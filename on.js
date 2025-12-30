@@ -2,7 +2,7 @@
 	"use strict";
 
 	var Config = {
-		HostKey: "lampa.vip",
+		HostKey: "lampa.mx",
 		Urls: {
 			Localhost: "http://lampa.vip/",
 			LampaVip: "http://lampa.vip",
