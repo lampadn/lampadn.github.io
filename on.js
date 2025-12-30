@@ -2,10 +2,10 @@
 	"use strict";
 
 	var Config = {
-		HostKey: "lampa.vip",
+		HostKey: "http://5.252.116.77:11212/",
 		Urls: {
-			Localhost: "http://lampa.vip/",
-			LampaVip: "http://lampa.vip",
+			Localhost: "http://5.252.116.77:11212/",
+			LampaVip: "http://5.252.116.77:11212/",
 			NwsClientScript: "https://honeyxcat.github.io/chdlmpvp/nws-client-es5.js",
 			GithubCheck: "https://github.com/",
 			CorsCheckPath: "/cors/check",
