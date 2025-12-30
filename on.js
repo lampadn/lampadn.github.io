@@ -4,8 +4,8 @@
 	var Config = {
 		HostKey: "lampa.vip",
 		Urls: {
-			Localhost: "http://lampa.mx/",
-			LampaVip: "http://lampa.vip",
+			Localhost: "http://lampa.vip/",
+			LampaVip: "http://lampa.mx",
 			NwsClientScript: "https://honeyxcat.github.io/chdlmpvp/nws-client-es5.js",
 			GithubCheck: "https://github.com/",
 			CorsCheckPath: "/cors/check",
