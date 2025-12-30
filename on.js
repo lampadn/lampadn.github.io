@@ -5,10 +5,10 @@
 		HostKey: "lampa.vip",
 		Urls: {
 			Localhost: "http://lampa.vip/",
-			LampaVip: "http://lampa.mx",
+			LampaVip: "http://lampa.vip",
 			NwsClientScript: "https://honeyxcat.github.io/chdlmpvp/nws-client-es5.js",
-			GithubCheck: "https://github.com/",
-			CorsCheckPath: "/cors/check",
+		//	GithubCheck: "https://github.com/",
+		//	CorsCheckPath: "/cors/check",
 		},
 		Rch: {
 			RegistryVersion: 149,
