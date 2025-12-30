@@ -16,7 +16,7 @@
 		},
 		Auth: {
 			LampaUid: "",
-			LampacUnicId: "",
+			LampacUnicId: "ofkrtxdg",
 			Token: "",
 		},
 		StorageKeys: {
