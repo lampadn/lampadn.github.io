@@ -14,11 +14,11 @@
 			RegistryVersion: 149,
 			ClientTimeout: 8000,
 		},
-		Auth: {
-			LampaUid: "jjhjf3yt",
-			LampacUnicId: "guest",
-			Token: "",
-		},
+	//	Auth: {
+	//		LampaUid: "jjhjf3yt",
+	//		LampacUnicId: "guest",
+	//		Token: "",
+	//	},
 		StorageKeys: {
 			LampacUnicId: "lampac_unic_id",
 			LampacProfileId: "lampac_profile_id",
