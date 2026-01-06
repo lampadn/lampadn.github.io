@@ -386,6 +386,9 @@
             }
         });
 
+        // Кнопка режима отображения наверху
+        list.append(modeBtn);
+
         function createButtonItem(btn) {
             var displayName = getButtonDisplayName(btn, currentButtons);
             var icon = btn.find('svg').clone();
@@ -413,8 +416,7 @@
                 '</div>' +
             '</div>');
 
-            // Всегда видим в редакторе, только с opacity при скрытии
-            item.css('opacity', isHidden ? '0.5' : '1');
+            item.toggleClass('menu-edit-list__item-hidden', isHidden);
 
             item.find('.menu-edit-list__icon').append(icon);
             item.data('button', btn);
@@ -422,10 +424,10 @@
 
             item.find('.move-up').on('hover:enter', function() {
                 var prev = item.prev();
-                while (prev.length && (prev.hasClass('viewmode-switch') || prev.hasClass('folder-reset-button'))) {
+                while (prev.length && prev.hasClass('viewmode-switch')) {
                     prev = prev.prev();
                 }
-                if (prev.length && !prev.hasClass('viewmode-switch') && !prev.hasClass('folder-reset-button')) {
+                if (prev.length && !prev.hasClass('viewmode-switch')) {
                     item.insertBefore(prev);
                     var btnIndex = currentButtons.indexOf(btn);
                     if (btnIndex > 0) {
@@ -453,17 +455,17 @@
             });
 
             item.find('.toggle').on('hover:enter', function() {
-                isHidden = !isHidden;
-                item.css('opacity', isHidden ? '0.5' : '1');
-                btn.toggleClass('hidden', isHidden);
-                item.find('.dot').attr('opacity', isHidden ? '0' : '1');
+                var isNowHidden = !item.hasClass('menu-edit-list__item-hidden');
+                item.toggleClass('menu-edit-list__item-hidden', isNowHidden);
+                btn.toggleClass('hidden', isNowHidden);
+                item.find('.dot').attr('opacity', isNowHidden ? '0' : '1');
                 
                 var hiddenList = getHiddenButtons();
                 var index = hiddenList.indexOf(btnId);
-                if (index !== -1) {
-                    hiddenList.splice(index, 1);
-                } else {
+                if (isNowHidden && index === -1) {
                     hiddenList.push(btnId);
+                } else if (!isNowHidden && index !== -1) {
+                    hiddenList.splice(index, 1);
                 }
                 setHiddenButtons(hiddenList);
             });
@@ -471,12 +473,10 @@
             return item;
         }
         
-        // Добавляем ВСЕ кнопки (включая скрытые)
+        // Все кнопки всегда добавляются в редактор
         currentButtons.forEach(function(btn) {
             list.append(createButtonItem(btn));
         });
-
-        list.append(modeBtn);
 
         var resetBtn = $('<div class="selector folder-reset-button">' +
             '<div style="text-align: center; padding: 1em;">Сбросить по умолчанию</div>' +
@@ -640,7 +640,7 @@
             '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
             '.viewmode-switch { background: rgba(100,100,255,0.3); margin-top: 1em; border-radius: 0.3em; }' +
             '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
-            '.menu-edit-list__item { opacity: 1 !important; }' + /* Гарантируем видимость в редакторе */
+            '.menu-edit-list__item-hidden { opacity: 0.5; }' +
         '</style>');
         $('body').append(style);
 
