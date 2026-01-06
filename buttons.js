@@ -100,7 +100,7 @@
     }
 
     function categorizeButtons(container) {
-        var allButtons = container.find('.full-start__button').not('.button--play');
+        var allButtons = container.find('.full-start__button').not('.button--edit-order, .button--play');
         
         var categories = {
             online: [],
@@ -210,31 +210,20 @@
         });
     }
 
-    function addEditPencil(container) {
-        var header = container.find('.head__actions');
-        if (header.length === 0) return;
+    function createEditButton() {
+        var btn = $('<div class="full-start__button selector button--edit-order" style="order: 9999;">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 29" fill="none"><use xlink:href="#sprite-edit"></use></svg>' +
+            '</div>');
 
-        var pencil = header.find('.edit-card');
-        if (pencil.length === 0) {
-            pencil = $(`
-                <div class="head__action selector edit-card focus">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </div>
-            `);
-            var settingsBtn = header.find('.open--settings');
-            if (settingsBtn.length) {
-                settingsBtn.after(pencil);
-            } else {
-                header.append(pencil);
-            }
-            pencil.on('hover:enter', openEditDialog);
+        btn.on('hover:enter', function() {
+            openEditDialog();
+        });
+
+        if (Lampa.Storage.get('buttons_editor_enabled') === false) {
+            btn.hide();
         }
 
-        var enabled = Lampa.Storage.get('buttons_editor_enabled', true);
-        pencil.toggle(enabled);
+        return btn;
     }
 
     function saveOrder() {
@@ -279,6 +268,14 @@
 
         applyButtonAnimation(visibleButtons);
 
+        var editBtn = targetContainer.find('.button--edit-order');
+        if (editBtn.length) {
+            editBtn.detach();
+            targetContainer.append(editBtn);
+        } else {
+            targetContainer.append(createEditButton());
+        }
+
         applyHiddenButtons(currentButtons);
 
         var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
@@ -286,12 +283,12 @@
         if (viewmode === 'icons') targetContainer.addClass('icons-only');
         if (viewmode === 'always') targetContainer.addClass('always-text');
 
-        addEditPencil(currentContainer);
-
         saveOrder();
         
         setTimeout(function() {
-            setupButtonNavigation(currentContainer);
+            if (currentContainer) {
+                setupButtonNavigation(currentContainer);
+            }
         }, 100);
     }
 
@@ -369,7 +366,7 @@
         var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'Текст всегда'};
         var currentMode = Lampa.Storage.get('buttons_viewmode', 'default');
 
-        var modeBtn = $('<div class="selector viewmode-switch">' +
+        var modeBtn = $('<div class="selector viewmode-switch" style="margin-bottom: 1.5em;">' +
             '<div style="text-align: center; padding: 1em;">Режим отображения: ' + labels[currentMode] + '</div>' +
         '</div>');
 
@@ -489,7 +486,7 @@
             
             setTimeout(function() {
                 if (currentContainer) {
-                    currentContainer.find('.button--play').remove();
+                    currentContainer.find('.button--play, .button--edit-order').remove();
                     currentContainer.data('buttons-processed', false);
                     
                     var targetContainer = currentContainer.find('.full-start-new__buttons');
@@ -542,7 +539,7 @@
         if (!targetContainer.length) return false;
 
         currentContainer = container;
-        container.find('.button--play').remove();
+        container.find('.button--play, .button--edit-order').remove();
 
         var categories = categorizeButtons(container);
         
@@ -577,6 +574,25 @@
             }
         });
 
+        // Добавляем кнопку редактора в хедер карточки (как в cardbtn)
+        var header = container.find('.head__actions');
+        if (header.length && Lampa.Storage.get('buttons_editor_enabled', true)) {
+            var pencil = header.find('.edit-card');
+            if (pencil.length === 0) {
+                pencil = $('<div class="head__action selector edit-card">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>' +
+                    '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>' +
+                    '</svg>' +
+                    '</div>');
+                header.find('.open--settings').after(pencil);
+                pencil.on('hover:enter', openEditDialog);
+            }
+        }
+
+        // Также добавляем кнопку внизу среди кнопок (как в оригинале)
+        targetContainer.append(createEditButton());
+
         applyHiddenButtons(currentButtons);
 
         var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
@@ -585,8 +601,6 @@
         if (viewmode === 'always') targetContainer.addClass('always-text');
 
         applyButtonAnimation(visibleButtons);
-        
-        addEditPencil(container);
         
         setTimeout(function() {
             setupButtonNavigation(container);
@@ -636,7 +650,7 @@
             '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
             '.full-start-new__buttons.icons-only .full-start__button span { display: none; }' +
             '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
-            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0 0 1em 0; border-radius: 0.3em; }' +
+            '.viewmode-switch { background: rgba(100,100,255,0.3); border-radius: 0.3em; }' +
             '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
             '.menu-edit-list__item-hidden { opacity: 0.5; }' +
             '.head__action.edit-card svg { width: 26px; height: 26px; }' +
@@ -657,7 +671,6 @@
                     if (!container.data('buttons-processed')) {
                         container.data('buttons-processed', true);
                         if (reorderButtons(container)) {
-                            addEditPencil(container);
                             if (targetContainer.length) {
                                 targetContainer.removeClass('buttons-loading');
                             }
@@ -686,7 +699,12 @@
             },
             onChange: function(value) {
                 setTimeout(function() {
-                    $('.edit-card').toggle(value);
+                    var currentValue = Lampa.Storage.get('buttons_editor_enabled', true);
+                    if (currentValue) {
+                        $('.button--edit-order, .edit-card').show();
+                    } else {
+                        $('.button--edit-order, .edit-card').hide();
+                    }
                 }, 100);
             },
             onRender: function(element) {
