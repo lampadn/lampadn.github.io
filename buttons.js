@@ -18,12 +18,6 @@
     var allButtonsOriginal = [];
     var currentContainer = null;
 
-    const VIEW_MODES = [
-        { key: 'default', label: 'Стандартный' },
-        { key: 'icons',   label: 'Только иконки' },
-        { key: 'always',  label: 'Всегда с надписями' }
-    ];
-
     function findButton(btnId) {
         var btn = allButtonsOriginal.find(function(b) { return getButtonId(b) === btnId; });
         if (!btn) {
@@ -239,13 +233,6 @@
                 'animation-delay': (index * 0.08) + 's'
             });
         });
-    }
-
-    function applyViewMode(targetContainer) {
-        var viewMode = Lampa.Storage.get('buttons_viewmode', 'default');
-        targetContainer.removeClass('buttons-icons-only buttons-always-text');
-        if (viewMode === 'icons') targetContainer.addClass('buttons-icons-only');
-        if (viewMode === 'always') targetContainer.addClass('buttons-always-text');
     }
 
     function createEditButton() {
@@ -523,7 +510,11 @@
             targetContainer.append(editBtn);
         }
 
-        applyViewMode(targetContainer);
+        // Применяем режим отображения
+        var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
+        targetContainer.removeClass('icons-only always-text');
+        if (viewmode === 'icons') targetContainer.addClass('icons-only');
+        if (viewmode === 'always') targetContainer.addClass('always-text');
 
         saveOrder();
         
@@ -764,6 +755,18 @@
         }
     }
 
+    function createFolder(name, buttonIds) {
+        var folders = getFolders();
+        var folder = {
+            id: 'folder_' + Date.now(),
+            name: name,
+            buttons: buttonIds
+        };
+        folders.push(folder);
+        setFolders(folders);
+        return folder;
+    }
+
     function deleteFolder(folderId) {
         var folders = getFolders();
         folders = folders.filter(function(f) { return f.id !== folderId; });
@@ -802,32 +805,32 @@
         var folders = getFolders();
         var itemOrder = getItemOrder();
 
-        list.append($('<div class="menu-edit-list__item" style="background:rgba(255,255,255,0.1); cursor:default; pointer-events:none;"><div class="menu-edit-list__title">Режим отображения кнопок</div></div>'));
+        // Кнопка переключения режима отображения (вместо создания папки)
+        var modes = ['default', 'icons', 'always'];
+        var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'Текст всегда'};
+        var currentMode = Lampa.Storage.get('buttons_viewmode', 'default');
 
-        var currentViewMode = Lampa.Storage.get('buttons_viewmode', 'default');
+        var modeBtn = $('<div class="selector viewmode-switch">' +
+            '<div style="text-align: center; padding: 1em;">Режим отображения: ' + labels[currentMode] + '</div>' +
+        '</div>');
 
-        VIEW_MODES.forEach(function(mode) {
-            var item = $('<div class="menu-edit-list__item selector">' +
-                '<div class="menu-edit-list__title">' + mode.label + '</div>' +
-                '<div class="menu-edit-list__toggle selector">' +
-                    '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
-                        '<path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="' + (currentViewMode === mode.key ? '1' : '0') + '" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-            '</div>');
-
-            item.on('hover:enter', function() {
-                Lampa.Storage.set('buttons_viewmode', mode.key);
-                list.find('.dot').attr('opacity', '0');
-                $(this).find('.dot').attr('opacity', '1');
-                applyChanges();
-            });
-
-            list.append(item);
+        modeBtn.on('hover:enter', function() {
+            var idx = modes.indexOf(currentMode);
+            idx = (idx + 1) % modes.length;
+            currentMode = modes[idx];
+            Lampa.Storage.set('buttons_viewmode', currentMode);
+            $(this).find('div').text('Режим отображения: ' + labels[currentMode]);
+            
+            if (currentContainer) {
+                var target = currentContainer.find('.full-start-new__buttons');
+                target.removeClass('icons-only always-text');
+                if (currentMode === 'icons') target.addClass('icons-only');
+                if (currentMode === 'always') target.addClass('always-text');
+            }
+            Lampa.Noty.show('Режим изменён на: ' + labels[currentMode]);
         });
 
-        list.append($('<div style="height:1em;"></div>'));
+        list.append(modeBtn);
 
         function createFolderItem(folder) {
             var item = $('<div class="menu-edit-list__item folder-item">' +
@@ -860,7 +863,7 @@
 
             item.find('.move-up').on('hover:enter', function() {
                 var prev = item.prev();
-                while (prev.length && prev.hasClass('menu-edit-list__create-folder')) {
+                while (prev.length && prev.hasClass('viewmode-switch')) {
                     prev = prev.prev();
                 }
                 if (prev.length) {
@@ -929,7 +932,38 @@
                 item.remove();
                 Lampa.Noty.show('Папка удалена');
                 
-                applyChanges();
+                setTimeout(function() {
+                    if (currentContainer) {
+                        currentContainer.find('.button--play, .button--edit-order, .button--folder').remove();
+                        currentContainer.data('buttons-processed', false);
+                        
+                        var targetContainer = currentContainer.find('.full-start-new__buttons');
+                        var existingButtons = targetContainer.find('.full-start__button').toArray();
+                        
+                        allButtonsOriginal.forEach(function(originalBtn) {
+                            var btnId = getButtonId(originalBtn);
+                            var exists = false;
+                            
+                            for (var i = 0; i < existingButtons.length; i++) {
+                                if (getButtonId($(existingButtons[i])) === btnId) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (!exists) {
+                                var clonedBtn = originalBtn.clone(true, true);
+                                clonedBtn.css({
+                                    'opacity': '1',
+                                    'animation': 'none'
+                                });
+                                targetContainer.append(clonedBtn);
+                            }
+                        });
+                        
+                        reorderButtons(currentContainer);
+                    }
+                }, 50);
             });
             
             return item;
@@ -969,10 +1003,10 @@
 
             item.find('.move-up').on('hover:enter', function() {
                 var prev = item.prev();
-                while (prev.length && prev.hasClass('menu-edit-list__create-folder')) {
+                while (prev.length && prev.hasClass('viewmode-switch')) {
                     prev = prev.prev();
                 }
-                if (prev.length && !prev.hasClass('menu-edit-list__create-folder')) {
+                if (prev.length && !prev.hasClass('viewmode-switch')) {
                     item.insertBefore(prev);
                     var btnIndex = currentButtons.indexOf(btn);
                     if (btnIndex > 0) {
@@ -1071,11 +1105,43 @@
             Lampa.Storage.set('button_hidden', []);
             Lampa.Storage.set('button_folders', []);
             Lampa.Storage.set('button_item_order', []);
-            Lampa.Storage.set('buttons_viewmode', 'default');
+            Lampa.Storage.set('buttons_viewmode', 'default'); // Сброс режима
             Lampa.Modal.close();
             Lampa.Noty.show('Настройки сброшены');
             
-            applyChanges();
+            setTimeout(function() {
+                if (currentContainer) {
+                    currentContainer.find('.button--play, .button--edit-order, .button--folder').remove();
+                    currentContainer.data('buttons-processed', false);
+                    
+                    var targetContainer = currentContainer.find('.full-start-new__buttons');
+                    var existingButtons = targetContainer.find('.full-start__button').toArray();
+                    
+                    allButtonsOriginal.forEach(function(originalBtn) {
+                        var btnId = getButtonId(originalBtn);
+                        var exists = false;
+                        
+                        for (var i = 0; i < existingButtons.length; i++) {
+                            if (getButtonId($(existingButtons[i])) === btnId) {
+                                exists = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!exists) {
+                            var clonedBtn = originalBtn.clone(true, true);
+                            clonedBtn.css({
+                                'opacity': '1',
+                                'animation': 'none'
+                            });
+                            targetContainer.append(clonedBtn);
+                        }
+                    });
+                    
+                    reorderButtons(currentContainer);
+                    refreshController();
+                }
+            }, 100);
         });
 
         list.append(resetBtn);
@@ -1245,7 +1311,11 @@
         targetContainer.append(editButton);
         visibleButtons.push(editButton);
 
-        applyViewMode(targetContainer);
+        // Применяем режим отображения
+        var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
+        targetContainer.removeClass('icons-only always-text');
+        if (viewmode === 'icons') targetContainer.addClass('icons-only');
+        if (viewmode === 'always') targetContainer.addClass('always-text');
 
         applyButtonAnimation(visibleButtons);
         
@@ -1300,10 +1370,11 @@
             '.folder-reset-button { background: rgba(200,100,100,0.3); margin-top: 1em; border-radius: 0.3em; }' +
             '.folder-reset-button.focus { border: 3px solid rgba(255,255,255,0.8); }' +
             '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
-            '.full-start-new__buttons.buttons-icons-only .full-start__button span { display: none !important; }' +
-            '.full-start-new__buttons.buttons-always-text .full-start__button span { display: block !important; }' +
-            '.full-start-new__buttons.buttons-icons-only .button--folder span { display: block !important; }' +
-            '</style>');
+            '.full-start-new__buttons.icons-only .full-start__button span { display: none; }' +
+            '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
+            '.viewmode-switch { background: rgba(100,100,255,0.3); margin-top: 1em; border-radius: 0.3em; }' +
+            '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
+        '</style>');
         $('body').append(style);
 
         Lampa.Listener.follow('full', function(e) {
@@ -1333,40 +1404,40 @@
                 }
             }, 400);
         });
+    }
 
-        if (Lampa.SettingsApi) {
-            Lampa.SettingsApi.addParam({
-                component: 'interface',
-                param: {
-                    name: 'buttons_editor_enabled',
-                    type: 'trigger',
-                    default: true
-                },
-                field: {
-                    name: 'Редактор кнопок'
-                },
-                onChange: function(value) {
-                    setTimeout(function() {
-                        var currentValue = Lampa.Storage.get('buttons_editor_enabled', true);
-                        if (currentValue) {
-                            $('.button--edit-order').show();
-                            Lampa.Noty.show('Редактор кнопок включен');
-                        } else {
-                            $('.button--edit-order').hide();
-                            Lampa.Noty.show('Редактор кнопок выключен');
-                        }
-                    }, 100);
-                },
-                onRender: function(element) {
-                    setTimeout(function() {
-                        var lastElement = $('div[data-component="interface"] .settings-param').last();
-                        if (lastElement.length) {
-                            element.insertAfter(lastElement);
-                        }
-                    }, 0);
-                }
-            });
-        }
+    if (Lampa.SettingsApi) {
+        Lampa.SettingsApi.addParam({
+            component: 'interface',
+            param: {
+                name: 'buttons_editor_enabled',
+                type: 'trigger',
+                default: true
+            },
+            field: {
+                name: 'Редактор кнопок'
+            },
+            onChange: function(value) {
+                setTimeout(function() {
+                    var currentValue = Lampa.Storage.get('buttons_editor_enabled', true);
+                    if (currentValue) {
+                        $('.button--edit-order').show();
+                        Lampa.Noty.show('Редактор кнопок включен');
+                    } else {
+                        $('.button--edit-order').hide();
+                        Lampa.Noty.show('Редактор кнопок выключен');
+                    }
+                }, 100);
+            },
+            onRender: function(element) {
+                setTimeout(function() {
+                    var lastElement = $('div[data-component="interface"] .settings-param').last();
+                    if (lastElement.length) {
+                        element.insertAfter(lastElement);
+                    }
+                }, 0);
+            }
+        });
     }
 
     init();
