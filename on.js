@@ -5,7 +5,7 @@
       Urls: {
         Localhost: "http://lampa.oksibutch.ru/",
         LampOnline: "http://lampa.oksibutch.ru",
-        NwsClientScript: "https://amikdn.github.io/nws-client-es5.js",
+    //    NwsClientScript: "https://amikdn.github.io/nws-client-es5.js",
         GithubCheck: "https://github.com/",
         CorsCheckPath: "/cors/check"
       },
@@ -1618,3 +1618,4 @@
       "ready" === e.type && initBalanserInFilterMenu()
     }))
 })();
+
