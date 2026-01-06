@@ -3,7 +3,7 @@
 
     var LAMPAC_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z" fill="currentColor"></path></svg>';
     
-    var EXCLUDED_CLASSES = ['button--play'];
+    var EXCLUDED_CLASSES = ['button--play', 'button--edit-order'];
     
     var DEFAULT_GROUPS = [
         { name: 'online', patterns: ['online', 'lampac', 'modss', 'showy'], label: 'Онлайн' },
@@ -100,7 +100,7 @@
     }
 
     function categorizeButtons(container) {
-        var allButtons = container.find('.full-start__button').not('.button--play');
+        var allButtons = container.find('.full-start__button').not('.button--edit-order, .button--play');
         
         var categories = {
             online: [],
@@ -195,7 +195,8 @@
     function applyHiddenButtons(buttons) {
         var hidden = getHiddenButtons();
         buttons.forEach(function(btn) {
-            btn.toggleClass('hidden', hidden.indexOf(getButtonId(btn)) !== -1);
+            var id = getButtonId(btn);
+            btn.toggleClass('hidden', hidden.indexOf(id) !== -1);
         });
     }
 
@@ -207,6 +208,22 @@
                 'animation-delay': (index * 0.08) + 's'
             });
         });
+    }
+
+    function createEditButton() {
+        var btn = $('<div class="full-start__button selector button--edit-order" style="order: 9999;">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 29" fill="none"><use xlink:href="#sprite-edit"></use></svg>' +
+            '</div>');
+
+        btn.on('hover:enter', function() {
+            openEditDialog();
+        });
+
+        if (Lampa.Storage.get('buttons_editor_enabled') === false) {
+            btn.hide();
+        }
+
+        return btn;
     }
 
     function saveOrder() {
@@ -239,17 +256,21 @@
         var targetContainer = currentContainer.find('.full-start-new__buttons');
         if (!targetContainer.length) return;
 
-        targetContainer.find('.full-start__button').not('.button--play').detach();
+        targetContainer.find('.full-start__button').not('.button--edit-order').detach();
         
         var visibleButtons = [];
         currentButtons.forEach(function(btn) {
             targetContainer.append(btn);
-            if (!btn.hasClass('hidden')) {
-                visibleButtons.push(btn);
-            }
+            if (!btn.hasClass('hidden')) visibleButtons.push(btn);
         });
 
         applyButtonAnimation(visibleButtons);
+
+        var editBtn = targetContainer.find('.button--edit-order');
+        if (editBtn.length) {
+            editBtn.detach();
+            targetContainer.append(editBtn);
+        }
 
         applyHiddenButtons(currentButtons);
 
@@ -428,16 +449,17 @@
             });
 
             item.find('.toggle').on('hover:enter', function() {
-                item.toggleClass('menu-edit-list__item-hidden');
-                btn.toggleClass('hidden');
-                item.find('.dot').attr('opacity', item.hasClass('menu-edit-list__item-hidden') ? '0' : '1');
+                var isNowHidden = !item.hasClass('menu-edit-list__item-hidden');
+                item.toggleClass('menu-edit-list__item-hidden', isNowHidden);
+                btn.toggleClass('hidden', isNowHidden);
+                item.find('.dot').attr('opacity', isNowHidden ? '0' : '1');
                 
                 var hiddenList = getHiddenButtons();
                 var index = hiddenList.indexOf(btnId);
-                if (item.hasClass('menu-edit-list__item-hidden')) {
-                    if (index === -1) hiddenList.push(btnId);
-                } else {
-                    if (index !== -1) hiddenList.splice(index, 1);
+                if (isNowHidden && index === -1) {
+                    hiddenList.push(btnId);
+                } else if (!isNowHidden && index !== -1) {
+                    hiddenList.splice(index, 1);
                 }
                 setHiddenButtons(hiddenList);
             });
@@ -461,7 +483,7 @@
             
             setTimeout(function() {
                 if (currentContainer) {
-                    currentContainer.find('.button--play').remove();
+                    currentContainer.find('.button--play, .button--edit-order').remove();
                     currentContainer.data('buttons-processed', false);
                     
                     var targetContainer = currentContainer.find('.full-start-new__buttons');
@@ -514,7 +536,7 @@
         if (!targetContainer.length) return false;
 
         currentContainer = container;
-        container.find('.button--play').remove();
+        container.find('.button--play, .button--edit-order').remove();
 
         var categories = categorizeButtons(container);
         
@@ -544,10 +566,12 @@
         var visibleButtons = [];
         currentButtons.forEach(function(btn) {
             targetContainer.append(btn);
-            if (!btn.hasClass('hidden')) {
-                visibleButtons.push(btn);
-            }
+            if (!btn.hasClass('hidden')) visibleButtons.push(btn);
         });
+
+        var editButton = createEditButton();
+        targetContainer.append(editButton);
+        visibleButtons.push(editButton);
 
         applyHiddenButtons(currentButtons);
 
@@ -557,24 +581,6 @@
         if (viewmode === 'always') targetContainer.addClass('always-text');
 
         applyButtonAnimation(visibleButtons);
-
-        // Добавляем карандаш в хедер карточки
-        if (Lampa.Storage.get('buttons_editor_enabled', true)) {
-            const header = container.find('.head__actions');
-            if (header.length) {
-                let pencil = header.find('.head__action.edit-card');
-                if (pencil.length === 0) {
-                    pencil = $('<div class="head__action selector edit-card">' +
-                        '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-                            '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>' +
-                            '<path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>' +
-                        '</svg>' +
-                    '</div>');
-                    header.find('.open--settings').after(pencil);
-                    pencil.on('hover:enter', openEditDialog);
-                }
-            }
-        }
         
         setTimeout(function() {
             setupButtonNavigation(container);
@@ -624,10 +630,9 @@
             '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
             '.full-start-new__buttons.icons-only .full-start__button span { display: none; }' +
             '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
-            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0 0 2em 0; border-radius: 0.3em; }' +
+            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0.5em 0 1.5em 0; border-radius: 0.3em; }' +
             '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
             '.menu-edit-list__item-hidden { opacity: 0.5; }' +
-            '.head__action.edit-card svg { width: 26px; height: 26px; }' +
         '</style>');
         $('body').append(style);
 
@@ -674,7 +679,11 @@
             onChange: function(value) {
                 setTimeout(function() {
                     var currentValue = Lampa.Storage.get('buttons_editor_enabled', true);
-                    $('.head__action.edit-card').toggle(currentValue);
+                    if (currentValue) {
+                        $('.button--edit-order').show();
+                    } else {
+                        $('.button--edit-order').hide();
+                    }
                 }, 100);
             },
             onRender: function(element) {
