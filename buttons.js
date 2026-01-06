@@ -1591,6 +1591,7 @@
         '</style>');
         $('body').append(style);
 
+        // Ключ настройки "Всегда показывать левое меню" — sidebar_open
         var leftMenuAlways = Lampa.Storage.get('sidebar_open', false);
 
         if (leftMenuAlways) {
@@ -1598,33 +1599,32 @@
 
             var menuStyle = $('<style>' +
                 '.left-menu-text-on-focus .menu__text {' +
-                    'position: absolute;' +
-                    'left: 62px;' +
-                    'top: 50%;' +
-                    'transform: translateY(-50%);' +
-                    'opacity: 0;' +
-                    'transition: opacity 0.3s ease;' +
-                    'white-space: nowrap;' +
-                    'pointer-events: none;' +
-                    'font-size: 1em;' +
+                    'position: absolute !important;' +
+                    'left: 70px !important;' +
+                    'top: 50% !important;' +
+                    'transform: translateY(-50%) !important;' +
+                    'opacity: 0 !important;' +
+                    'transition: opacity 0.4s ease !important;' +
+                    'white-space: nowrap !important;' +
+                    'pointer-events: none !important;' +
+                    'z-index: 10 !important;' +
+                    'background: rgba(0,0,0,0.6) !important;' +
+                    'padding: 0.5em 1em !important;' +
+                    'border-radius: 0.4em !important;' +
                 '}' +
-                '.left-menu-text-on-focus .menu__item.focus .menu__text,' +
-                '.left-menu-text-on-focus .menu__item:hover .menu__text {' +
-                    'opacity: 1;' +
+                '.left-menu-text-on-focus .menu__item.focus .menu__text {' +
+                    'opacity: 1 !important;' +
                 '}' +
                 '.left-menu-text-on-focus .menu__item {' +
-                    'position: relative;' +
-                    'justify-content: flex-start;' +
-                    'padding-left: 0;' +
+                    'position: relative !important;' +
+                    'justify-content: center !important;' +
                 '}' +
                 '.left-menu-text-on-focus .menu__ico {' +
-                    'margin-right: 0;' +
-                    'width: 62px;' +
-                    'justify-content: center;' +
+                    'width: 70px !important;' +
+                    'justify-content: center !important;' +
                 '}' +
                 '.left-menu-text-on-focus .sidebar {' +
-                    'min-width: 240px !important;' +
-                    'transition: min-width 0.3s ease;' +
+                    'min-width: 70px !important;' +
                 '}' +
             '</style>');
             $('body').append(menuStyle);
