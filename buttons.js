@@ -359,7 +359,7 @@
         var hidden = getHiddenButtons();
 
         var modes = ['default', 'icons', 'always'];
-        var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'Кнопки с текстом'};
+        var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'С текстом'};
         var currentMode = Lampa.Storage.get('buttons_viewmode', 'default');
 
         var modeBtn = $('<div class="selector viewmode-switch">' +
