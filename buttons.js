@@ -250,14 +250,30 @@
             const icon = btn.find('svg').clone();
             const id = getButtonId(btn);
             const isHidden = hidden.includes(id);
+            const opacity = isHidden ? '0' : '1';
 
-            const item = $(`<div class="menu-edit-list__item">
-                <div class="menu-edit-list__icon"></div>
-                <div class="menu-edit-list__title">${display}</div>
-                <div class="menu-edit-list__move move-up selector">[↑]</div>
-                <div class="menu-edit-list__move move-down selector">[↓]</div>
-                <div class="menu-edit-list__toggle toggle selector">[✓]</div>
-            </div>`);
+            const item = $(`
+                <div class="menu-edit-list__item">
+                    <div class="menu-edit-list__icon"></div>
+                    <div class="menu-edit-list__title">${display}</div>
+                    <div class="menu-edit-list__move move-up selector">
+                        <svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="menu-edit-list__move move-down selector">
+                        <svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="menu-edit-list__toggle toggle selector">
+                        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>
+                            <path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="${opacity}" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+            `);
 
             item.toggleClass('menu-edit-list__item-hidden', isHidden);
             item.find('.menu-edit-list__icon').append(icon);
