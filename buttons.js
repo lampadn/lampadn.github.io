@@ -3,8 +3,8 @@
 
     var LAMPAC_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z" fill="currentColor"></path></svg>';
     
-    var EXCLUDED_CLASSES = ['button--play', 'button--edit-order', 'button--folder'];
-    
+    var EXCLUDED_CLASSES = ['button--play', 'button--edit-order'];
+
     var DEFAULT_GROUPS = [
         { name: 'online', patterns: ['online', 'lampac', 'modss', 'showy'], label: 'Онлайн' },
         { name: 'torrent', patterns: ['torrent'], label: 'Торренты' },
@@ -98,7 +98,7 @@
     }
 
     function categorizeButtons(container) {
-        var allButtons = container.find('.full-start__button').not('.button--edit-order, .button--folder, .button--play');
+        var allButtons = container.find('.full-start__button').not('.button--edit-order, .button--play');
         
         var categories = {
             online: [],
@@ -226,60 +226,6 @@
         return btn;
     }
 
-    function saveOrder() {
-        var order = [];
-        currentButtons.forEach(function(btn) {
-            order.push(getButtonId(btn));
-        });
-        setCustomOrder(order);
-    }
-
-    function applyChanges() {
-        if (!currentContainer) return;
-        
-        var categories = categorizeButtons(currentContainer);
-        var allButtons = []
-            .concat(categories.online)
-            .concat(categories.torrent)
-            .concat(categories.trailer)
-            .concat(categories.book)
-            .concat(categories.reaction)
-            .concat(categories.other);
-        
-        allButtons = sortByCustomOrder(allButtons);
-        allButtonsCache = allButtons;
-        
-        currentButtons = allButtons;
-        applyHiddenButtons(allButtons);
-        
-        var targetContainer = currentContainer.find('.full-start-new__buttons');
-        if (!targetContainer.length) return;
-
-        targetContainer.find('.full-start__button').not('.button--edit-order').detach();
-        
-        allButtons.forEach(function(btn) {
-            if (!btn.hasClass('hidden')) {
-                targetContainer.append(btn);
-            }
-        });
-
-        applyButtonAnimation(allButtons.filter(function(btn) { return !btn.hasClass('hidden'); }));
-
-        var editBtn = targetContainer.find('.button--edit-order');
-        if (editBtn.length) {
-            editBtn.detach();
-            targetContainer.append(editBtn);
-        }
-
-        saveOrder();
-        
-        setTimeout(function() {
-            if (currentContainer) {
-                setupButtonNavigation(currentContainer);
-            }
-        }, 100);
-    }
-
     function capitalize(str) {
         if (!str) return str;
         return str.charAt(0).toUpperCase() + str.slice(1);
@@ -328,6 +274,60 @@
         return text;
     }
 
+    function createButtonItem(btn) {
+        var displayName = getButtonDisplayName(btn, allButtonsOriginal);
+        var icon = btn.find('svg').clone();
+        var btnId = getButtonId(btn);
+        var hiddenList = getHiddenButtons();
+        var isHidden = hiddenList.indexOf(btnId) !== -1;
+
+        var item = $('<div class="menu-edit-list__item">' +
+            '<div class="menu-edit-list__icon"></div>' +
+            '<div class="menu-edit-list__title">' + displayName + '</div>' +
+            '<div class="menu-edit-list__move move-up selector">' +
+                '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                '</svg>' +
+            '</div>' +
+            '<div class="menu-edit-list__move move-down selector">' +
+                '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                '</svg>' +
+            '</div>' +
+            '<div class="menu-edit-list__toggle toggle selector">' +
+                '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
+                    '<path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="' + (isHidden ? '0' : '1') + '" stroke-linecap="round"/>' +
+                '</svg>' +
+            '</div>' +
+        '</div>');
+
+        item.find('.menu-edit-list__icon').append(icon);
+        item.data('buttonId', btnId);
+        item.toggleClass('menu-edit-list__item-hidden', isHidden);
+
+        item.find('.move-up').on('hover:enter', function() {
+            var prev = item.prev();
+            if (prev.length) {
+                item.insertBefore(prev);
+            }
+        });
+
+        item.find('.move-down').on('hover:enter', function() {
+            var next = item.next();
+            if (next.length) {
+                item.insertAfter(next);
+            }
+        });
+
+        item.find('.toggle').on('hover:enter', function() {
+            item.toggleClass('menu-edit-list__item-hidden');
+            item.find('.dot').attr('opacity', item.hasClass('menu-edit-list__item-hidden') ? '0' : '1');
+        });
+        
+        return item;
+    }
+
     function openEditDialog() {
         if (currentContainer) {
             var categories = categorizeButtons(currentContainer);
@@ -341,124 +341,88 @@
             
             allButtons = sortByCustomOrder(allButtons);
             allButtonsCache = allButtons;
-            
             currentButtons = allButtons;
+            applyHiddenButtons(allButtons);
         }
         
         var list = $('<div class="menu-edit-list"></div>');
-        var hidden = getHiddenButtons();
 
-        function createButtonItem(btn) {
-            var displayName = getButtonDisplayName(btn, currentButtons);
-            var icon = btn.find('svg').clone();
-            var btnId = getButtonId(btn);
-            var isHidden = hidden.indexOf(btnId) !== -1;
-
-            var item = $('<div class="menu-edit-list__item">' +
-                '<div class="menu-edit-list__icon"></div>' +
-                '<div class="menu-edit-list__title">' + displayName + '</div>' +
-                '<div class="menu-edit-list__move move-up selector">' +
-                    '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-                '<div class="menu-edit-list__move move-down selector">' +
-                    '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-                '<div class="menu-edit-list__toggle toggle selector">' +
-                    '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
-                        '<path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="' + (isHidden ? '0' : '1') + '" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-            '</div>');
-
-            item.find('.menu-edit-list__icon').append(icon);
-            item.data('button', btn);
-            item.data('buttonId', btnId);
-
-            item.find('.move-up').on('hover:enter', function() {
-                var prev = item.prev();
-                if (prev.length) {
-                    item.insertBefore(prev);
-                    var btnIndex = currentButtons.indexOf(btn);
-                    if (btnIndex > 0) {
-                        currentButtons.splice(btnIndex, 1);
-                        currentButtons.splice(btnIndex - 1, 0, btn);
-                    }
-                    saveOrder();
-                }
-            });
-
-            item.find('.move-down').on('hover:enter', function() {
-                var next = item.next();
-                if (next.length && !next.hasClass('folder-reset-button')) {
-                    item.insertAfter(next);
-                    var btnIndex = currentButtons.indexOf(btn);
-                    if (btnIndex < currentButtons.length - 1) {
-                        currentButtons.splice(btnIndex, 1);
-                        currentButtons.splice(btnIndex + 1, 0, btn);
-                    }
-                    saveOrder();
-                }
-            });
-
-            item.find('.toggle').on('hover:enter', function() {
-                var index = hidden.indexOf(btnId);
-                
-                if (index !== -1) {
-                    hidden.splice(index, 1);
-                    btn.removeClass('hidden');
-                    item.find('.dot').attr('opacity', '1');
-                } else {
-                    hidden.push(btnId);
-                    btn.addClass('hidden');
-                    item.find('.dot').attr('opacity', '0');
-                }
-                
-                setHiddenButtons(hidden);
-            });
-            
-            return item;
-        }
-        
         currentButtons.forEach(function(btn) {
             list.append(createButtonItem(btn));
         });
 
-        var resetBtn = $('<div class="selector folder-reset-button">' +
-            '<div style="text-align: center; padding: 1em;">Сбросить по умолчанию</div>' +
-        '</div>');
-        
-        resetBtn.on('hover:enter', function() {
-            Lampa.Storage.set('button_custom_order', []);
-            Lampa.Storage.set('button_hidden', []);
-            Lampa.Modal.close();
-            Lampa.Noty.show('Настройки сброшены');
-            
-            setTimeout(function() {
-                if (currentContainer) {
-                    reorderButtons(currentContainer);
-                    refreshController();
-                }
-            }, 100);
-        });
-
-        list.append(resetBtn);
-
         Lampa.Modal.open({
-            title: 'Порядок кнопок',
+            title: 'Редактировать кнопки',
             html: list,
             size: 'small',
             scroll_to_center: true,
             onBack: function() {
+                var newOrder = [];
+                var newHidden = [];
+                list.find('.menu-edit-list__item').each(function() {
+                    var $item = $(this);
+                    var id = $item.data('buttonId');
+                    if (id) {
+                        newOrder.push(id);
+                        if ($item.hasClass('menu-edit-list__item-hidden')) {
+                            newHidden.push(id);
+                        }
+                    }
+                });
+                setCustomOrder(newOrder);
+                setHiddenButtons(newHidden);
                 Lampa.Modal.close();
-                applyChanges();
+                if (currentContainer) {
+                    reorderButtons(currentContainer);
+                }
                 Lampa.Controller.toggle('full_start');
             }
         });
+    }
+
+    function applyChanges() {
+        if (!currentContainer) return;
+        
+        var categories = categorizeButtons(currentContainer);
+        var allButtons = []
+            .concat(categories.online)
+            .concat(categories.torrent)
+            .concat(categories.trailer)
+            .concat(categories.book)
+            .concat(categories.reaction)
+            .concat(categories.other);
+        
+        allButtons = sortByCustomOrder(allButtons);
+        allButtonsCache = allButtons;
+        currentButtons = allButtons;
+        applyHiddenButtons(allButtons);
+        
+        var targetContainer = currentContainer.find('.full-start-new__buttons');
+        if (!targetContainer.length) return;
+
+        targetContainer.find('.full-start__button').not('.button--edit-order').detach();
+        
+        var visibleButtons = [];
+        allButtons.forEach(function(btn) {
+            targetContainer.append(btn);
+            if (!btn.hasClass('hidden')) visibleButtons.push(btn);
+        });
+
+        applyButtonAnimation(visibleButtons);
+
+        var editBtn = targetContainer.find('.button--edit-order');
+        if (editBtn.length) {
+            editBtn.detach();
+            targetContainer.append(editBtn);
+        } else {
+            targetContainer.append(createEditButton());
+        }
+
+        setTimeout(function() {
+            if (currentContainer) {
+                setupButtonNavigation(currentContainer);
+            }
+        }, 100);
     }
 
     function reorderButtons(container) {
@@ -466,7 +430,7 @@
         if (!targetContainer.length) return false;
 
         currentContainer = container;
-        container.find('.button--play, .button--edit-order, .button--folder').remove();
+        container.find('.button--play, .button--edit-order').remove();
 
         var categories = categorizeButtons(container);
         
@@ -494,15 +458,12 @@
         
         var visibleButtons = [];
         allButtons.forEach(function(btn) {
-            if (!btn.hasClass('hidden')) {
-                targetContainer.append(btn);
-                visibleButtons.push(btn);
-            }
+            targetContainer.append(btn);
+            if (!btn.hasClass('hidden')) visibleButtons.push(btn);
         });
 
-        var editButton = createEditButton();
-        targetContainer.append(editButton);
-        visibleButtons.push(editButton);
+        targetContainer.append(createEditButton());
+        visibleButtons.push(targetContainer.find('.button--edit-order'));
 
         applyButtonAnimation(visibleButtons);
         
@@ -527,7 +488,6 @@
         setTimeout(function() {
             try {
                 Lampa.Controller.toggle('full_start');
-                
                 if (currentContainer) {
                     setTimeout(function() {
                         setupButtonNavigation(currentContainer);
@@ -542,7 +502,6 @@
             '@keyframes button-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }' +
             '.full-start__button { opacity: 0; }' +
             '.full-start__button.hidden { display: none !important; }' +
-            '.button--folder { cursor: pointer; }' +
             '.full-start-new__buttons { ' +
                 'display: flex !important; ' +
                 'flex-direction: row !important; ' +
@@ -551,52 +510,8 @@
             '}' +
             '.full-start-new__buttons.buttons-loading .full-start__button { visibility: hidden !important; }' +
             '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
-            '.folder-reset-button { background: rgba(200,100,100,0.3); margin-top: 1em; border-radius: 0.3em; }' +
-            '.folder-reset-button.focus { border: 3px solid rgba(255,255,255,0.8); }' +
         '</style>');
         $('body').append(style);
-
-        var leftMenuAlways = Lampa.Storage.get('sidebar_open', false);
-
-        if (leftMenuAlways) {
-            $('body').addClass('left-menu-text-tooltip');
-
-            var tooltipStyle = $('<style>' +
-                '.left-menu-text-tooltip .menu__text {' +
-                    'display: none !important;' +
-                '}' +
-                '.left-menu-text-tooltip .menu__item.focus .menu__text,' +
-                '.left-menu-text-tooltip .menu__item:hover .menu__text {' +
-                    'display: block !important;' +
-                    'position: absolute !important;' +
-                    'left: 80px !important;' +
-                    'top: 50% !important;' +
-                    'transform: translateY(-50%) !important;' +
-                    'background: rgba(0,0,0,0.8) !important;' +
-                    'color: white !important;' +
-                    'padding: 0.5em 1em !important;' +
-                    'border-radius: 0.5em !important;' +
-                    'white-space: nowrap !important;' +
-                    'z-index: 100 !important;' +
-                    'font-size: 1.1em !important;' +
-                    'box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;' +
-                    'pointer-events: none !important;' +
-                '}' +
-                '.left-menu-text-tooltip .menu__item {' +
-                    'position: relative !important;' +
-                    'justify-content: center !important;' +
-                '}' +
-                '.left-menu-text-tooltip .menu__ico {' +
-                    'width: 70px !important;' +
-                    'justify-content: center !important;' +
-                '}' +
-                '.left-menu-text-tooltip .sidebar {' +
-                    'min-width: 70px !important;' +
-                    'transition: min-width 0.3s ease;' +
-                '}' +
-            '</style>');
-            $('body').append(tooltipStyle);
-        }
 
         Lampa.Listener.follow('full', function(e) {
             if (e.type !== 'complite') return;
