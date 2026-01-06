@@ -33,10 +33,10 @@
 
     function getServersList() {
         var stored = Lampa.Storage.get(STORAGE_KEY_SERVERS, "[]");
-        var str = typeof stored === "string" ? stored : "[]";
+        var str = typeof stored === "string" ? stored : JSON.stringify(stored || []);
         var arr = [];
         try {
-            if (str.trim() !== "") {
+            if (str && str.trim() !== "") {
                 arr = JSON.parse(str);
             }
             if (!Array.isArray(arr)) {
@@ -176,7 +176,7 @@
         if (!hostkey) return null;
         if (!window.rch_nws[hostkey]) {
             window.rch_nws[hostkey] = {
-                type: Lampa.Platform.is("android") ? "apk" : Lampa.Platform.is("tizen") ? "cors" : undefined,
+                type: Lampa.Platform.is("android") ? "apk" : Lampa.Platform.is("tizen") ? "cors" : "web", // всегда "web" для обхода CORS проверки
                 startTypeInvoke: false,
                 rchRegistry: false,
                 apkVersion: 0,
@@ -187,23 +187,12 @@
 
     ensureRchNws();
 
+    // Убрана проверка CORS — всегда "web" (прямые запросы, но для RCH это ок, если сервер поддерживает)
     if (typeof window.rch_nws[getActiveHostKey()]?.typeInvoke !== "function") {
         var hostkey = getActiveHostKey();
         if (hostkey && window.rch_nws[hostkey]) {
             window.rch_nws[hostkey].typeInvoke = function (host, call) {
-                var hk = getActiveHostKey();
-                if (!window.rch_nws[hk].startTypeInvoke) {
-                    window.rch_nws[hk].startTypeInvoke = true;
-                    var check = function (good) {
-                        window.rch_nws[hk].type = Lampa.Platform.is("android") ? "apk" : good ? "cors" : "web";
-                        call();
-                    };
-                    if (Lampa.Platform.is("android") || Lampa.Platform.is("tizen")) check(true);
-                    else {
-                        var net = new Lampa.Reguest();
-                        net.silent(Config.Urls.LampOnline.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : host + Config.Urls.CorsCheckPath, function () { check(true); }, function () { check(false); }, false, { dataType: "text" });
-                    }
-                } else call();
+                call(); // сразу вызываем без проверки
             };
         }
     }
@@ -213,45 +202,35 @@
         if (hostkey && window.rch_nws[hostkey]) {
             window.rch_nws[hostkey].Registry = function (client, startConnection) {
                 var hk = getActiveHostKey();
-                new Promise(function (resolve) {
-                    window.rch_nws[hk].typeInvoke(Config.Urls.LampOnline, resolve);
-                }).then(function () {
-                    client.invoke("RchRegistry", JSON.stringify({
-                        version: Config.Rch.RegistryVersion,
-                        host: location.host,
-                        rchtype: Lampa.Platform.is("android") ? "apk" : Lampa.Platform.is("tizen") ? "cors" : window.rch_nws[hk].type,
-                        apkVersion: window.rch_nws[hk].apkVersion,
-                        player: Lampa.Storage.field("player"),
-                        account_email: "",
-                        unic_id: MY_AUTH.lampac_unic_id,
-                        profile_id: Lampa.Storage.get(Config.StorageKeys.LampacProfileId, ""),
-                        token: Config.Auth.Token,
-                    }));
-                    if (client._shouldReconnect && window.rch_nws[hk].rchRegistry) {
-                        if (startConnection) startConnection();
-                        return;
+                client.invoke("RchRegistry", JSON.stringify({
+                    version: Config.Rch.RegistryVersion,
+                    host: location.host,
+                    rchtype: "web", // всегда web
+                    apkVersion: window.rch_nws[hk].apkVersion,
+                    player: Lampa.Storage.field("player"),
+                    account_email: "",
+                    unic_id: MY_AUTH.lampac_unic_id,
+                    profile_id: Lampa.Storage.get(Config.StorageKeys.LampacProfileId, ""),
+                    token: Config.Auth.Token,
+                }));
+                window.rch_nws[hk].rchRegistry = true;
+                client.on("RchRegistry", function () { if (startConnection) startConnection(); });
+                client.on("RchClient", function (rchId, url, data, headers, returnHeaders) {
+                    var network = new Lampa.Reguest();
+                    function result(html) {
+                        if (Lampa.Arrays.isObject(html) || Array.isArray(html)) html = JSON.stringify(html);
+                        client.invoke("RchResult", rchId, html);
                     }
-                    window.rch_nws[hk].rchRegistry = true;
-                    client.on("RchRegistry", function () { if (startConnection) startConnection(); });
-                    client.on("RchClient", function (rchId, url, data, headers, returnHeaders) {
-                        var network = new Lampa.Reguest();
-                        function result(html) {
-                            if (Lampa.Arrays.isObject(html) || Array.isArray(html)) html = JSON.stringify(html);
-                            client.invoke("RchResult", rchId, html);
-                        }
-                        if (url == "eval") result(eval(data));
-                        else if (url == "ping") result("pong");
-                        else {
-                            network["native"](url, result, function () { result(""); }, data, { dataType: "text", timeout: Config.Rch.ClientTimeout, headers: headers, returnHeaders: returnHeaders });
-                        }
-                    });
-                    client.on("Connected", function (connectionId) {
-                        window.rch_nws[hk].connectionId = connectionId;
-                    });
-                })["catch"](function (e) {
-                    console.error(e);
-                    if (startConnection) startConnection();
+                    if (url == "eval") result(eval(data));
+                    else if (url == "ping") result("pong");
+                    else {
+                        network["native"](url, result, function () { result(""); }, data, { dataType: "text", timeout: Config.Rch.ClientTimeout, headers: headers, returnHeaders: returnHeaders });
+                    }
                 });
+                client.on("Connected", function (connectionId) {
+                    window.rch_nws[hk].connectionId = connectionId;
+                });
+                if (startConnection) startConnection();
             };
         }
     }
