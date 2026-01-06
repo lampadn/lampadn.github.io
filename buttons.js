@@ -1,4 +1,3 @@
-
 (function() {
     'use strict';
 
@@ -19,7 +18,6 @@
     var allButtonsOriginal = [];
     var currentContainer = null;
 
-    // Вспомогательная функция для поиска кнопки
     function findButton(btnId) {
         var btn = allButtonsOriginal.find(function(b) { return getButtonId(b) === btnId; });
         if (!btn) {
@@ -28,7 +26,6 @@
         return btn;
     }
 
-    // Вспомогательная функция для получения всех ID кнопок в папках
     function getButtonsInFolders() {
         var folders = getFolders();
         var buttonsInFolders = [];
@@ -247,7 +244,6 @@
             openEditDialog();
         });
 
-        // Проверяем настройку и скрываем кнопку если редактор выключен
         if (Lampa.Storage.get('buttons_editor_enabled') === false) {
             btn.hide();
         }
@@ -1326,8 +1322,6 @@
         '</div>');
         
         resetBtn.on('hover:enter', function() {
-            var folders = getFolders();
-            
             Lampa.Storage.set('button_custom_order', []);
             Lampa.Storage.set('button_hidden', []);
             Lampa.Storage.set('button_folders', []);
@@ -1547,8 +1541,6 @@
     }
 
     function setupButtonNavigation(container) {
-        // Lampa автоматически обрабатывает навигацию для flex-wrap: wrap
-        // Просто убедимся что контроллер обновлен
         if (Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
             try {
                 Lampa.Controller.toggle('full_start');
@@ -1599,6 +1591,45 @@
         '</style>');
         $('body').append(style);
 
+        var leftMenuAlways = Lampa.Storage.get('sidebar_open', false);
+
+        if (leftMenuAlways) {
+            $('body').addClass('left-menu-text-on-focus');
+
+            var menuStyle = $('<style>' +
+                '.left-menu-text-on-focus .menu__text {' +
+                    'position: absolute;' +
+                    'left: 62px;' +
+                    'top: 50%;' +
+                    'transform: translateY(-50%);' +
+                    'opacity: 0;' +
+                    'transition: opacity 0.3s ease;' +
+                    'white-space: nowrap;' +
+                    'pointer-events: none;' +
+                    'font-size: 1em;' +
+                '}' +
+                '.left-menu-text-on-focus .menu__item.focus .menu__text,' +
+                '.left-menu-text-on-focus .menu__item:hover .menu__text {' +
+                    'opacity: 1;' +
+                '}' +
+                '.left-menu-text-on-focus .menu__item {' +
+                    'position: relative;' +
+                    'justify-content: flex-start;' +
+                    'padding-left: 0;' +
+                '}' +
+                '.left-menu-text-on-focus .menu__ico {' +
+                    'margin-right: 0;' +
+                    'width: 62px;' +
+                    'justify-content: center;' +
+                '}' +
+                '.left-menu-text-on-focus .sidebar {' +
+                    'min-width: 240px !important;' +
+                    'transition: min-width 0.3s ease;' +
+                '}' +
+            '</style>');
+            $('body').append(menuStyle);
+        }
+
         Lampa.Listener.follow('full', function(e) {
             if (e.type !== 'complite') return;
 
@@ -1628,7 +1659,6 @@
         });
     }
 
-    // Добавляем настройку в раздел "Интерфейс"
     if (Lampa.SettingsApi) {
         Lampa.SettingsApi.addParam({
             component: 'interface',
