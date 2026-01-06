@@ -359,11 +359,11 @@
         var hidden = getHiddenButtons();
 
         var modes = ['default', 'icons', 'always'];
-        var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'Текст всегда'};
+        var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'Кнопки с текстом'};
         var currentMode = Lampa.Storage.get('buttons_viewmode', 'default');
 
         var modeBtn = $('<div class="selector viewmode-switch">' +
-            '<div style="text-align: center; padding: 1em;">Режим отображения: ' + labels[currentMode] + '</div>' +
+            '<div style="text-align: center; padding: 1em;">Вид кнопок: ' + labels[currentMode] + '</div>' +
         '</div>');
 
         modeBtn.on('hover:enter', function() {
@@ -371,7 +371,7 @@
             idx = (idx + 1) % modes.length;
             currentMode = modes[idx];
             Lampa.Storage.set('buttons_viewmode', currentMode);
-            $(this).find('div').text('Режим отображения: ' + labels[currentMode]);
+            $(this).find('div').text('Вид кнопок: ' + labels[currentMode]);
             
             if (currentContainer) {
                 var target = currentContainer.find('.full-start-new__buttons');
