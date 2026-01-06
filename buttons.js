@@ -625,12 +625,12 @@
                 'gap: 0.5em !important; ' +
             '}' +
             '.full-start-new__buttons.buttons-loading .full-start__button { visibility: hidden !important; }' +
-            '.folder-reset-button { background: rgba(200,100,100,0.3); margin-top: 1em; border-radius: 0.3em; }' +
+            '.folder-reset-button { background: rgba(0, 0, 255, 0.5); margin-top: 1em; border-radius: 0.3em; }' +
             '.folder-reset-button.focus { border: 3px solid rgba(255,255,255,0.8); }' +
             '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
             '.full-start-new__buttons.icons-only .full-start__button span { display: none; }' +
             '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
-            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0.5em 0 0.5em 0; border-radius: 0.3em; }' +
+            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0.5em 0 1em 0; border-radius: 0.3em; }' +
             '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
             '.menu-edit-list__item-hidden { opacity: 0.5; }' +
         '</style>');
