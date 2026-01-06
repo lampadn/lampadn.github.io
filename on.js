@@ -1,15 +1,3 @@
-
-(function(){
-    const orig = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function(type, attrs){
-        if(type === "2d"){
-            attrs = attrs || {};
-            attrs.willReadFrequently = true;
-        }
-        return orig.call(this, type, attrs);
-    };
-})();
-
 (function () {
 	"use strict";
 
@@ -143,7 +131,7 @@ var Config = {
 			},
 			NwsClientScript: "https://honeyxcat.github.io/lampa-link-online/nws-client-es5.js",
 			GithubCheck: "https://github.com/",
-			CorsCheckPath: "/cors/check",
+			CorsCheckPath: "",
 		},
 		Rch: {
 			RegistryVersion: 149,
@@ -262,7 +250,7 @@ function ensureBalansersWithSearch() {
 					else {
 						var net = new Lampa.Reguest();
 						net.silent(
-							Config.Urls.LampOnline.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : host + Config.Urls.CorsCheckPath,
+							Config.Urls.LampOnline.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : host + "",
 							function () {
 								check(true);
 							},
@@ -2577,10 +2565,131 @@ function ensureBalansersWithSearch() {
 		};
 		addSourceSearch("Онлайн", "spider");
 
-		
 		Lampa.Lang.add({
-    lampac_watch: { ru: "Смотреть онлайн" }
-});
+			lampac_watch: {
+				ru: "Смотреть онлайн",
+			},
+			lampac_video: {
+				ru: "Видео",
+			},
+			lampac_no_watch_history: {
+				ru: "Нет истории просмотра",
+				ua: "Немає історії перегляду",
+			},
+			lampac_nolink: {
+				ru: "Не удалось извлечь ссылку",
+			},
+			lampac_balanser: {
+				ru: "Источник",
+			},
+			helper_online_file: {
+				ru: 'Удерживайте клавишу "ОК" для вызова контекстного меню',
+				uk: 'Утримуйте клавішу "ОК" для виклику контекстного меню',
+				en: 'Hold the "OK" key to bring up the context menu',
+			},
+			title_online: {
+				ru: "Онлайн",
+			},
+			lampac_voice_subscribe: {
+				ru: "Подписаться на перевод",
+			},
+			lampac_voice_success: {
+				ru: "Вы успешно подписались",
+			},
+			lampac_voice_error: {
+				ru: "Возникла ошибка",
+			},
+			lampac_clear_all_marks: {
+				ru: "Очистить все метки",
+			},
+			lampac_clear_all_timecodes: {
+				ru: "Очистить все тайм-коды",
+			},
+			lampac_change_balanser: {
+				ru: "Изменить балансер",
+			},
+			lampac_balanser_dont_work: {
+				ru: "Поиск не дал результатов",
+			},
+			lampac_balanser_timeout: {
+				ru: 'Источник будет переключен автоматически через <span class="timeout">10</span> секунд.',
+				uk: 'Джерело буде автоматично переключено через <span class="timeout">10</span> секунд.',
+				en: 'The source will be switched automatically after <span class="timeout">10</span> seconds.',
+				zh: '平衡器将在<span class="timeout">10</span>秒内自动切换。',
+			},
+			lampac_does_not_answer_text: {
+				ru: "Поиск не дал результатов",
+			},
+			lampac_server_not_set: {
+				ru: "Сервер не настроен",
+			},
+			lampac_server_not_set_desc: {
+				ru: "Укажите адрес сервера в настройках для просмотра онлайн",
+			},
+			lampac_open_settings: {
+				ru: "Открыть настройки",
+			},
+			lampac_enter_server: {
+				ru: "Ввести адрес сервера",
+			},
+			lampac_server_short: {
+				ru: "Сервер",
+			},
+			lampac_not_set: {
+				ru: "Не указан",
+			},
+			lampac_add_server: {
+				ru: "Добавить сервер",
+			},
+			lampac_select_server: {
+				ru: "Выбор сервера",
+			},
+			lampac_servers_list: {
+				ru: "Список серверов",
+			},
+			lampac_select_this: {
+				ru: "Выбрать",
+			},
+			lampac_delete_server: {
+				ru: "Удалить",
+			},
+			lampac_server_address: {
+				ru: "Адрес сервера",
+			},
+			lampac_server_address_desc: {
+				ru: "Например: 192.168.1.1:9118 или lampac.site",
+			},
+			lampac_settings_title: {
+				ru: "Онлайн",
+			},
+			lampac_load_public_servers: {
+				ru: "Загрузить открытые серверы",
+			},
+			lampac_load_public_servers_desc: {
+				ru: "Загрузить список бесплатных серверов из интернета",
+			},
+			lampac_loading: {
+				ru: "Загрузка...",
+			},
+			lampac_load_error: {
+				ru: "Ошибка загрузки серверов",
+			},
+			lampac_no_servers_found: {
+				ru: "Серверы не найдены",
+			},
+			lampac_checking_servers: {
+				ru: "Проверка серверов",
+			},
+			lampac_no_working_servers: {
+				ru: "Рабочие серверы не найдены",
+			},
+			lampac_found_working: {
+				ru: "Найдено рабочих",
+			},
+			lampac_select_public_server: {
+				ru: "Выберите сервер",
+			},
+		});
 
 		var button = '<div class="full-start__button selector view--online lampac--button" data-subtitle="'.concat(
 			manifst.name,
