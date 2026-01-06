@@ -196,11 +196,7 @@
         var hidden = getHiddenButtons();
         buttons.forEach(function(btn) {
             var id = getButtonId(btn);
-            if (hidden.indexOf(id) !== -1) {
-                btn.addClass('hidden');
-            } else {
-                btn.removeClass('hidden');
-            }
+            btn.toggleClass('hidden', hidden.indexOf(id) !== -1);
         });
     }
 
@@ -256,7 +252,6 @@
         allButtonsCache = allButtons;
         
         currentButtons = allButtons;
-        applyHiddenButtons(currentButtons);
         
         var targetContainer = currentContainer.find('.full-start-new__buttons');
         if (!targetContainer.length) return;
@@ -265,8 +260,8 @@
         
         var visibleButtons = [];
         currentButtons.forEach(function(btn) {
+            targetContainer.append(btn);
             if (!btn.hasClass('hidden')) {
-                targetContainer.append(btn);
                 visibleButtons.push(btn);
             }
         });
@@ -277,7 +272,11 @@
         if (editBtn.length) {
             editBtn.detach();
             targetContainer.append(editBtn);
+        } else {
+            targetContainer.append(createEditButton());
         }
+
+        applyHiddenButtons(currentButtons);
 
         var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
         targetContainer.removeClass('icons-only always-text');
@@ -386,7 +385,6 @@
             }
         });
 
-        // Кнопка режима отображения наверху
         list.append(modeBtn);
 
         function createButtonItem(btn) {
@@ -455,17 +453,16 @@
             });
 
             item.find('.toggle').on('hover:enter', function() {
-                var isNowHidden = !item.hasClass('menu-edit-list__item-hidden');
-                item.toggleClass('menu-edit-list__item-hidden', isNowHidden);
-                btn.toggleClass('hidden', isNowHidden);
-                item.find('.dot').attr('opacity', isNowHidden ? '0' : '1');
+                item.toggleClass('menu-edit-list__item-hidden');
+                btn.toggleClass('hidden');
+                item.find('.dot').attr('opacity', item.hasClass('menu-edit-list__item-hidden') ? '0' : '1');
                 
                 var hiddenList = getHiddenButtons();
                 var index = hiddenList.indexOf(btnId);
-                if (isNowHidden && index === -1) {
-                    hiddenList.push(btnId);
-                } else if (!isNowHidden && index !== -1) {
-                    hiddenList.splice(index, 1);
+                if (item.hasClass('menu-edit-list__item-hidden')) {
+                    if (index === -1) hiddenList.push(btnId);
+                } else {
+                    if (index !== -1) hiddenList.splice(index, 1);
                 }
                 setHiddenButtons(hiddenList);
             });
@@ -473,7 +470,6 @@
             return item;
         }
         
-        // Все кнопки всегда добавляются в редактор
         currentButtons.forEach(function(btn) {
             list.append(createButtonItem(btn));
         });
@@ -567,21 +563,21 @@
         }
 
         currentButtons = allButtons;
-        applyHiddenButtons(currentButtons);
 
         targetContainer.children().detach();
         
         var visibleButtons = [];
         currentButtons.forEach(function(btn) {
+            targetContainer.append(btn);
             if (!btn.hasClass('hidden')) {
-                targetContainer.append(btn);
                 visibleButtons.push(btn);
             }
         });
 
         var editButton = createEditButton();
         targetContainer.append(editButton);
-        visibleButtons.push(editButton);
+
+        applyHiddenButtons(currentButtons);
 
         var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
         targetContainer.removeClass('icons-only always-text');
@@ -638,7 +634,7 @@
             '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
             '.full-start-new__buttons.icons-only .full-start__button span { display: none; }' +
             '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
-            '.viewmode-switch { background: rgba(100,100,255,0.3); margin-top: 1em; border-radius: 0.3em; }' +
+            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0 0 1.5em 0; border-radius: 0.3em; }' +
             '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
             '.menu-edit-list__item-hidden { opacity: 0.5; }' +
         '</style>');
