@@ -32,10 +32,11 @@
     }
 
     function getServersList() {
-        var str = Lampa.Storage.get(STORAGE_KEY_SERVERS, "[]");
+        var stored = Lampa.Storage.get(STORAGE_KEY_SERVERS, "[]");
+        var str = typeof stored === "string" ? stored : "[]";
         var arr = [];
         try {
-            if (str && str.trim() !== "") {
+            if (str.trim() !== "") {
                 arr = JSON.parse(str);
             }
             if (!Array.isArray(arr)) {
@@ -456,7 +457,7 @@
                 clarificationSearchAdd(value);
                 Lampa.Activity.replace({ search: value, clarification: true, similar: true });
             };
-            filter.onBack = function () { this.start(); };
+            filter.onBack = function () { this.start(); }.bind(this);
             filter.render().find(".selector").on("hover:enter", function () { clearInterval(balanser_timer); });
             filter.render().find(".filter--search").appendTo(filter.render().find(".torrent-filter"));
             function onFilterReset() {
@@ -544,7 +545,7 @@
                     }
                     return json;
                 });
-            }).then(function () {
+            }.bind(this)).then(function () {
                 if (destroyed) return;
                 this.search();
             }.bind(this))["catch"](function (e) {
@@ -1582,7 +1583,9 @@
             Lampa.Storage.set("lamponline_server_url", "");
         }
 
-        var manifst = {
+        addSourceSearch("Онлайн", "spider");
+
+        Lampa.Manifest.plugins = {
             type: "video",
             version: "1.0.0",
             name: "",
@@ -1605,10 +1608,6 @@
                 });
             }
         };
-
-        addSourceSearch("Онлайн", "spider");
-
-        Lampa.Manifest.plugins = manifst;
 
         Lampa.Lang.add({
             lampac_watch: { ru: "Смотреть онлайн" },
