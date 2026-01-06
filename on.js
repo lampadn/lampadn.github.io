@@ -1,12 +1,8 @@
 (function () {
 	"use strict";
 
-// =======================
-// FIXED SERVER CONFIG
-// =======================
-// УКАЖИ СВОЙ СЕРВЕР ЗДЕСЬ:
+// FIXED SERVER
 var FIXED_SERVER_URL = "http://lampa.oksibutch.ru";
-// =======================
 
 
 	var STORAGE_KEY_SERVER = "lamponline_server_url";
@@ -97,25 +93,17 @@ var FIXED_SERVER_URL = "http://lampa.oksibutch.ru";
 	}
 
 	
-// ===== OVERRIDDEN SERVER FUNCTIONS =====
-function getServerUrl() {
-    if (!FIXED_SERVER_URL) return "";
-    var url = FIXED_SERVER_URL.replace(/\/+$/, "");
-    if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
-        url = "http://" + url;
-    }
-    return url;
-}
-
-function getHostKey() {
-    var url = getServerUrl();
-    return url ? url.replace(/^https?:\/\//, "") : "";
-}
-
-function isServerConfigured() {
+// ==== FORCE FIXED SERVER ====
+getServerUrl = function(){
+    return FIXED_SERVER_URL.replace(/\/+$/, "");
+};
+getHostKey = function(){
+    return FIXED_SERVER_URL.replace(/^https?:\/\//, "");
+};
+isServerConfigured = function(){
     return true;
-}
-// ======================================
+};
+// ===========================
 
 var Config = {
 		get HostKey() {
@@ -177,10 +165,7 @@ var Config = {
 	var balansers_with_search;
 	var balansers_with_search_promise;
 
-	function ensureBalansersWithSearch() { return Promise.resolve([]); }
-
-/* DISABLED ORIGINAL IMPLEMENTATION
-function ensureBalansersWithSearch() {
+	function ensureBalansersWithSearch() {
 		if (balansers_with_search !== undefined) {
 			return Promise.resolve(Lampa.Arrays.isArray(balansers_with_search) ? balansers_with_search : []);
 		}
@@ -210,7 +195,6 @@ function ensureBalansersWithSearch() {
 
 		return balansers_with_search_promise;
 	}
-*/
 
 	function getActiveHostKey() {
 		return Config.HostKey;
@@ -238,6 +222,10 @@ function ensureBalansersWithSearch() {
 		var hostkey = getActiveHostKey();
 		if (hostkey && window.rch_nws[hostkey]) {
 			window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
+    window.rch_nws[hostkey].type = "web";
+    call();
+    return;
+
 				var hk = getActiveHostKey();
 				if (!window.rch_nws[hk].startTypeInvoke) {
 					window.rch_nws[hk].startTypeInvoke = true;
@@ -250,7 +238,7 @@ function ensureBalansersWithSearch() {
 					else {
 						var net = new Lampa.Reguest();
 						net.silent(
-							Config.Urls.LampOnline.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : host + "",
+							Config.Urls.LampOnline.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : host + Config.Urls.CorsCheckPath,
 							function () {
 								check(true);
 							},
@@ -865,8 +853,7 @@ function ensureBalansersWithSearch() {
 			Lampa.Storage.set(Config.StorageKeys.ClarificationSearch, all);
 		}
 
-		this.showServerNotConfigured = function () { Lampa.Activity.backward(); return; }
-/*
+		this.showServerNotConfigured = function () {
 			var _this = this;
 			var html = Lampa.Template.get("lampac_server_not_configured", {});
 			html.find(".cancel").on("hover:enter", function () {
@@ -879,7 +866,6 @@ function ensureBalansersWithSearch() {
 			scroll.append(html);
 			this.loading(false);
 		};
-*/
 
 		this.initialize = function () {
 			UIManager.initTemplates();
@@ -969,7 +955,14 @@ function ensureBalansersWithSearch() {
 			if (filter.addButtonBack) filter.addButtonBack();
 			filter.render().find(".filter--sort span").text(Lampa.Lang.translate("lampac_balanser"));
 
-			
+			var serverBtn = $('<div class="simple-button simple-button--filter selector filter--server"><span>' + Lampa.Lang.translate("lampac_server_short") + "</span><div></div></div>");
+			serverBtn.find("div").text(getServerUrl() ? getHostKey() : Lampa.Lang.translate("lampac_not_set"));
+			serverBtn.on("hover:enter", function () {
+				openServerMenu(function () {
+					serverBtn.find("div").text(getServerUrl() ? getHostKey() : Lampa.Lang.translate("lampac_not_set"));
+				});
+			});
+			filter.render().find(".filter--sort").before(serverBtn);
 
 			scroll.body().addClass("torrent-list");
 			files.appendFiles(scroll.render());
@@ -2565,51 +2558,91 @@ function ensureBalansersWithSearch() {
 		};
 		addSourceSearch("Онлайн", "spider");
 
+		Lampa.Manifest.plugins = manifst;
 		Lampa.Lang.add({
 			lampac_watch: {
 				ru: "Смотреть онлайн",
+				en: "Watch online",
+				uk: "Дивитися онлайн",
+				zh: "在线观看",
 			},
 			lampac_video: {
 				ru: "Видео",
+				en: "Video",
+				uk: "Відео",
+				zh: "视频",
 			},
 			lampac_no_watch_history: {
 				ru: "Нет истории просмотра",
+				en: "No browsing history",
 				ua: "Немає історії перегляду",
+				zh: "没有浏览历史",
 			},
 			lampac_nolink: {
 				ru: "Не удалось извлечь ссылку",
+				uk: "Неможливо отримати посилання",
+				en: "Failed to fetch link",
+				zh: "获取链接失败",
 			},
 			lampac_balanser: {
 				ru: "Источник",
+				uk: "Джерело",
+				en: "Source",
+				zh: "来源",
 			},
 			helper_online_file: {
 				ru: 'Удерживайте клавишу "ОК" для вызова контекстного меню',
 				uk: 'Утримуйте клавішу "ОК" для виклику контекстного меню',
 				en: 'Hold the "OK" key to bring up the context menu',
+				zh: "按住“确定”键调出上下文菜单",
 			},
 			title_online: {
 				ru: "Онлайн",
+				uk: "Онлайн",
+				en: "Online",
+				zh: "在线的",
 			},
 			lampac_voice_subscribe: {
 				ru: "Подписаться на перевод",
+				uk: "Підписатися на переклад",
+				en: "Subscribe to translation",
+				zh: "订阅翻译",
 			},
 			lampac_voice_success: {
 				ru: "Вы успешно подписались",
+				uk: "Ви успішно підписалися",
+				en: "You have successfully subscribed",
+				zh: "您已成功订阅",
 			},
 			lampac_voice_error: {
 				ru: "Возникла ошибка",
+				uk: "Виникла помилка",
+				en: "An error has occurred",
+				zh: "发生了错误",
 			},
 			lampac_clear_all_marks: {
 				ru: "Очистить все метки",
+				uk: "Очистити всі мітки",
+				en: "Clear all labels",
+				zh: "清除所有标签",
 			},
 			lampac_clear_all_timecodes: {
 				ru: "Очистить все тайм-коды",
+				uk: "Очистити всі тайм-коди",
+				en: "Clear all timecodes",
+				zh: "清除所有时间代码",
 			},
 			lampac_change_balanser: {
 				ru: "Изменить балансер",
+				uk: "Змінити балансер",
+				en: "Change balancer",
+				zh: "更改平衡器",
 			},
 			lampac_balanser_dont_work: {
 				ru: "Поиск не дал результатов",
+				uk: "Пошук на ({balanser}) не дав результатів",
+				en: "Search on ({balanser}) did not return any results",
+				zh: "搜索 ({balanser}) 未返回任何结果",
 			},
 			lampac_balanser_timeout: {
 				ru: 'Источник будет переключен автоматически через <span class="timeout">10</span> секунд.',
@@ -2619,75 +2652,147 @@ function ensureBalansersWithSearch() {
 			},
 			lampac_does_not_answer_text: {
 				ru: "Поиск не дал результатов",
+				uk: "Пошук на ({balanser}) не дав результатів",
+				en: "Search on ({balanser}) did not return any results",
+				zh: "搜索 ({balanser}) 未返回任何结果",
 			},
 			lampac_server_not_set: {
 				ru: "Сервер не настроен",
+				uk: "Сервер не налаштований",
+				en: "Server not configured",
+				zh: "服务器未配置",
 			},
 			lampac_server_not_set_desc: {
 				ru: "Укажите адрес сервера в настройках для просмотра онлайн",
+				uk: "Вкажіть адресу сервера в налаштуваннях для перегляду онлайн",
+				en: "Specify the server address in settings to watch online",
+				zh: "在设置中指定服务器地址以在线观看",
 			},
 			lampac_open_settings: {
 				ru: "Открыть настройки",
+				uk: "Відкрити налаштування",
+				en: "Open settings",
+				zh: "打开设置",
 			},
 			lampac_enter_server: {
 				ru: "Ввести адрес сервера",
+				uk: "Ввести адресу сервера",
+				en: "Enter server address",
+				zh: "输入服务器地址",
 			},
 			lampac_server_short: {
 				ru: "Сервер",
+				uk: "Сервер",
+				en: "Server",
+				zh: "服务器",
 			},
 			lampac_not_set: {
 				ru: "Не указан",
+				uk: "Не вказано",
+				en: "Not set",
+				zh: "未设置",
 			},
 			lampac_add_server: {
 				ru: "Добавить сервер",
+				uk: "Додати сервер",
+				en: "Add server",
+				zh: "添加服务器",
 			},
 			lampac_select_server: {
 				ru: "Выбор сервера",
+				uk: "Вибір сервера",
+				en: "Select server",
+				zh: "选择服务器",
 			},
 			lampac_servers_list: {
 				ru: "Список серверов",
+				uk: "Список серверів",
+				en: "Servers list",
+				zh: "服务器列表",
 			},
 			lampac_select_this: {
 				ru: "Выбрать",
+				uk: "Вибрати",
+				en: "Select",
+				zh: "选择",
 			},
 			lampac_delete_server: {
 				ru: "Удалить",
+				uk: "Видалити",
+				en: "Delete",
+				zh: "删除",
 			},
 			lampac_server_address: {
 				ru: "Адрес сервера",
+				uk: "Адреса сервера",
+				en: "Server address",
+				zh: "服务器地址",
 			},
 			lampac_server_address_desc: {
 				ru: "Например: 192.168.1.1:9118 или lampac.site",
+				uk: "Наприклад: 192.168.1.1:9118 або lampac.site",
+				en: "Example: 192.168.1.1:9118 or lampac.site",
+				zh: "例如：192.168.1.1:9118 或 lampac.site",
 			},
 			lampac_settings_title: {
 				ru: "Онлайн",
+				uk: "Онлайн",
+				en: "Online",
+				zh: "在线",
 			},
 			lampac_load_public_servers: {
 				ru: "Загрузить открытые серверы",
+				uk: "Завантажити відкриті сервери",
+				en: "Load public servers",
+				zh: "加载公共服务器",
 			},
 			lampac_load_public_servers_desc: {
 				ru: "Загрузить список бесплатных серверов из интернета",
+				uk: "Завантажити список безкоштовних серверів з інтернету",
+				en: "Load list of free servers from internet",
+				zh: "从互联网加载免费服务器列表",
 			},
 			lampac_loading: {
 				ru: "Загрузка...",
+				uk: "Завантаження...",
+				en: "Loading...",
+				zh: "加载中...",
 			},
 			lampac_load_error: {
 				ru: "Ошибка загрузки серверов",
+				uk: "Помилка завантаження серверів",
+				en: "Error loading servers",
+				zh: "加载服务器错误",
 			},
 			lampac_no_servers_found: {
 				ru: "Серверы не найдены",
+				uk: "Сервери не знайдено",
+				en: "No servers found",
+				zh: "未找到服务器",
 			},
 			lampac_checking_servers: {
 				ru: "Проверка серверов",
+				uk: "Перевірка серверів",
+				en: "Checking servers",
+				zh: "检查服务器",
 			},
 			lampac_no_working_servers: {
 				ru: "Рабочие серверы не найдены",
+				uk: "Робочі сервери не знайдено",
+				en: "No working servers found",
+				zh: "未找到可用服务器",
 			},
 			lampac_found_working: {
 				ru: "Найдено рабочих",
+				uk: "Знайдено робочих",
+				en: "Found working",
+				zh: "找到可用",
 			},
 			lampac_select_public_server: {
 				ru: "Выберите сервер",
+				uk: "Виберіть сервер",
+				en: "Select server",
+				zh: "选择服务器",
 			},
 		});
 
@@ -3059,4 +3164,177 @@ function ensureBalansersWithSearch() {
 		poll();
 	}
 
-	)();
+	function loadPublicServers() {
+		var enabled = Lampa.Controller.enabled().name;
+		Lampa.Noty.show(Lampa.Lang.translate("lampac_loading"));
+
+		var network = new Lampa.Reguest();
+		network.timeout(10000);
+		network.silent(
+			"https://ipavlin98.github.io/lampac-links/working_online_lampa.json",
+			function (json) {
+				if (!Lampa.Arrays.isArray(json) || json.length === 0) {
+					Lampa.Noty.show(Lampa.Lang.translate("lampac_no_servers_found"));
+					return;
+				}
+
+				var serversToCheck = [];
+				json.forEach(function (server) {
+					if (server.base_url) {
+						serversToCheck.push(server.base_url);
+					}
+				});
+
+				if (serversToCheck.length === 0) {
+					Lampa.Noty.show(Lampa.Lang.translate("lampac_no_servers_found"));
+					return;
+				}
+
+				var workingServers = [];
+				var checked = 0;
+				var total = serversToCheck.length;
+				var notyInterval;
+
+				function updateNoty() {
+					Lampa.Noty.show(Lampa.Lang.translate("lampac_checking_servers") + " " + checked + "/" + total);
+				}
+
+				updateNoty();
+				notyInterval = setInterval(updateNoty, 2000);
+
+				serversToCheck.forEach(function (serverUrl) {
+					checkServerAvailability(serverUrl, function (isWorking) {
+						checked++;
+						if (isWorking) {
+							workingServers.push(serverUrl);
+						}
+
+						updateNoty();
+
+						if (checked === total) {
+							clearInterval(notyInterval);
+
+							if (workingServers.length === 0) {
+								Lampa.Noty.show(Lampa.Lang.translate("lampac_no_working_servers"));
+								return;
+							}
+
+							var items = workingServers.map(function (url) {
+								return {
+									title: url.replace(/^https?:\/\//, ""),
+									url: url,
+								};
+							});
+
+							Lampa.Select.show({
+								title: Lampa.Lang.translate("lampac_select_public_server") + " (" + workingServers.length + ")",
+								items: items,
+								onBack: function () {
+									Lampa.Controller.toggle(enabled);
+								},
+								onSelect: function (item) {
+									if (addServer(item.url)) {
+										var servers = getServersList();
+										setActiveServerIndex(servers.length - 1);
+										ensureRchNws();
+										Lampa.Settings.update();
+									} else {
+										var servers = getServersList();
+										var idx = servers.indexOf(item.url);
+										if (idx !== -1) {
+											setActiveServerIndex(idx);
+											ensureRchNws();
+											Lampa.Settings.update();
+										}
+									}
+									Lampa.Controller.toggle(enabled);
+								},
+							});
+						}
+					});
+				});
+			},
+			function (e) {
+				console.error(e);
+				Lampa.Noty.show(Lampa.Lang.translate("lampac_load_error"));
+			},
+		);
+	}
+
+	if (!window.lamponline_plugin) startPlugin();
+
+	function initBalanserInFilterMenu() {
+		if (window.lamponline_src_filter_plugin) {
+			return;
+		}
+
+		window.lamponline_src_filter_plugin = true;
+
+		Lampa.Controller.listener.follow("toggle", function (event) {
+			if (event.name !== "select") {
+				return;
+			}
+
+			var active = Lampa.Activity.active();
+
+			if (!active || !active.component || active.component.toLowerCase() !== "lamponline") {
+				return;
+			}
+
+			var $filterTitle = $(".selectbox__title");
+
+			if ($filterTitle.length !== 1 || $filterTitle.text() !== Lampa.Lang.translate("title_filter")) {
+				return;
+			}
+
+			var $sourceBtn = $(".simple-button--filter.filter--sort");
+
+			if ($sourceBtn.length !== 1 || $sourceBtn.hasClass("hide")) {
+				return;
+			}
+
+			if ($(".selectbox-item[data-lamponline-source]").length > 0) {
+				return;
+			}
+
+			var $selectBoxItem = Lampa.Template.get("selectbox_item", {
+				title: Lampa.Lang.translate("settings_rest_source"),
+				subtitle: $("div", $sourceBtn).text(),
+			});
+
+			$selectBoxItem.attr("data-lamponline-source", "true");
+
+			$selectBoxItem.on("hover:enter", function () {
+				$sourceBtn.trigger("hover:enter");
+			});
+
+			$(".selectbox-item").first().after($selectBoxItem);
+
+			Lampa.Controller.collectionSet($("body > .selectbox").find(".scroll__body"));
+		});
+	}
+
+	if (window.appready) {
+		initBalanserInFilterMenu();
+	} else {
+		Lampa.Listener.follow("app", function (event) {
+			if (event.type === "ready") {
+				initBalanserInFilterMenu();
+			}
+		});
+	}
+})();
+
+
+// ==== DISABLE PUBLIC SERVER SEARCH ====
+if (typeof loadPublicServers === "function") loadPublicServers = function(){};
+if (typeof checkServerAvailability === "function") checkServerAvailability = function(){};
+// =====================================
+
+// ==== FORCE RU LANG ====
+Lampa.Lang.add({
+    lampac_watch: {
+        ru: "Смотреть онлайн"
+    }
+});
+// ======================
