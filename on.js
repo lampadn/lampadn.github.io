@@ -1,14 +1,103 @@
 (function () {
 	"use strict";
 
-	
 // =======================
-// USER SERVER CONFIG
+// FIXED SERVER CONFIG
 // =======================
-// УКАЖИ НУЖНЫЙ СЕРВЕР ЗДЕСЬ:
+// УКАЖИ СВОЙ СЕРВЕР ЗДЕСЬ:
 var FIXED_SERVER_URL = "http://lampa.oksibutch.ru";
 // =======================
 
+
+	var STORAGE_KEY_SERVER = "lamponline_server_url";
+	var STORAGE_KEY_SERVERS = "lamponline_servers";
+	var STORAGE_KEY_ACTIVE_SERVER = "lamponline_active_server";
+
+	function getServersList() {
+		var servers = Lampa.Storage.get(STORAGE_KEY_SERVERS, []);
+		if (typeof servers === "string") {
+			try {
+				servers = JSON.parse(servers);
+			} catch (e) {
+				servers = [];
+			}
+		}
+		if (!Lampa.Arrays.isArray(servers)) servers = [];
+		var oldServer = Lampa.Storage.get(STORAGE_KEY_SERVER, "");
+		if (oldServer && servers.indexOf(oldServer) === -1) {
+			servers.push(oldServer);
+			Lampa.Storage.set(STORAGE_KEY_SERVERS, servers);
+		}
+		return servers;
+	}
+
+	function getActiveServerIndex() {
+		var servers = getServersList();
+		var active = parseInt(Lampa.Storage.get(STORAGE_KEY_ACTIVE_SERVER, 0)) || 0;
+		if (active >= servers.length) active = 0;
+		return active;
+	}
+
+	function setActiveServerIndex(index) {
+		Lampa.Storage.set(STORAGE_KEY_ACTIVE_SERVER, index);
+	}
+
+	function addServer(url) {
+		if (!url) return false;
+		var servers = getServersList();
+		if (servers.indexOf(url) === -1) {
+			servers.push(url);
+			Lampa.Storage.set(STORAGE_KEY_SERVERS, servers);
+			return true;
+		}
+		return false;
+	}
+
+	function removeServer(index) {
+		var servers = getServersList();
+		if (index >= 0 && index < servers.length) {
+			var removedUrl = servers[index];
+			servers.splice(index, 1);
+			Lampa.Storage.set(STORAGE_KEY_SERVERS, servers);
+			var oldServer = Lampa.Storage.get(STORAGE_KEY_SERVER, "");
+			if (oldServer === removedUrl) {
+				Lampa.Storage.set(STORAGE_KEY_SERVER, "");
+			}
+			var active = getActiveServerIndex();
+			if (active >= servers.length) {
+				setActiveServerIndex(Math.max(0, servers.length - 1));
+			}
+			return true;
+		}
+		return false;
+	}
+
+	function getServerUrl() {
+		var servers = getServersList();
+		if (servers.length === 0) return "";
+		var index = getActiveServerIndex();
+		var url = servers[index] || "";
+		if (url) {
+			url = url.replace(/\/+$/, "");
+			if (url.indexOf("http://") !== 0 && url.indexOf("https://") !== 0) {
+				url = "http://" + url;
+			}
+		}
+		return url;
+	}
+
+	function getHostKey() {
+		var url = getServerUrl();
+		if (!url) return "";
+		return url.replace(/^https?:\/\//, "");
+	}
+
+	function isServerConfigured() {
+		return Boolean(getServerUrl());
+	}
+
+	
+// ===== OVERRIDDEN SERVER FUNCTIONS =====
 function getServerUrl() {
     if (!FIXED_SERVER_URL) return "";
     var url = FIXED_SERVER_URL.replace(/\/+$/, "");
@@ -24,10 +113,11 @@ function getHostKey() {
 }
 
 function isServerConfigured() {
-    return Boolean(getServerUrl());
+    return true;
 }
+// ======================================
 
-	var Config = {
+var Config = {
 		get HostKey() {
 			return getHostKey();
 		},
@@ -39,7 +129,7 @@ function isServerConfigured() {
 			get LampOnline() {
 				return getServerUrl();
 			},
-			NwsClientScript: "https://amikdn.github.io/nws-client-es5.js",
+			NwsClientScript: "https://honeyxcat.github.io/lampa-link-online/nws-client-es5.js",
 			GithubCheck: "https://github.com/",
 			CorsCheckPath: "/cors/check",
 		},
@@ -87,7 +177,10 @@ function isServerConfigured() {
 	var balansers_with_search;
 	var balansers_with_search_promise;
 
-	function ensureBalansersWithSearch() {
+	function ensureBalansersWithSearch() { return Promise.resolve([]); }
+
+/* DISABLED ORIGINAL IMPLEMENTATION
+function ensureBalansersWithSearch() {
 		if (balansers_with_search !== undefined) {
 			return Promise.resolve(Lampa.Arrays.isArray(balansers_with_search) ? balansers_with_search : []);
 		}
@@ -117,6 +210,7 @@ function isServerConfigured() {
 
 		return balansers_with_search_promise;
 	}
+*/
 
 	function getActiveHostKey() {
 		return Config.HostKey;
@@ -771,7 +865,21 @@ function isServerConfigured() {
 			Lampa.Storage.set(Config.StorageKeys.ClarificationSearch, all);
 		}
 
-		this.showServerNotConfigured = function(){ Lampa.Activity.backward(); };
+		this.showServerNotConfigured = function () { Lampa.Activity.backward(); return; }
+/*
+			var _this = this;
+			var html = Lampa.Template.get("lampac_server_not_configured", {});
+			html.find(".cancel").on("hover:enter", function () {
+				Lampa.Activity.backward();
+			});
+			html.find(".enter_server").on("hover:enter", function () {
+				openServerInput();
+			});
+			scroll.clear();
+			scroll.append(html);
+			this.loading(false);
+		};
+*/
 
 		this.initialize = function () {
 			UIManager.initTemplates();
@@ -783,7 +891,19 @@ function isServerConfigured() {
 				scroll.body().addClass("torrent-list");
 				files.appendFiles(scroll.render());
 				Lampa.Controller.enable("content");
-				this.showServerNotConfigured = function(){ Lampa.Activity.backward(); };
+				this.showServerNotConfigured();
+				return;
+			}
+
+			this.loading(true);
+			filter.onSearch = function (value) {
+				clarificationSearchAdd(value);
+				Lampa.Activity.replace({
+					search: value,
+					clarification: true,
+					similar: true,
+				});
+			};
 			filter.onBack = function () {
 				_this.start();
 			};
@@ -849,14 +969,7 @@ function isServerConfigured() {
 			if (filter.addButtonBack) filter.addButtonBack();
 			filter.render().find(".filter--sort span").text(Lampa.Lang.translate("lampac_balanser"));
 
-			var serverBtn = $('<div class="simple-button simple-button--filter selector filter--server"><span>' + Lampa.Lang.translate("lampac_server_short") + "</span><div></div></div>");
-			serverBtn.find("div").text(getServerUrl() ? getHostKey() : Lampa.Lang.translate("lampac_not_set"));
-			serverBtn.on("hover:enter", function () {
-				openServerMenu(function () {
-					serverBtn.find("div").text(getServerUrl() ? getHostKey() : Lampa.Lang.translate("lampac_not_set"));
-				});
-			});
-			filter.render().find(".filter--sort").before(serverBtn);
+			
 
 			scroll.body().addClass("torrent-list");
 			files.appendFiles(scroll.render());
