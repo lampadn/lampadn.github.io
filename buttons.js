@@ -1,11 +1,11 @@
 (function() {
     'use strict';
 
-    var LAMPAC_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z" fill="currentColor"></path></svg>';
-    
-    var EXCLUDED_CLASSES = ['button--play', 'button--edit-order'];
-    
-    var DEFAULT_GROUPS = [
+    const LAMPAC_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z" fill="currentColor"></path></svg>`;
+
+    const EXCLUDED_CLASSES = ['button--play', 'button--edit-order'];
+
+    const DEFAULT_GROUPS = [
         { name: 'online', patterns: ['online', 'lampac', 'modss', 'showy'], label: 'Онлайн' },
         { name: 'torrent', patterns: ['torrent'], label: 'Торренты' },
         { name: 'trailer', patterns: ['trailer', 'rutube'], label: 'Трейлеры' },
@@ -15,507 +15,299 @@
         { name: 'reaction', patterns: ['reaction'], label: 'Реакции' }
     ];
 
-    var currentButtons = [];
-    var allButtonsCache = [];
-    var allButtonsOriginal = [];
-    var currentContainer = null;
+    let currentButtons = [];
+    let allButtonsOriginal = [];
+    let currentContainer = null;
 
-    function findButton(btnId) {
-        var btn = allButtonsOriginal.find(function(b) { return getButtonId(b) === btnId; });
-        if (!btn) {
-            btn = allButtonsCache.find(function(b) { return getButtonId(b) === btnId; });
-        }
-        return btn;
-    }
+    const storageGet = (key, def) => Lampa.Storage.get(key, def);
+    const storageSet = (key, val) => Lampa.Storage.set(key, val);
 
-    function getCustomOrder() {
-        return Lampa.Storage.get('button_custom_order', []);
-    }
-
-    function setCustomOrder(order) {
-        Lampa.Storage.set('button_custom_order', order);
-    }
-
-    function getHiddenButtons() {
-        return Lampa.Storage.get('button_hidden', []);
-    }
-
-    function setHiddenButtons(hidden) {
-        Lampa.Storage.set('button_hidden', hidden);
-    }
+    const getCustomOrder = () => storageGet('button_custom_order', []);
+    const setCustomOrder = order => storageSet('button_custom_order', order);
+    const getHiddenButtons = () => storageGet('button_hidden', []);
+    const setHiddenButtons = hidden => storageSet('button_hidden', hidden);
 
     function getButtonId(button) {
-        var classes = button.attr('class') || '';
-        var text = button.find('span').text().trim().replace(/\s+/g, '_');
-        var subtitle = button.attr('data-subtitle') || '';
-        
-        if (classes.indexOf('modss') !== -1 || text.indexOf('MODS') !== -1 || text.indexOf('MOD') !== -1) {
-            return 'modss_online_button';
-        }
-        
-        if (classes.indexOf('showy') !== -1 || text.indexOf('Showy') !== -1) {
-            return 'showy_online_button';
-        }
-        
-        var viewClasses = classes.split(' ').filter(function(c) { 
-            return c.indexOf('view--') === 0 || c.indexOf('button--') === 0; 
-        }).join('_');
-        
-        if (!viewClasses && !text) {
-            return 'button_unknown';
-        }
-        
-        var id = viewClasses + '_' + text;
-        
-        if (subtitle) {
-            id = id + '_' + subtitle.replace(/\s+/g, '_').substring(0, 30);
-        }
-        
+        const classes = button.attr('class') || '';
+        const text = button.find('span').text().trim().replace(/\s+/g, '_');
+        const subtitle = button.attr('data-subtitle') || '';
+
+        if (classes.includes('modss') || text.includes('MODS') || text.includes('MOD')) return 'modss_online_button';
+        if (classes.includes('showy') || text.includes('Showy')) return 'showy_online_button';
+
+        const viewClasses = classes.split(' ').filter(c => c.startsWith('view--') || c.startsWith('button--')).join('_');
+        let id = viewClasses ? `${viewClasses}_${text}` : 'button_unknown';
+
+        if (subtitle) id += `_${subtitle.replace(/\s+/g, '_').substring(0, 30)}`;
+
         return id;
     }
 
     function getButtonType(button) {
-        var classes = button.attr('class') || '';
-        
-        for (var i = 0; i < DEFAULT_GROUPS.length; i++) {
-            var group = DEFAULT_GROUPS[i];
-            for (var j = 0; j < group.patterns.length; j++) {
-                if (classes.indexOf(group.patterns[j]) !== -1) {
-                    return group.name;
-                }
-            }
+        const classes = button.attr('class') || '';
+        for (const group of DEFAULT_GROUPS) {
+            if (group.patterns.some(p => classes.includes(p))) return group.name;
         }
-        
         return 'other';
     }
 
     function isExcluded(button) {
-        var classes = button.attr('class') || '';
-        for (var i = 0; i < EXCLUDED_CLASSES.length; i++) {
-            if (classes.indexOf(EXCLUDED_CLASSES[i]) !== -1) {
-                return true;
-            }
-        }
-        return false;
+        const classes = button.attr('class') || '';
+        return EXCLUDED_CLASSES.some(c => classes.includes(c));
     }
 
     function categorizeButtons(container) {
-        var allButtons = container.find('.full-start__button').not('.button--edit-order, .button--play');
-        
-        var categories = {
-            online: [],
-            torrent: [],
-            trailer: [],
-            favorite: [],
-            subscribe: [],
-            book: [],
-            reaction: [],
-            other: []
-        };
+        const buttons = container.find('.full-start__button').not('.button--edit-order, .button--play');
+        const categories = { online: [], torrent: [], trailer: [], favorite: [], subscribe: [], book: [], reaction: [], other: [] };
 
-        allButtons.each(function() {
-            var $btn = $(this);
-            
+        buttons.each(function() {
+            const $btn = $(this);
             if (isExcluded($btn)) return;
 
-            var type = getButtonType($btn);
-            
+            const type = getButtonType($btn);
+
             if (type === 'online' && $btn.hasClass('lampac--button') && !$btn.hasClass('modss--button') && !$btn.hasClass('showy--button')) {
-                var svgElement = $btn.find('svg').first();
-                if (svgElement.length && !svgElement.hasClass('modss-online-icon')) {
-                    svgElement.replaceWith(LAMPAC_ICON);
-                }
+                const svg = $btn.find('svg').first();
+                if (svg.length && !svg.hasClass('modss-online-icon')) svg.replaceWith(LAMPAC_ICON);
             }
-            
-            if (categories[type]) {
-                categories[type].push($btn);
-            } else {
-                categories.other.push($btn);
-            }
+
+            categories[type].push($btn);
         });
 
         return categories;
     }
 
     function sortByCustomOrder(buttons) {
-        var customOrder = getCustomOrder();
-        
-        var priority = [];
-        var regular = [];
-        
-        buttons.forEach(function(btn) {
-            var id = getButtonId(btn);
-            if (id === 'modss_online_button' || id === 'showy_online_button') {
-                priority.push(btn);
-            } else {
-                regular.push(btn);
-            }
-        });
-        
-        priority.sort(function(a, b) {
-            var idA = getButtonId(a);
-            var idB = getButtonId(b);
-            if (idA === 'modss_online_button') return -1;
-            if (idB === 'modss_online_button') return 1;
-            if (idA === 'showy_online_button') return -1;
-            if (idB === 'showy_online_button') return 1;
-            return 0;
-        });
-        
+        const customOrder = getCustomOrder();
+
+        const priority = buttons
+            .filter(btn => ['modss_online_button', 'showy_online_button'].includes(getButtonId(btn)))
+            .sort((a, b) => getButtonId(a) === 'modss_online_button' ? -1 : 1);
+
+        const regular = buttons.filter(btn => !priority.includes(btn));
+
         if (!customOrder.length) {
-            regular.sort(function(a, b) {
-                var typeOrder = ['online', 'torrent', 'trailer', 'favorite', 'subscribe', 'book', 'reaction', 'other'];
-                var typeA = getButtonType(a);
-                var typeB = getButtonType(b);
-                var indexA = typeOrder.indexOf(typeA);
-                var indexB = typeOrder.indexOf(typeB);
-                if (indexA === -1) indexA = 999;
-                if (indexB === -1) indexB = 999;
-                return indexA - indexB;
+            const typeOrder = ['online', 'torrent', 'trailer', 'favorite', 'subscribe', 'book', 'reaction', 'other'];
+            regular.sort((a, b) => {
+                const ia = typeOrder.indexOf(getButtonType(a));
+                const ib = typeOrder.indexOf(getButtonType(b));
+                return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
             });
-            return priority.concat(regular);
+            return [...priority, ...regular];
         }
 
-        var sorted = [];
-        var remaining = regular.slice();
-
-        customOrder.forEach(function(id) {
-            for (var i = 0; i < remaining.length; i++) {
-                if (getButtonId(remaining[i]) === id) {
-                    sorted.push(remaining[i]);
-                    remaining.splice(i, 1);
-                    break;
-                }
+        const sorted = [];
+        const remaining = [...regular];
+        customOrder.forEach(id => {
+            const idx = remaining.findIndex(btn => getButtonId(btn) === id);
+            if (idx !== -1) {
+                sorted.push(remaining[idx]);
+                remaining.splice(idx, 1);
             }
         });
 
-        return priority.concat(sorted).concat(remaining);
+        return [...priority, ...sorted, ...remaining];
     }
 
     function applyHiddenButtons(buttons) {
-        var hidden = getHiddenButtons();
-        buttons.forEach(function(btn) {
-            var id = getButtonId(btn);
-            btn.toggleClass('hidden', hidden.indexOf(id) !== -1);
-        });
+        const hidden = getHiddenButtons();
+        buttons.forEach(btn => btn.toggleClass('hidden', hidden.includes(getButtonId(btn))));
     }
 
-    function applyButtonAnimation(buttons) {
-        buttons.forEach(function(btn, index) {
+    function applyButtonAnimation(visibleButtons) {
+        visibleButtons.forEach((btn, i) => {
             btn.css({
-                'opacity': '0',
-                'animation': 'button-fade-in 0.4s ease forwards',
-                'animation-delay': (index * 0.08) + 's'
+                opacity: 0,
+                animation: 'button-fade-in 0.4s ease forwards',
+                'animation-delay': `${i * 0.08}s`
             });
         });
     }
 
     function createEditButton() {
-        var btn = $('<div class="full-start__button selector button--edit-order" style="order: 9999;">' +
-            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 29" fill="none"><use xlink:href="#sprite-edit"></use></svg>' +
-            '</div>');
-
-        btn.on('hover:enter', function() {
-            openEditDialog();
-        });
-
-        if (Lampa.Storage.get('buttons_editor_enabled') === false) {
-            btn.hide();
-        }
-
+        const btn = $(`<div class="full-start__button selector button--edit-order" style="order:9999;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 29" fill="none"><use xlink:href="#sprite-edit"></use></svg>
+        </div>`);
+        btn.on('hover:enter', openEditDialog);
+        if (storageGet('buttons_editor_enabled') === false) btn.hide();
         return btn;
     }
 
     function saveOrder() {
-        var order = [];
-        currentButtons.forEach(function(btn) {
-            order.push(getButtonId(btn));
-        });
-        setCustomOrder(order);
+        setCustomOrder(currentButtons.map(getButtonId));
     }
 
-    function applyChanges() {
-        if (!currentContainer) return;
-        
-        var categories = categorizeButtons(currentContainer);
-        var allButtons = []
-            .concat(categories.online)
-            .concat(categories.torrent)
-            .concat(categories.trailer)
-            .concat(categories.favorite)
-            .concat(categories.subscribe)
-            .concat(categories.book)
-            .concat(categories.reaction)
-            .concat(categories.other);
-        
+    function reorderButtons(container) {
+        const target = container.find('.full-start-new__buttons');
+        if (!target.length) return false;
+
+        currentContainer = container;
+        container.find('.button--play, .button--edit-order').remove();
+
+        const categories = categorizeButtons(container);
+        let allButtons = [].concat(
+            categories.online, categories.torrent, categories.trailer,
+            categories.favorite, categories.subscribe, categories.book,
+            categories.reaction, categories.other
+        );
+
         allButtons = sortByCustomOrder(allButtons);
-        allButtonsCache = allButtons;
-        
+
+        if (!allButtonsOriginal.length) {
+            allButtonsOriginal = allButtons.map(b => b.clone(true, true));
+        }
+
         currentButtons = allButtons;
-        
-        var targetContainer = currentContainer.find('.full-start-new__buttons');
-        if (!targetContainer.length) return;
+        target.empty();
 
-        targetContainer.find('.full-start__button').not('.button--edit-order').detach();
-        
-        var visibleButtons = [];
-        currentButtons.forEach(function(btn) {
-            targetContainer.append(btn);
-            if (!btn.hasClass('hidden')) visibleButtons.push(btn);
+        const visible = [];
+        allButtons.forEach(btn => {
+            target.append(btn);
+            if (!btn.hasClass('hidden')) visible.push(btn);
         });
 
-        applyButtonAnimation(visibleButtons);
+        target.append(createEditButton());
+        visible.push(target.find('.button--edit-order'));
 
-        var editBtn = targetContainer.find('.button--edit-order');
-        if (editBtn.length) {
-            editBtn.detach();
-            targetContainer.append(editBtn);
-        }
+        applyHiddenButtons(allButtons);
 
-        applyHiddenButtons(currentButtons);
+        const mode = storageGet('buttons_viewmode', 'default');
+        target.removeClass('icons-only always-text');
+        if (mode === 'icons') target.addClass('icons-only');
+        if (mode === 'always') target.addClass('always-text');
 
-        var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
-        targetContainer.removeClass('icons-only always-text');
-        if (viewmode === 'icons') targetContainer.addClass('icons-only');
-        if (viewmode === 'always') targetContainer.addClass('always-text');
+        applyButtonAnimation(visible);
 
-        saveOrder();
-        
-        setTimeout(function() {
-            if (currentContainer) {
-                setupButtonNavigation(currentContainer);
-            }
-        }, 100);
+        setTimeout(() => setupButtonNavigation(container), 100);
+        return true;
     }
 
-    function capitalize(str) {
-        if (!str) return str;
-        return str.charAt(0).toUpperCase() + str.slice(1);
+    function setupButtonNavigation(container) {
+        try { Lampa.Controller.toggle('full_start'); } catch(e) {}
     }
 
-    function getButtonDisplayName(btn, allButtons) {
-        var text = btn.find('span').text().trim();
-        var classes = btn.attr('class') || '';
-        var subtitle = btn.attr('data-subtitle') || '';
-        
+    function refreshController() {
+        setTimeout(() => {
+            try {
+                Lampa.Controller.toggle('full_start');
+                if (currentContainer) setupButtonNavigation(currentContainer);
+            } catch(e) {}
+        }, 50);
+    }
+
+    function getButtonDisplayName(btn) {
+        let text = btn.find('span').text().trim();
+        const classes = btn.attr('class') || '';
+        const subtitle = btn.attr('data-subtitle') || '';
+
         if (!text) {
-            var viewClass = classes.split(' ').find(function(c) { 
-                return c.indexOf('view--') === 0 || c.indexOf('button--') === 0; 
-            });
-            if (viewClass) {
-                text = viewClass.replace('view--', '').replace('button--', '').replace(/_/g, ' ');
-                text = capitalize(text);
-            } else {
-                text = 'Кнопка';
-            }
-            return text;
+            const view = classes.split(' ').find(c => c.startsWith('view--') || c.startsWith('button--'));
+            return view ? capitalize(view.replace(/^(view|button)--/, '').replace(/_/g, ' ')) : 'Кнопка';
         }
-        
-        var sameTextCount = 0;
-        allButtons.forEach(function(otherBtn) {
-            if (otherBtn.find('span').text().trim() === text) {
-                sameTextCount++;
-            }
-        });
-        
-        if (sameTextCount > 1) {
-            if (subtitle) {
-                return text + ' <span style="opacity:0.5">(' + subtitle.substring(0, 30) + ')</span>';
-            }
-            
-            var viewClass = classes.split(' ').find(function(c) { 
-                return c.indexOf('view--') === 0; 
-            });
-            if (viewClass) {
-                var identifier = viewClass.replace('view--', '').replace(/_/g, ' ');
-                identifier = capitalize(identifier);
-                return text + ' <span style="opacity:0.5">(' + identifier + ')</span>';
-            }
+
+        const sameCount = currentButtons.filter(b => b.find('span').text().trim() === text).length;
+        if (sameCount > 1) {
+            if (subtitle) return `${text} <span style="opacity:0.5">(${subtitle.substring(0,30)})</span>`;
+            const view = classes.split(' ').find(c => c.startsWith('view--'));
+            if (view) return `${text} <span style="opacity:0.5">(${capitalize(view.replace('view--', '').replace(/_/g, ' '))})</span>`;
         }
-        
         return text;
     }
 
+    function capitalize(str) {
+        return str ? str[0].toUpperCase() + str.slice(1) : str;
+    }
+
     function openEditDialog() {
-        if (currentContainer) {
-            var categories = categorizeButtons(currentContainer);
-            var allButtons = []
-                .concat(categories.online)
-                .concat(categories.torrent)
-                .concat(categories.trailer)
-                .concat(categories.favorite)
-                .concat(categories.subscribe)
-                .concat(categories.book)
-                .concat(categories.reaction)
-                .concat(categories.other);
-            
-            allButtons = sortByCustomOrder(allButtons);
-            allButtonsCache = allButtons;
-            
-            currentButtons = allButtons;
-        }
-        
-        var list = $('<div class="menu-edit-list"></div>');
-        var hidden = getHiddenButtons();
+        const categories = categorizeButtons(currentContainer);
+        const allButtons = [].concat(
+            categories.online, categories.torrent, categories.trailer,
+            categories.favorite, categories.subscribe, categories.book,
+            categories.reaction, categories.other
+        );
+        currentButtons = sortByCustomOrder(allButtons);
 
-        var modes = ['default', 'icons', 'always'];
-        var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'С текстом'};
-        var currentMode = Lampa.Storage.get('buttons_viewmode', 'default');
+        const list = $('<div class="menu-edit-list"></div>');
+        const hidden = getHiddenButtons();
+        const modes = ['default', 'icons', 'always'];
+        const labels = { default: 'Стандартный', icons: 'Только иконки', always: 'С текстом' };
+        let currentMode = storageGet('buttons_viewmode', 'default');
 
-        var modeBtn = $('<div class="selector viewmode-switch">' +
-            '<div style="text-align: center; padding: 1em;">Вид кнопок: ' + labels[currentMode] + '</div>' +
-        '</div>');
-
+        const modeBtn = $(`<div class="selector viewmode-switch"><div style="text-align:center;padding:1em;">Вид кнопок: ${labels[currentMode]}</div></div>`);
         modeBtn.on('hover:enter', function() {
-            var idx = modes.indexOf(currentMode);
-            idx = (idx + 1) % modes.length;
-            currentMode = modes[idx];
-            Lampa.Storage.set('buttons_viewmode', currentMode);
-            $(this).find('div').text('Вид кнопок: ' + labels[currentMode]);
-            
-            if (currentContainer) {
-                var target = currentContainer.find('.full-start-new__buttons');
-                target.removeClass('icons-only always-text');
-                if (currentMode === 'icons') target.addClass('icons-only');
-                if (currentMode === 'always') target.addClass('always-text');
-            }
+            currentMode = modes[(modes.indexOf(currentMode) + 1) % modes.length];
+            storageSet('buttons_viewmode', currentMode);
+            $(this).find('div').text(`Вид кнопок: ${labels[currentMode]}`);
+            const target = currentContainer.find('.full-start-new__buttons');
+            target.removeClass('icons-only always-text');
+            if (currentMode === 'icons') target.addClass('icons-only');
+            if (currentMode === 'always') target.addClass('always-text');
         });
-
         list.append(modeBtn);
 
-        function createButtonItem(btn) {
-            var displayName = getButtonDisplayName(btn, currentButtons);
-            var icon = btn.find('svg').clone();
-            var btnId = getButtonId(btn);
-            var isHidden = hidden.indexOf(btnId) !== -1;
+        currentButtons.forEach(btn => {
+            const display = getButtonDisplayName(btn);
+            const icon = btn.find('svg').clone();
+            const id = getButtonId(btn);
+            const isHidden = hidden.includes(id);
 
-            var item = $('<div class="menu-edit-list__item">' +
-                '<div class="menu-edit-list__icon"></div>' +
-                '<div class="menu-edit-list__title">' + displayName + '</div>' +
-                '<div class="menu-edit-list__move move-up selector">' +
-                    '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-                '<div class="menu-edit-list__move move-down selector">' +
-                    '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-                '<div class="menu-edit-list__toggle toggle selector">' +
-                    '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
-                        '<path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="' + (isHidden ? '0' : '1') + '" stroke-linecap="round"/>' +
-                    '</svg>' +
-                '</div>' +
-            '</div>');
+            const item = $(`<div class="menu-edit-list__item">
+                <div class="menu-edit-list__icon"></div>
+                <div class="menu-edit-list__title">${display}</div>
+                <div class="menu-edit-list__move move-up selector">[↑]</div>
+                <div class="menu-edit-list__move move-down selector">[↓]</div>
+                <div class="menu-edit-list__toggle toggle selector">[✓]</div>
+            </div>`);
 
             item.toggleClass('menu-edit-list__item-hidden', isHidden);
-
             item.find('.menu-edit-list__icon').append(icon);
-            item.data('button', btn);
-            item.data('buttonId', btnId);
+            item.data('button', btn).data('buttonId', id);
 
-            item.find('.move-up').on('hover:enter', function() {
-                var prev = item.prev();
-                while (prev.length && prev.hasClass('viewmode-switch')) {
-                    prev = prev.prev();
-                }
-                if (prev.length && !prev.hasClass('viewmode-switch')) {
+            item.find('.move-up').on('hover:enter', () => {
+                let prev = item.prev();
+                while (prev.hasClass('viewmode-switch')) prev = prev.prev();
+                if (prev.length) {
                     item.insertBefore(prev);
-                    var btnIndex = currentButtons.indexOf(btn);
-                    if (btnIndex > 0) {
-                        currentButtons.splice(btnIndex, 1);
-                        currentButtons.splice(btnIndex - 1, 0, btn);
-                    }
+                    const idx = currentButtons.indexOf(btn);
+                    if (idx > 0) [currentButtons[idx-1], currentButtons[idx]] = [btn, currentButtons[idx-1]];
                     saveOrder();
                 }
             });
 
-            item.find('.move-down').on('hover:enter', function() {
-                var next = item.next();
-                while (next.length && next.hasClass('folder-reset-button')) {
-                    next = next.next();
-                }
-                if (next.length && !next.hasClass('folder-reset-button')) {
+            item.find('.move-down').on('hover:enter', () => {
+                let next = item.next();
+                while (next.hasClass('folder-reset-button')) next = next.next();
+                if (next.length) {
                     item.insertAfter(next);
-                    var btnIndex = currentButtons.indexOf(btn);
-                    if (btnIndex < currentButtons.length - 1) {
-                        currentButtons.splice(btnIndex, 1);
-                        currentButtons.splice(btnIndex + 1, 0, btn);
-                    }
+                    const idx = currentButtons.indexOf(btn);
+                    if (idx < currentButtons.length - 1) [currentButtons[idx], currentButtons[idx+1]] = [currentButtons[idx+1], btn];
                     saveOrder();
                 }
             });
 
-            item.find('.toggle').on('hover:enter', function() {
-                var isNowHidden = !item.hasClass('menu-edit-list__item-hidden');
-                item.toggleClass('menu-edit-list__item-hidden', isNowHidden);
-                btn.toggleClass('hidden', isNowHidden);
-                item.find('.dot').attr('opacity', isNowHidden ? '0' : '1');
-                
-                var hiddenList = getHiddenButtons();
-                var index = hiddenList.indexOf(btnId);
-                if (isNowHidden && index === -1) {
-                    hiddenList.push(btnId);
-                } else if (!isNowHidden && index !== -1) {
-                    hiddenList.splice(index, 1);
-                }
-                setHiddenButtons(hiddenList);
+            item.find('.toggle').on('hover:enter', () => {
+                const nowHidden = !item.hasClass('menu-edit-list__item-hidden');
+                item.toggleClass('menu-edit-list__item-hidden', nowHidden);
+                btn.toggleClass('hidden', nowHidden);
+                item.find('.dot').attr('opacity', nowHidden ? '0' : '1');
+
+                const newHidden = nowHidden
+                    ? [...hidden, id].filter((v, i, a) => a.indexOf(v) === i)
+                    : hidden.filter(h => h !== id);
+                setHiddenButtons(newHidden);
             });
-            
-            return item;
-        }
-        
-        currentButtons.forEach(function(btn) {
-            list.append(createButtonItem(btn));
+
+            list.append(item);
         });
 
-        var resetBtn = $('<div class="selector folder-reset-button">' +
-            '<div style="text-align: center; padding: 1em;">Сбросить по умолчанию</div>' +
-        '</div>');
-        
-        resetBtn.on('hover:enter', function() {
-            Lampa.Storage.set('button_custom_order', []);
-            Lampa.Storage.set('button_hidden', []);
-            Lampa.Storage.set('buttons_viewmode', 'default');
+        const resetBtn = $(`<div class="selector folder-reset-button"><div style="text-align:center;padding:1em;">Сбросить по умолчанию</div></div>`);
+        resetBtn.on('hover:enter', () => {
+            storageSet('button_custom_order', []);
+            storageSet('button_hidden', []);
+            storageSet('buttons_viewmode', 'default');
             Lampa.Modal.close();
-            
-            setTimeout(function() {
-                if (currentContainer) {
-                    currentContainer.find('.button--play, .button--edit-order').remove();
-                    currentContainer.data('buttons-processed', false);
-                    
-                    var targetContainer = currentContainer.find('.full-start-new__buttons');
-                    var existingButtons = targetContainer.find('.full-start__button').toArray();
-                    
-                    allButtonsOriginal.forEach(function(originalBtn) {
-                        var btnId = getButtonId(originalBtn);
-                        var exists = false;
-                        
-                        for (var i = 0; i < existingButtons.length; i++) {
-                            if (getButtonId($(existingButtons[i])) === btnId) {
-                                exists = true;
-                                break;
-                            }
-                        }
-                        
-                        if (!exists) {
-                            var clonedBtn = originalBtn.clone(true, true);
-                            clonedBtn.css({
-                                'opacity': '1',
-                                'animation': 'none'
-                            });
-                            targetContainer.append(clonedBtn);
-                        }
-                    });
-                    
-                    reorderButtons(currentContainer);
-                    refreshController();
-                }
-            }, 100);
+            setTimeout(() => reorderButtons(currentContainer) || refreshController(), 100);
         });
-
         list.append(resetBtn);
 
         Lampa.Modal.open({
@@ -523,180 +315,63 @@
             html: list,
             size: 'small',
             scroll_to_center: true,
-            onBack: function() {
+            onBack: () => {
                 Lampa.Modal.close();
-                applyChanges();
+                reorderButtons(currentContainer);
                 Lampa.Controller.toggle('full_start');
             }
         });
-    }
-
-    function reorderButtons(container) {
-        var targetContainer = container.find('.full-start-new__buttons');
-        if (!targetContainer.length) return false;
-
-        currentContainer = container;
-        container.find('.button--play, .button--edit-order').remove();
-
-        var categories = categorizeButtons(container);
-        
-        var allButtons = []
-            .concat(categories.online)
-            .concat(categories.torrent)
-            .concat(categories.trailer)
-            .concat(categories.favorite)
-            .concat(categories.subscribe)
-            .concat(categories.book)
-            .concat(categories.reaction)
-            .concat(categories.other);
-
-        allButtons = sortByCustomOrder(allButtons);
-        allButtonsCache = allButtons;
-        
-        if (allButtonsOriginal.length === 0) {
-            allButtons.forEach(function(btn) {
-                allButtonsOriginal.push(btn.clone(true, true));
-            });
-        }
-
-        currentButtons = allButtons;
-
-        targetContainer.children().detach();
-        
-        var visibleButtons = [];
-        currentButtons.forEach(function(btn) {
-            targetContainer.append(btn);
-            if (!btn.hasClass('hidden')) visibleButtons.push(btn);
-        });
-
-        var editButton = createEditButton();
-        targetContainer.append(editButton);
-        visibleButtons.push(editButton);
-
-        applyHiddenButtons(currentButtons);
-
-        var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
-        targetContainer.removeClass('icons-only always-text');
-        if (viewmode === 'icons') targetContainer.addClass('icons-only');
-        if (viewmode === 'always') targetContainer.addClass('always-text');
-
-        applyButtonAnimation(visibleButtons);
-        
-        setTimeout(function() {
-            setupButtonNavigation(container);
-        }, 100);
-
-        return true;
-    }
-
-    function setupButtonNavigation(container) {
-        if (Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
-            try {
-                Lampa.Controller.toggle('full_start');
-            } catch(e) {}
-        }
-    }
-
-    function refreshController() {
-        if (!Lampa.Controller || typeof Lampa.Controller.toggle !== 'function') return;
-        
-        setTimeout(function() {
-            try {
-                Lampa.Controller.toggle('full_start');
-                
-                if (currentContainer) {
-                    setTimeout(function() {
-                        setupButtonNavigation(currentContainer);
-                    }, 100);
-                }
-            } catch(e) {}
-        }, 50);
     }
 
     function init() {
-        var style = $('<style>' +
-            '@keyframes button-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }' +
-            '.full-start__button { opacity: 0; }' +
-            '.full-start__button.hidden { display: none !important; }' +
-            '.full-start-new__buttons { ' +
-                'display: flex !important; ' +
-                'flex-direction: row !important; ' +
-                'flex-wrap: wrap !important; ' +
-                'gap: 0.5em !important; ' +
-            '}' +
-            '.full-start-new__buttons.buttons-loading .full-start__button { visibility: hidden !important; }' +
-            '.folder-reset-button { background: rgba(200,100,100,0.3); margin-top: 1em; border-radius: 0.3em; }' +
-            '.folder-reset-button.focus { border: 3px solid rgba(255,255,255,0.8); }' +
-            '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
-            '.full-start-new__buttons.icons-only .full-start__button span { display: none; }' +
-            '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
-            '.viewmode-switch { background: rgba(100,100,255,0.3); margin: 0.5em 0 1em 0; border-radius: 0.3em; }' +
-            '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
-            '.menu-edit-list__item-hidden { opacity: 0.5; }' +
-        '</style>');
-        $('body').append(style);
+        const style = `<style>
+            @keyframes button-fade-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+            .full-start__button { opacity:0; }
+            .full-start__button.hidden { display:none !important; }
+            .full-start-new__buttons { display:flex !important; flex-direction:row !important; flex-wrap:wrap !important; gap:0.5em !important; }
+            .full-start-new__buttons.buttons-loading .full-start__button { visibility:hidden !important; }
+            .folder-reset-button { background:rgba(200,100,100,0.3); margin-top:1em; border-radius:0.3em; }
+            .folder-reset-button.focus { border:3px solid rgba(255,255,255,0.8); }
+            .menu-edit-list__toggle.focus { border:2px solid rgba(255,255,255,0.8); border-radius:0.3em; }
+            .full-start-new__buttons.icons-only .full-start__button span { display:none; }
+            .full-start-new__buttons.always-text .full-start__button span { display:block !important; }
+            .viewmode-switch { background:rgba(100,100,255,0.3); margin:0.5em 0 1em 0; border-radius:0.3em; }
+            .viewmode-switch.focus { border:3px solid rgba(255,255,255,0.8); }
+            .menu-edit-list__item-hidden { opacity:0.5; }
+        </style>`;
+        $('body').append($(style));
 
-        Lampa.Listener.follow('full', function(e) {
+        Lampa.Listener.follow('full', e => {
             if (e.type !== 'complite') return;
+            const container = e.object.activity.render();
+            const target = container.find('.full-start-new__buttons');
+            if (target.length) target.addClass('buttons-loading');
 
-            var container = e.object.activity.render();
-            var targetContainer = container.find('.full-start-new__buttons');
-            if (targetContainer.length) {
-                targetContainer.addClass('buttons-loading');
-            }
-
-            setTimeout(function() {
+            setTimeout(() => {
                 try {
                     if (!container.data('buttons-processed')) {
                         container.data('buttons-processed', true);
                         if (reorderButtons(container)) {
-                            if (targetContainer.length) {
-                                targetContainer.removeClass('buttons-loading');
-                            }
+                            target.removeClass('buttons-loading');
                             refreshController();
                         }
                     }
-                } catch(err) {
-                    if (targetContainer.length) {
-                        targetContainer.removeClass('buttons-loading');
-                    }
+                } catch (err) {
+                    target.removeClass('buttons-loading');
                 }
             }, 400);
         });
-    }
 
-    if (Lampa.SettingsApi) {
-        Lampa.SettingsApi.addParam({
-            component: 'interface',
-            param: {
-                name: 'buttons_editor_enabled',
-                type: 'trigger',
-                default: true
-            },
-            field: {
-                name: 'Редактор кнопок'
-            },
-            onChange: function(value) {
-                setTimeout(function() {
-                    var currentValue = Lampa.Storage.get('buttons_editor_enabled', true);
-                    if (currentValue) {
-                        $('.button--edit-order').show();
-                    } else {
-                        $('.button--edit-order').hide();
-                    }
-                }, 100);
-            },
-            onRender: function(element) {
-                setTimeout(function() {
-                    $('div[data-name="interface_size"]').after(element);
-                }, 0);
-            }
-        });
+        if (Lampa.SettingsApi) {
+            Lampa.SettingsApi.addParam({
+                component: 'interface',
+                param: { name: 'buttons_editor_enabled', type: 'trigger', default: true },
+                field: { name: 'Редактор кнопок' },
+                onChange: () => setTimeout(() => $('.button--edit-order').toggle(storageGet('buttons_editor_enabled', true)), 100),
+                onRender: el => setTimeout(() => $('div[data-name="interface_size"]').after(el), 0)
+            });
+        }
     }
 
     init();
-
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = {};
-    }
 })();
