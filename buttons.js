@@ -9,6 +9,8 @@
         { name: 'online', patterns: ['online', 'lampac', 'modss', 'showy'], label: 'Онлайн' },
         { name: 'torrent', patterns: ['torrent'], label: 'Торренты' },
         { name: 'trailer', patterns: ['trailer', 'rutube'], label: 'Трейлеры' },
+        { name: 'favorite', patterns: ['favorite'], label: 'Избранное' },
+        { name: 'subscribe', patterns: ['subscribe'], label: 'Подписка' },
         { name: 'book', patterns: ['book'], label: 'Закладки' },
         { name: 'reaction', patterns: ['reaction'], label: 'Реакции' }
     ];
@@ -129,6 +131,8 @@
             online: [],
             torrent: [],
             trailer: [],
+            favorite: [],
+            subscribe: [],
             book: [],
             reaction: [],
             other: []
@@ -185,7 +189,7 @@
         
         if (!customOrder.length) {
             regular.sort(function(a, b) {
-                var typeOrder = ['online', 'torrent', 'trailer', 'book', 'reaction', 'other'];
+                var typeOrder = ['online', 'torrent', 'trailer', 'favorite', 'subscribe', 'book', 'reaction', 'other'];
                 var typeA = getButtonType(a);
                 var typeB = getButtonType(b);
                 var indexA = typeOrder.indexOf(typeA);
@@ -261,7 +265,7 @@
 
     function saveItemOrder() {
         var order = [];
-        var items = $('.menu-edit-list .menu-edit-list__item').not('.menu-edit-list__create-folder');
+        var items = $('.menu-edit-list .menu-edit-list__item').not('.viewmode-switch, .folder-reset-button');
         
         items.each(function() {
             var $item = $(this);
@@ -291,6 +295,8 @@
             .concat(categories.online)
             .concat(categories.torrent)
             .concat(categories.trailer)
+            .concat(categories.favorite)
+            .concat(categories.subscribe)
             .concat(categories.book)
             .concat(categories.reaction)
             .concat(categories.other);
@@ -420,7 +426,7 @@
                 if (addedButtons.indexOf(btnId) === -1 && !btn.hasClass('hidden') && buttonsInFolders.indexOf(btnId) === -1) {
                     var insertBefore = null;
                     var btnType = getButtonType(btn);
-                    var typeOrder = ['online', 'torrent', 'trailer', 'book', 'reaction', 'other'];
+                    var typeOrder = ['online', 'torrent', 'trailer', 'favorite', 'subscribe', 'book', 'reaction', 'other'];
                     var btnTypeIndex = typeOrder.indexOf(btnType);
                     if (btnTypeIndex === -1) btnTypeIndex = 999;
                     
@@ -510,7 +516,6 @@
             targetContainer.append(editBtn);
         }
 
-        // Применяем режим отображения
         var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
         targetContainer.removeClass('icons-only always-text');
         if (viewmode === 'icons') targetContainer.addClass('icons-only');
@@ -755,18 +760,6 @@
         }
     }
 
-    function createFolder(name, buttonIds) {
-        var folders = getFolders();
-        var folder = {
-            id: 'folder_' + Date.now(),
-            name: name,
-            buttons: buttonIds
-        };
-        folders.push(folder);
-        setFolders(folders);
-        return folder;
-    }
-
     function deleteFolder(folderId) {
         var folders = getFolders();
         folders = folders.filter(function(f) { return f.id !== folderId; });
@@ -780,6 +773,8 @@
                 .concat(categories.online)
                 .concat(categories.torrent)
                 .concat(categories.trailer)
+                .concat(categories.favorite)
+                .concat(categories.subscribe)
                 .concat(categories.book)
                 .concat(categories.reaction)
                 .concat(categories.other);
@@ -805,7 +800,6 @@
         var folders = getFolders();
         var itemOrder = getItemOrder();
 
-        // Кнопка переключения режима отображения (вместо создания папки)
         var modes = ['default', 'icons', 'always'];
         var labels = {default: 'Стандартный', icons: 'Только иконки', always: 'Текст всегда'};
         var currentMode = Lampa.Storage.get('buttons_viewmode', 'default');
@@ -827,10 +821,7 @@
                 if (currentMode === 'icons') target.addClass('icons-only');
                 if (currentMode === 'always') target.addClass('always-text');
             }
-            Lampa.Noty.show('Режим изменён на: ' + labels[currentMode]);
         });
-
-        list.append(modeBtn);
 
         function createFolderItem(folder) {
             var item = $('<div class="menu-edit-list__item folder-item">' +
@@ -863,7 +854,7 @@
 
             item.find('.move-up').on('hover:enter', function() {
                 var prev = item.prev();
-                while (prev.length && prev.hasClass('viewmode-switch')) {
+                while (prev.length && (prev.hasClass('viewmode-switch') || prev.hasClass('folder-reset-button'))) {
                     prev = prev.prev();
                 }
                 if (prev.length) {
@@ -1003,10 +994,10 @@
 
             item.find('.move-up').on('hover:enter', function() {
                 var prev = item.prev();
-                while (prev.length && prev.hasClass('viewmode-switch')) {
+                while (prev.length && (prev.hasClass('viewmode-switch') || prev.hasClass('folder-reset-button'))) {
                     prev = prev.prev();
                 }
-                if (prev.length && !prev.hasClass('viewmode-switch')) {
+                if (prev.length && !prev.hasClass('viewmode-switch') && !prev.hasClass('folder-reset-button')) {
                     item.insertBefore(prev);
                     var btnIndex = currentButtons.indexOf(btn);
                     if (btnIndex > 0) {
@@ -1096,6 +1087,8 @@
             });
         }
 
+        list.append(modeBtn);
+
         var resetBtn = $('<div class="selector folder-reset-button">' +
             '<div style="text-align: center; padding: 1em;">Сбросить по умолчанию</div>' +
         '</div>');
@@ -1105,7 +1098,7 @@
             Lampa.Storage.set('button_hidden', []);
             Lampa.Storage.set('button_folders', []);
             Lampa.Storage.set('button_item_order', []);
-            Lampa.Storage.set('buttons_viewmode', 'default'); // Сброс режима
+            Lampa.Storage.set('buttons_viewmode', 'default');
             Lampa.Modal.close();
             Lampa.Noty.show('Настройки сброшены');
             
@@ -1172,6 +1165,8 @@
             .concat(categories.online)
             .concat(categories.torrent)
             .concat(categories.trailer)
+            .concat(categories.favorite)
+            .concat(categories.subscribe)
             .concat(categories.book)
             .concat(categories.reaction)
             .concat(categories.other);
@@ -1231,7 +1226,7 @@
                 if (addedButtons.indexOf(btnId) === -1 && !btn.hasClass('hidden')) {
                     var insertBefore = null;
                     var btnType = getButtonType(btn);
-                    var typeOrder = ['online', 'torrent', 'trailer', 'book', 'reaction', 'other'];
+                    var typeOrder = ['online', 'torrent', 'trailer', 'favorite', 'subscribe', 'book', 'reaction', 'other'];
                     var btnTypeIndex = typeOrder.indexOf(btnType);
                     if (btnTypeIndex === -1) btnTypeIndex = 999;
                     
@@ -1311,7 +1306,6 @@
         targetContainer.append(editButton);
         visibleButtons.push(editButton);
 
-        // Применяем режим отображения
         var viewmode = Lampa.Storage.get('buttons_viewmode', 'default');
         targetContainer.removeClass('icons-only always-text');
         if (viewmode === 'icons') targetContainer.addClass('icons-only');
