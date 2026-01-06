@@ -693,17 +693,7 @@
             },
             onRender: function(element) {
                 setTimeout(function() {
-                    var sizeParam = $('div[data-component="interface"] .settings-param').filter(function() {
-                        return $(this).find('.settings-param__title').text().trim() === 'Размер интерфейса';
-                    });
-                    if (sizeParam.length) {
-                        element.insertAfter(sizeParam);
-                    } else {
-                        var lastElement = $('div[data-component="interface"] .settings-param').last();
-                        if (lastElement.length) {
-                            element.insertAfter(lastElement);
-                        }
-                    }
+                    $('div[data-name="interface_size"]').after(element);
                 }, 0);
             }
         });
