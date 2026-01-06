@@ -1591,7 +1591,6 @@
         '</style>');
         $('body').append(style);
 
-        // Ключ настройки "Всегда показывать левое меню" — sidebar_open
         var leftMenuAlways = Lampa.Storage.get('sidebar_open', false);
 
         if (leftMenuAlways) {
@@ -1604,13 +1603,15 @@
                     'top: 50% !important;' +
                     'transform: translateY(-50%) !important;' +
                     'opacity: 0 !important;' +
-                    'transition: opacity 0.4s ease !important;' +
+                    'transition: opacity 0.3s ease !important;' +
                     'white-space: nowrap !important;' +
                     'pointer-events: none !important;' +
+                    'background: rgba(0,0,0,0.7) !important;' +
+                    'padding: 0.4em 0.9em !important;' +
+                    'border-radius: 0.5em !important;' +
+                    'box-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;' +
                     'z-index: 10 !important;' +
-                    'background: rgba(0,0,0,0.6) !important;' +
-                    'padding: 0.5em 1em !important;' +
-                    'border-radius: 0.4em !important;' +
+                    'font-size: 1.1em !important;' +
                 '}' +
                 '.left-menu-text-on-focus .menu__item.focus .menu__text {' +
                     'opacity: 1 !important;' +
