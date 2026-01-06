@@ -413,7 +413,8 @@
                 '</div>' +
             '</div>');
 
-            item.toggleClass('menu-edit-list__item-hidden', isHidden);
+            // Всегда видим в редакторе, только с opacity при скрытии
+            item.css('opacity', isHidden ? '0.5' : '1');
 
             item.find('.menu-edit-list__icon').append(icon);
             item.data('button', btn);
@@ -452,23 +453,25 @@
             });
 
             item.find('.toggle').on('hover:enter', function() {
-                item.toggleClass('menu-edit-list__item-hidden');
-                btn.toggleClass('hidden');
-                item.find('.dot').attr('opacity', item.hasClass('menu-edit-list__item-hidden') ? '0' : '1');
+                isHidden = !isHidden;
+                item.css('opacity', isHidden ? '0.5' : '1');
+                btn.toggleClass('hidden', isHidden);
+                item.find('.dot').attr('opacity', isHidden ? '0' : '1');
                 
-                var hidden = getHiddenButtons();
-                var index = hidden.indexOf(btnId);
+                var hiddenList = getHiddenButtons();
+                var index = hiddenList.indexOf(btnId);
                 if (index !== -1) {
-                    hidden.splice(index, 1);
+                    hiddenList.splice(index, 1);
                 } else {
-                    hidden.push(btnId);
+                    hiddenList.push(btnId);
                 }
-                setHiddenButtons(hidden);
+                setHiddenButtons(hiddenList);
             });
             
             return item;
         }
         
+        // Добавляем ВСЕ кнопки (включая скрытые)
         currentButtons.forEach(function(btn) {
             list.append(createButtonItem(btn));
         });
@@ -637,7 +640,7 @@
             '.full-start-new__buttons.always-text .full-start__button span { display: block !important; }' +
             '.viewmode-switch { background: rgba(100,100,255,0.3); margin-top: 1em; border-radius: 0.3em; }' +
             '.viewmode-switch.focus { border: 3px solid rgba(255,255,255,0.8); }' +
-            '.menu-edit-list__item-hidden { opacity: 0.5; }' +
+            '.menu-edit-list__item { opacity: 1 !important; }' + /* Гарантируем видимость в редакторе */
         '</style>');
         $('body').append(style);
 
