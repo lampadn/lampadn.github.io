@@ -3,7 +3,7 @@
 
   var Defined = {
     api: 'lampac',
-    localhost: 'https://lampa.oksibutch.ru/',
+    localhost: 'https://lampa.azharkov.ru/',
     apn: ''
   };
 
@@ -28,7 +28,7 @@
   }
 }
 
-var hostkey = 'https://lampa.oksibutch.ru'.replace('http://', '').replace('https://', '');
+var hostkey = 'https://lampa.azharkov.ru'.replace('http://', '').replace('https://', '');
 
 if (!window.rch_nws || !window.rch_nws[hostkey]) {
   if (!window.rch_nws) window.rch_nws = {};
@@ -65,7 +65,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
 };
 
 window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
-  window.rch_nws[hostkey].typeInvoke('https://lampa.oksibutch.ru', function() {
+  window.rch_nws[hostkey].typeInvoke('https://lampa.azharkov.ru', function() {
 
     client.invoke("RchRegistry", JSON.stringify({
       version: 149,
@@ -115,7 +115,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                 client.invoke("RchResult", rchId, html);
               } else {
                 $.ajax({
-                  url: 'https://lampa.oksibutch.ru/rch/gzresult?id=' + rchId,
+                  url: 'https://lampa.azharkov.ru/rch/gzresult?id=' + rchId,
                   type: 'POST',
                   data: compressedArray,
                   async: true,
@@ -172,7 +172,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
   });
 };
-  window.rch_nws[hostkey].typeInvoke('https://lampa.oksibutch.ru', function() {});
+  window.rch_nws[hostkey].typeInvoke('https://lampa.azharkov.ru', function() {});
 
   function rchInvoke(json, call) {
     if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect){
@@ -195,7 +195,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function rchRun(json, call) {
     if (typeof NativeWsClient == 'undefined') {
-      Lampa.Utils.putScript(["https://lampa.oksibutch.ru/js/nws-client-es5.js?v18112025"], function() {}, false, function() {
+      Lampa.Utils.putScript(["https://lampa.azharkov.ru/js/nws-client-es5.js?v18112025"], function() {}, false, function() {
         rchInvoke(json, call);
       }, true);
     } else {
@@ -258,7 +258,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	
     if (balansers_with_search == undefined) {
       network.timeout(10000);
-      network.silent(account('https://lampa.oksibutch.ru/lite/withsearch'), function(json) {
+      network.silent(account('https://lampa.azharkov.ru/lite/withsearch'), function(json) {
         balansers_with_search = json;
       }, function() {
 		  balansers_with_search = [];
@@ -790,7 +790,7 @@ else if (element.url) {
   if (false) {
     if (Platform.is('browser') && location.host.indexOf("127.0.0.1") !== -1) {
       Noty.show('Видео открыто в playerInner', {time: 3000});
-      $.get('https://lampa.oksibutch.ru/player-inner/' + element.url);
+      $.get('https://lampa.azharkov.ru/player-inner/' + element.url);
       return;
     }
 
@@ -1924,4 +1924,5 @@ else if (element.url) {
   if (!window.lampac_plugin) startPlugin();
 
 })();
+
 
