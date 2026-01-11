@@ -255,7 +255,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     if (balansers_with_search == undefined) {
       network.timeout(10000);
       network.silent(account('https://lampa.azharkov.ru/lite/withsearch'), function(json) {
-        balansers_with_search = json;
+        balansers_with_search = Array.isArray(json) ? json : [];
       }, function() {
 		  balansers_with_search = [];
 	  });
@@ -375,7 +375,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       this.externalids().then(function() {
         return _this.createSource();
       }).then(function(json) {
-        if (!balansers_with_search.find(function(b) {
+        if (balansers_with_search && Array.isArray(balansers_with_search) && !balansers_with_search.find(function(b) {
             return balanser.slice(0, b.length) == b;
           })) {
           filter.render().find('.filter--search').addClass('hide');
