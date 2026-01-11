@@ -53,7 +53,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
     if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
     else {
       var net = new Lampa.Reguest();
-      net.silent('https://lampa.oksibutch.ru'.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
+      net.silent('https://lampa.azharkov.ru'.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
         check(true);
       }, function() {
         check(false);
@@ -1924,6 +1924,7 @@ else if (element.url) {
   if (!window.lampac_plugin) startPlugin();
 
 })();
+
 
 
 
