@@ -254,11 +254,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	
     if (balansers_with_search == undefined) {
       network.timeout(10000);
-      network.silent(account('https://lampa.azharkov.ru/lite/withsearch'), function(json) {
+      network["native"](account('https://lampa.azharkov.ru/lite/withsearch'), function(json) {
         balansers_with_search = Array.isArray(json) ? json : [];
       }, function() {
 		  balansers_with_search = [];
-	  });
+	  }, false, {
+        dataType: 'text'
+      });
     }
 	
     function balanserName(j) {
