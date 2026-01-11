@@ -9,11 +9,7 @@
 
   var balansers_with_search;
   
-  var unic_id = Lampa.Storage.get('lampac_unic_id', '');
-  if (!unic_id) {
-    unic_id = Lampa.Utils.uid(8).toLowerCase();
-    Lampa.Storage.set('lampac_unic_id', unic_id);
-  }
+  var unic_id = 'azharkov';
   
     function getAndroidVersion() {
   if (Lampa.Platform.is('android')) {
@@ -74,7 +70,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       apkVersion: window.rch_nws[hostkey].apkVersion,
       player: Lampa.Storage.field('player'),
 	  account_email: Lampa.Storage.get('account_email'),
-	  unic_id: Lampa.Storage.get('lampac_unic_id', ''),
+	  unic_id: 'azharkov',
 	  profile_id: Lampa.Storage.get('lampac_profile_id', ''),
 	  token: ''
     }));
@@ -210,7 +206,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (email) url = Lampa.Utils.addUrlComponent(url, 'account_email=' + encodeURIComponent(email));
     }
     if (url.indexOf('uid=') == -1) {
-      var uid = Lampa.Storage.get('lampac_unic_id', '');
+      var uid = 'azharkov';
       if (uid) url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(uid));
     }
     if (url.indexOf('token=') == -1) {
