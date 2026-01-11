@@ -4,7 +4,7 @@
   var Defined = {
     api: 'lampac',
     localhost: 'https://lampa.azharkov.ru/',
-    apn: ''
+    apn: 'http://apn.cfhttp.top/'
   };
 
   var balansers_with_search;
@@ -1924,5 +1924,6 @@ else if (element.url) {
   if (!window.lampac_plugin) startPlugin();
 
 })();
+
 
 
