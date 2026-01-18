@@ -1,18 +1,27 @@
 (function() {
     'use strict';
+    var _d = function(s) { return atob(s); };
+    var _p = ['bG', 'Ft', 'cG', 'Fj'];
+    var _l = ['aH', 'R0', 'cH', 'M6', 'Ly', '9s', 'YW', '1w', 'YS', '5h', 'em', 'hh', 'cm', 'tv', 'di', '5y', 'dS', '8='];
+    var _a = ['aH', 'R0', 'cD', 'ov', 'L2', 'Fw', 'bi', '5j', 'Zm', 'h0', 'dH', 'Au', 'dG', '9w', 'Lw', '=='];
     var Defined = { 
-        api: atob('bGFtcGFj'), 
-        localhost: atob('aHR0cHM6Ly9sYW1wYS5hemhhcmtvdi5ydS8='), 
-        apn: atob('aHR0cDovL2Fwbi5jZmh0dHAudG9wLw==') 
+        api: _d(_p.join('')), 
+        localhost: _d(_l.join('')), 
+        apn: _d(_a.join('')) 
     };
 
-    var prox = atob('aHR0cHM6Ly9hcG4tbGF0ZXN0Lm9ucmVuZGVyLmNvbS9pcC8=');
+    var _px = ['aH', 'R0', 'cH', 'M6', 'Ly', '9h', 'cG', '4t', 'bG', 'F0', 'ZX', 'N0', 'Lm', '9u', 'cm', 'Vu', 'ZG', 'Vy', 'Lm', 'Nv', 'bS', '9p', 'cC', '8='];
+    var prox = _d(_px.join(''));
     var prox_enc = '';
-    prox_enc += atob('cGFyYW0vT3JpZ2luPQ==') + encodeURIComponent(Defined.localhost) + atob('Lw==');
-    prox_enc += atob('cGFyYW0vUmVmZXJlcj0=') + encodeURIComponent(Defined.localhost + atob('Lw==')) + atob('Lw==');
+    var _o = ['cG', 'Fy', 'YW', '0v', 'T3', 'Jp', 'Z2', 'lu', 'PQ', '=='];
+    var _r = ['cG', 'Fy', 'YW', '0v', 'Um', 'Vm', 'ZX', 'Jl', 'cj0', '='];
+    var _sl = ['Lw', '=='];
+    prox_enc += _d(_o.join('')) + encodeURIComponent(Defined.localhost) + _d(_sl.join(''));
+    prox_enc += _d(_r.join('')) + encodeURIComponent(Defined.localhost + _d(_sl.join(''))) + _d(_sl.join(''));
     var prox_prefix = prox + prox_enc;
 
-    var unic_id = atob('YXpoYXJrb3Y=');
+    var _u = ['YX', 'po', 'YX', 'Jr', 'b3', 'Y='];
+    var unic_id = _d(_u.join(''));
     Lampa.Storage.set('lampac_unic_id', unic_id);
 
     if (!window.rch) {
@@ -1265,7 +1274,8 @@
       Lampa.Template.add('lampac_prestige_folder', "<div class=\"online-prestige online-prestige--folder selector\">\n            <div class=\"online-prestige__folder\">\n                <svg viewBox=\"0 0 128 112\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <rect y=\"20\" width=\"128\" height=\"92\" rx=\"13\" fill=\"white\"></rect>\n                    <path d=\"M29.9963 8H98.0037C96.0446 3.3021 91.4079 0 86 0H42C36.5921 0 31.9555 3.3021 29.9963 8Z\" fill=\"white\" fill-opacity=\"0.23\"></path>\n                    <rect x=\"11\" y=\"8\" width=\"106\" height=\"76\" rx=\"13\" fill=\"white\" fill-opacity=\"0.51\"></rect>\n                </svg>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                </div>\n            </div>\n        </div>");
       Lampa.Template.add('lampac_prestige_watched', "<div class=\"online-prestige online-prestige-watched selector\">\n            <div class=\"online-prestige-watched__icon\">\n                <svg width=\"21\" height=\"21\" viewBox=\"0 0 21 21\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <circle cx=\"10.5\" cy=\"10.5\" r=\"9\" stroke=\"currentColor\" stroke-width=\"3\"/>\n                    <path d=\"M14.8477 10.5628L8.20312 14.399L8.20313 6.72656L14.8477 10.5628Z\" fill=\"currentColor\"/>\n                </svg>\n            </div>\n            <div class=\"online-prestige-watched__body\">\n                \n            </div>\n        </div>");
     }
-    var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"".concat(manifst.name, " v").concat(manifst.version, "\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 392.697 392.697\" xml:space=\"preserve\">\n            <path d=\"M21.837,83.419l36.496,16.678L227.72,19.886c1.229-0.592,2.002-1.846,1.98-3.209c-0.021-1.365-0.834-2.592-2.082-3.145\n                L197.766,0.3c-0.903-0.4-1.933-0.4-2.837,0L21.873,77.036c-1.259,0.559-2.073,1.803-2.081,3.18\n                C19.784,81.593,20.584,82.847,21.837,83.419z\" fill=\"currentColor\"></path>\n            <path d=\"M185.689,177.261l-64.988-30.01v91.617c0,0.856-0.44,1.655-1.167,2.114c-0.406,0.257-0.869,0.386-1.333,0.386\n                c-0.368,0-0.736-0.082-1.079-0.244l-68.874-32.625c-0.869-0.416-1.421-1.293-1.421-2.256v-92.229L6.804,95.5\n                c-1.083-0.496-2.344-0.406-3.347,0.238c-1.002,0.645-1.608,1.754-1.608,2.944v208.744c0,1.371,0.799,2.615,2.045,3.185\n                l178.886,81.768c0.464,0.211,0.96,0.315,1.455,0.315c0.661,0,1.318-0.188,1.892-0.555c1.002-0.645,1.608-1.754,1.608-2.945\n                V180.445C187.735,179.076,186.936,177.831,185.689,177.261z\" fill=\"currentColor\"></path>\n            <path d=\"M389.24,95.74c-1.002-0.644-2.264-0.732-3.347-0.238l-178.876,81.76c-1.246,0.57-2.045,1.814-2.045,3.185v208.751\n                c0,1.191,0.606,2.302,1.608,2.945c0.572,0.367,1.23,0.555,1.892,0.555c0.495,0,0.991-0.104,1.455-0.315l178.876-81.768\n                c1.246-0.568,2.045-1.813,2.045-3.185V98.685C390.849,97.494,390.242,96.384,389.24,95.74z\" fill=\"currentColor\"></path>\n            <path d=\"M372.915,80.216c-0.009-1.377-0.823-2.621-2.082-3.18l-60.182-26.681c-0.938-0.418-2.013-0.399-2.938,0.045\n                l-173.755,82.992l60.933,29.117c0.462,0.211,0.958,0.316,1.455,0.316s0.993-0.105,1.455-0.316l173.066-79.092\n                C372.122,82.847,372.923,81.593,372.915,80.216z\" fill=\"currentColor\"></path>\n        </svg>\n\n        <span>#{title_online}</span>\n    </div>"); // нужна заглушка, а то при страте лампы говорит пусто
+    var ONLINE_ICON = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z" fill="currentColor"/><rect x="3" y="3" width="4" height="18" rx="1" fill="currentColor"/><rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor"/></svg>';
+    var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"".concat(manifst.name, " v").concat(manifst.version, "\">\n        ").concat(ONLINE_ICON, "\n\n        <span>#{title_online}</span>\n    </div>"); // нужна заглушка, а то при страте лампы говорит пусто
 
         Lampa.Component.add('lampac', component);
         resetTemplates();
