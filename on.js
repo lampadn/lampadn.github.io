@@ -1,20 +1,16 @@
 (function() {
   'use strict';
-
   var Defined = {
     api: 'lampac',
     localhost: 'https://lampa.vip/',
     apn: ''
   };
 
-  var prox = 'https://apn-latest.onrender.com/ip/';
-  var prox_enc = '';
-  prox_enc += 'param/Origin=' + encodeURIComponent(Defined.localhost) + '/';
-  prox_enc += 'param/Referer=' + encodeURIComponent(Defined.localhost + '/') + '/';
-  var prox_prefix = prox + prox_enc;
+  var prox = 'https://corsproxy.io/?';
+  var prox_prefix = prox;
 
   var balansers_with_search;
-  
+ 
   var unic_id = 'guest';
   Lampa.Storage.set('lampac_unic_id', unic_id);
   
@@ -1883,4 +1879,5 @@
   if (!window.lampa_vip_plugin) startPlugin();
 
 })();
+
 
