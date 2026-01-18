@@ -307,7 +307,11 @@
             var _this3 = this;
             return new Promise(function(resolve, reject) {
                 var url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (_this3.memkey || ''));
+                var url_alt = typeof Defined_alt !== 'undefined' ? _this3.requestParams(Defined_alt.localhost + 'lifeevents?memkey=' + (_this3.memkey || '')) : null;
                 var red = false;
+                var alt_checked = false;
+                var main_sources = {};
+                var alt_sources = {};
                 var gou = function gou(json, any) {
                     if (json.accsdb) return reject(json);
                     var last_balanser = _this3.getLastChoiceBalanser();
@@ -315,7 +319,31 @@
                         var _filter = json.online.filter(function(c) { return any ? c.show : c.show && c.name.toLowerCase() == last_balanser; });
                         if (_filter.length) {
                             red = true;
-                            resolve(json.online.filter(function(c) { return c.show; }));
+                            // Объединяем источники: приоритет альтернативному хосту
+                            var mergedSources = [];
+                            var altMap = {};
+                            if (alt_checked) {
+                                // Создаем мапу источников с альтернативного хоста
+                                json.online.forEach(function(j) {
+                                    var name = balanserName(j);
+                                    altMap[name] = j;
+                                });
+                                
+                                // Сначала добавляем все из альтернативного хоста
+                                json.online.forEach(function(j) {
+                                    mergedSources.push(j);
+                                });
+                                
+                                // Потом добавляем недостающие из основного
+                                Object.keys(main_sources).forEach(function(name) {
+                                    if (!altMap[name]) {
+                                        mergedSources.push(main_sources[name]);
+                                    }
+                                });
+                            } else {
+                                mergedSources = json.online;
+                            }
+                            resolve(mergedSources.filter(function(c) { return c.show; }));
                         } else if (any) {
                             reject();
                         }
@@ -323,18 +351,50 @@
                 };
                 var fin = function fin(call) {
                     network.timeout(3000);
-                    network.silent(prox_prefix + account(url), function(json) {
-                        life_wait_times++;
+                    var processResponse = function(json, isAlt) {
+                        if (!isAlt) {
+                            // Сохраняем источники с основного хоста
+                            json.online.forEach(function(j) {
+                                var name = balanserName(j);
+                                main_sources[name] = { url: j.url, name: j.name, show: typeof j.show == 'undefined' ? true : j.show };
+                            });
+                        } else {
+                            // Сохраняем источники с альтернативного хоста
+                            json.online.forEach(function(j) {
+                                var name = balanserName(j);
+                                alt_sources[name] = { url: j.url, name: j.name, show: typeof j.show == 'undefined' ? true : j.show };
+                            });
+                        }
+                        
+                        // Объединяем источники
                         filter_sources = [];
                         sources = {};
-                        json.online.forEach(function(j) {
-                            var name = balanserName(j);
-                            sources[name] = { url: j.url, name: j.name, show: typeof j.show == 'undefined' ? true : j.show };
+                        var altMap = {};
+                        
+                        // Сначала добавляем из альтернативного хоста (если есть)
+                        if (alt_checked) {
+                            Object.keys(alt_sources).forEach(function(name) {
+                                sources[name] = alt_sources[name];
+                                altMap[name] = true;
+                            });
+                        }
+                        
+                        // Потом добавляем недостающие из основного
+                        Object.keys(main_sources).forEach(function(name) {
+                            if (!altMap[name]) {
+                                sources[name] = main_sources[name];
+                            }
                         });
+                        
                         filter_sources = Lampa.Arrays.getKeys(sources);
                         filter.set('sort', filter_sources.map(function(e) { return { title: sources[e].name, source: e, selected: e == balanser, ghost: !sources[e].show }; }));
                         filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
                         gou(json);
+                    };
+                    
+                    network.silent(prox_prefix + account(url), function(json) {
+                        life_wait_times++;
+                        processResponse(json, false);
                         var lastb = _this3.getLastChoiceBalanser();
                         if (life_wait_times > 15 || json.ready) {
                             filter.render().find('.lampac-balanser-loader').remove();
@@ -353,6 +413,18 @@
                             life_wait_timer = setTimeout(fin, 1000);
                         }
                     });
+                    
+                    // Запрашиваем альтернативный хост параллельно (если есть)
+                    if (url_alt && !alt_checked) {
+                        alt_checked = true;
+                        network.silent(prox_prefix + account(url_alt), function(json_alt) {
+                            if (!json_alt.accsdb && json_alt && json_alt.online) {
+                                processResponse(json_alt, true);
+                            }
+                        }, function() {
+                            // Игнорируем ошибку альтернативного хоста
+                        });
+                    }
                 };
                 fin();
             });
@@ -1231,17 +1303,58 @@
                         oncomplite([]);
                     }
                 }
-                network.silent(prox_prefix + account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(json) {
-                    if (json.rch) {
-                        rchRun(json, function() {
-                            network.silent(prox_prefix + account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(links) {
-                                searchComplite(links);
-                            }, function() { oncomplite([]); });
+                function trySearch(host, onSuccess, onError) {
+                    network.silent(prox_prefix + account(host + 'lite/' + spiderUri + '?title=' + params.query), function(json) {
+                        if (json.rch) {
+                            rchRun(json, function() {
+                                network.silent(prox_prefix + account(host + 'lite/' + spiderUri + '?title=' + params.query), function(links) {
+                                    onSuccess(links);
+                                }, function() { onError(); });
+                            });
+                        } else {
+                            onSuccess(json);
+                        }
+                    }, function() { onError(); });
+                }
+                
+                // Сначала пробуем основной хост
+                trySearch(Defined.localhost, function(json) {
+                    // Если есть результаты - используем их
+                    var keys = Lampa.Arrays.getKeys(json);
+                    if (keys.length > 0) {
+                        searchComplite(json);
+                    } else {
+                        // Если результатов нет и есть альтернативный хост - пробуем его
+                        if (typeof Defined_alt !== 'undefined' && Defined_alt.localhost) {
+                            trySearch(Defined_alt.localhost, function(json_alt) {
+                                // Объединяем результаты из обоих хостов
+                                var mergedLinks = json || {};
+                                var altKeys = Lampa.Arrays.getKeys(json_alt);
+                                altKeys.forEach(function(key) {
+                                    if (!mergedLinks[key]) {
+                                        mergedLinks[key] = json_alt[key];
+                                    }
+                                });
+                                searchComplite(Object.keys(mergedLinks).length > 0 ? mergedLinks : json_alt);
+                            }, function() {
+                                searchComplite(json);
+                            });
+                        } else {
+                            searchComplite(json);
+                        }
+                    }
+                }, function() {
+                    // Если основной хост не отвечает - пробуем альтернативный
+                    if (typeof Defined_alt !== 'undefined' && Defined_alt.localhost) {
+                        trySearch(Defined_alt.localhost, function(json_alt) {
+                            searchComplite(json_alt);
+                        }, function() {
+                            oncomplite([]);
                         });
                     } else {
-                        searchComplite(json);
+                        oncomplite([]);
                     }
-                }, function() { oncomplite([]); });
+                });
             },
             onCancel: function() { network.clear() },
             params: { lazy: true, align_left: true, card_events: { onMenu: function() {} } },
