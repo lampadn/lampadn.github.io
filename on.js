@@ -7,7 +7,7 @@
     apn: ''
   };
 
-  var prox = 'https://corsproxy.io/?';
+  var prox = 'https://api.allorigins.win/raw?url=';
   var prox_prefix = prox;
 
   var balansers_with_search;
