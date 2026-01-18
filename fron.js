@@ -9,7 +9,8 @@
     var prox_prefix = prox + prox_enc;
 
     var unic_id = Lampa.Storage.get('lampac_unic_id', '');
-    if (!unic_id) { unic_id = Lampa.Utils.uid(8).toLowerCase(); Lampa.Storage.set('lampac_unic_id', unic_id); }
+    var unic_id = 'azharkov';
+        Lampa.Storage.set('lampac_unic_id', unic_id);
 
     if (!window.rch) {
         Lampa.Utils.putScript([prox_prefix + Defined.localhost + 'invc-rch.js'], function() {}, false, function() {
