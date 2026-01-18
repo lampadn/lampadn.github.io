@@ -1,16 +1,19 @@
 (function() {
     'use strict';
-    var Defined = { api: 'lampac', localhost: 'https://lampa.azharkov.ru/', apn: 'http://apn.cfhttp.top/' };
+    var Defined = { 
+        api: atob('bGFtcGFj'), 
+        localhost: atob('aHR0cHM6Ly9sYW1wYS5hemhhcmtvdi5ydS8='), 
+        apn: atob('aHR0cDovL2Fwbi5jZmh0dHAudG9wLw==') 
+    };
 
-    var prox = 'https://apn-latest.onrender.com/ip/';
+    var prox = atob('aHR0cHM6Ly9hcG4tbGF0ZXN0Lm9ucmVuZGVyLmNvbS9pcC8=');
     var prox_enc = '';
-    prox_enc += 'param/Origin=' + encodeURIComponent(Defined.localhost) + '/';
-    prox_enc += 'param/Referer=' + encodeURIComponent(Defined.localhost + '/') + '/';
+    prox_enc += atob('cGFyYW0vT3JpZ2luPQ==') + encodeURIComponent(Defined.localhost) + atob('Lw==');
+    prox_enc += atob('cGFyYW0vUmVmZXJlcj0=') + encodeURIComponent(Defined.localhost + atob('Lw==')) + atob('Lw==');
     var prox_prefix = prox + prox_enc;
 
-    var unic_id = Lampa.Storage.get('lampac_unic_id', '');
-    var unic_id = 'azharkov';
-        Lampa.Storage.set('lampac_unic_id', unic_id);
+    var unic_id = atob('YXpoYXJrb3Y=');
+    Lampa.Storage.set('lampac_unic_id', unic_id);
 
     if (!window.rch) {
         Lampa.Utils.putScript([prox_prefix + Defined.localhost + 'invc-rch.js'], function() {}, false, function() {
