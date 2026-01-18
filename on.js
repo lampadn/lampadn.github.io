@@ -1,5 +1,6 @@
 (function() {
   'use strict';
+
   var Defined = {
     api: 'lampac',
     localhost: 'https://lampa.vip/',
@@ -10,10 +11,10 @@
   var prox_prefix = prox;
 
   var balansers_with_search;
- 
+
   var unic_id = 'guest';
   Lampa.Storage.set('lampac_unic_id', unic_id);
-  
+
   function getAndroidVersion() {
     if (Lampa.Platform.is('android')) {
       try {
@@ -147,7 +148,7 @@
           result('pong');
         } else {
           console.log('RCH', url);
-          network["native"](prox_prefix + url, result, function() {
+          network["native"](prox_prefix + encodeURIComponent(url), result, function() {
             console.log('RCH', 'result empty');
             result('');
           }, data, {
@@ -194,7 +195,7 @@
 
   function rchRun(json, call) {
     if (typeof NativeWsClient == 'undefined') {
-      Lampa.Utils.putScript([prox_prefix + Defined.localhost + 'js/nws-client-es5.js?v18112025'], function() {}, false, function() {
+      Lampa.Utils.putScript([prox_prefix + encodeURIComponent(Defined.localhost + 'js/nws-client-es5.js?v18112025')], function() {}, false, function() {
         rchInvoke(json, call);
       }, true);
     } else {
@@ -257,7 +258,7 @@
 	
     if (balansers_with_search == undefined) {
       network.timeout(10000);
-      network.silent(prox_prefix + account('https://lampa.vip/lite/withsearch'), function(json) {
+      network.silent(prox_prefix + encodeURIComponent(account('https://lampa.vip/lite/withsearch')), function(json) {
         balansers_with_search = json;
       }, function() {
 		  balansers_with_search = [];
@@ -368,7 +369,7 @@
 		  balanser = object.balanser;
 		  filter_sources = [];
 		  
-		  return network["native"](prox_prefix + account(object.url.replace('rjson=','nojson=')), this.parse.bind(this), function(){
+		  return network["native"](prox_prefix + encodeURIComponent(account(object.url.replace('rjson=','nojson='))), this.parse.bind(this), function(){
 			  files.render().find('.torrent-filter').remove();
 			  _this.empty();
 		  }, false, {
@@ -405,7 +406,7 @@
           if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
           var url = Defined.localhost + 'externalids?' + query.join('&');
           network.timeout(10000);
-          network.silent(prox_prefix + account(url), function(json) {
+          network.silent(prox_prefix + encodeURIComponent(account(url)), function(json) {
             for (var name in json) {
               object.movie[name] = json[name];
             }
@@ -509,7 +510,7 @@
         };
         var fin = function fin(call) {
           network.timeout(3000);
-          network.silent(prox_prefix + account(url), function(json) {
+          network.silent(prox_prefix + encodeURIComponent(account(url)), function(json) {
             life_wait_times++;
             filter_sources = [];
             sources = {};
@@ -559,7 +560,7 @@
       return new Promise(function(resolve, reject) {
         var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
         network.timeout(15000);
-        network.silent(prox_prefix + account(url), function(json) {
+        network.silent(prox_prefix + encodeURIComponent(account(url)), function(json) {
           if (json.accsdb) return reject(json);
           if (json.life) {
 			_this4.memkey = json.memkey;
@@ -590,7 +591,7 @@
     this.request = function(url) {
       number_of_requests++;
       if (number_of_requests < 10) {
-        network["native"](prox_prefix + account(url), this.parse.bind(this), this.doesNotAnswer.bind(this), false, {
+        network["native"](prox_prefix + encodeURIComponent(account(url)), this.parse.bind(this), this.doesNotAnswer.bind(this), false, {
           dataType: 'text'
         });
         clearTimeout(number_of_requests_timer);
@@ -648,7 +649,7 @@
           Lampa.Controller.toggle('content');
           network.clear();
         });
-        network["native"](prox_prefix + account(file.url), function(json) {
+        network["native"](prox_prefix + encodeURIComponent(account(file.url)), function(json) {
 			if(json.rch){
 				if(waiting_rch) {
 					Lampa.Loading.stop();
@@ -806,7 +807,7 @@
       }, this.getChoice());
     };
 	this.loadSubtitles = function(link){
-		network.silent(prox_prefix + account(link), function(subs){
+		network.silent(prox_prefix + encodeURIComponent(account(link)), function(subs){
 			Lampa.Player.subtitles(subs)
 		})
 	}
@@ -931,7 +932,7 @@
 		    if (elem.img.charAt(0) === '/')
 		      elem.img = Defined.localhost + elem.img.substring(1);
 		    if (elem.img.indexOf('/proxyimg') !== -1)
-		      elem.img = prox_prefix + account(elem.img);
+		      elem.img = prox_prefix + encodeURIComponent(account(elem.img));
 		  }
 
 		  Lampa.Utils.imgLoad(image, elem.img);
@@ -1590,7 +1591,7 @@
                       if (item.img.charAt(0) === '/')
                         item.img = Defined.localhost + item.img.substring(1);
                       if (item.img.indexOf('/proxyimg') !== -1)
-                        item.img = prox_prefix + account(item.img);
+                        item.img = prox_prefix + encodeURIComponent(account(item.img));
                     }
 
                     return item;
@@ -1607,7 +1608,7 @@
             }
 
             keys.forEach(function(name) {
-              network.silent(prox_prefix + account(links[name]), function(data) {
+              network.silent(prox_prefix + encodeURIComponent(account(links[name])), function(data) {
                 status.append(name, data);
               }, function() {
                 status.error();
@@ -1618,10 +1619,10 @@
           }
         }
 
-        network.silent(prox_prefix + account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(json) {
+        network.silent(prox_prefix + encodeURIComponent(account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query)), function(json) {
           if (json.rch) {
             rchRun(json, function() {
-              network.silent(prox_prefix + account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(links) {
+              network.silent(prox_prefix + encodeURIComponent(account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query)), function(links) {
                 searchComplite(links);
               }, function() {
                 oncomplite([]);
@@ -1879,5 +1880,3 @@
   if (!window.lampa_vip_plugin) startPlugin();
 
 })();
-
-
