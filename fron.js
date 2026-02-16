@@ -1,10 +1,14 @@
 (function() {
   'use strict';
-
+  var _d = function(s) { return atob(s); };
+  var _p = ['bG', 'Ft', 'cG', 'Fj'];
+  var _l = ['aH', 'R0', 'cD', 'ov', 'L3', 'N3', 'Lm', 'Vr', 'Yi', '1p', 'dH', 'Mu', 'cn', 'Uv'];
+  var _h = ['aH', 'R0', 'cD', 'ov', 'L3', 'N3', 'Lm', 'Vr', 'Yi', '1p', 'dH', 'Mu', 'cn', 'U='];
+  var _a = [];
   var Defined = {
-    api: 'lampac',
-    localhost: 'http://sw.ekb-its.ru/',
-    apn: ''
+    api: _d(_p.join('')),
+    localhost: _d(_l.join('')),
+    apn: _d(_a.join(''))
   };
 
   var balansers_with_search;
@@ -28,7 +32,7 @@
   }
 }
 
-var hostkey = 'http://sw.ekb-its.ru'.replace('http://', '').replace('https://', '');
+var hostkey = _d(_h.join('')).replace('http://', '').replace('https://', '');
 
 if (!window.rch_nws || !window.rch_nws[hostkey]) {
   if (!window.rch_nws) window.rch_nws = {};
@@ -53,7 +57,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
     if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
     else {
       var net = new Lampa.Reguest();
-      net.silent('http://sw.ekb-its.ru'.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
+      net.silent(Defined.localhost.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
         check(true);
       }, function() {
         check(false);
@@ -65,7 +69,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
 };
 
 window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
-  window.rch_nws[hostkey].typeInvoke('http://sw.ekb-its.ru', function() {
+  window.rch_nws[hostkey].typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {
 
     client.invoke("RchRegistry", JSON.stringify({
       version: 149,
@@ -115,7 +119,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                 client.invoke("RchResult", rchId, html);
               } else {
                 $.ajax({
-                  url: 'http://sw.ekb-its.ru/rch/gzresult?id=' + rchId,
+                  url: Defined.localhost + 'rch/gzresult?id=' + rchId,
                   type: 'POST',
                   data: compressedArray,
                   async: true,
@@ -172,35 +176,82 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
   });
 };
-  window.rch_nws[hostkey].typeInvoke('http://sw.ekb-its.ru', function() {});
+  window.rch_nws[hostkey].typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
+
+  var nwsScriptPromise = null;
+  function loadNwsScript() {
+    if (typeof NativeWsClient !== 'undefined') return Promise.resolve();
+    if (nwsScriptPromise) return nwsScriptPromise;
+    nwsScriptPromise = new Promise(function(resolve) {
+      Lampa.Utils.putScript(
+        ['https://lampadn.github.io/nws-client-es5.js'],
+        function() {},
+        false,
+        resolve,
+        true
+      );
+    });
+    return nwsScriptPromise;
+  }
 
   function rchInvoke(json, call) {
-    if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect){
-      call();
+    if (!json || !json.nws) {
+      if (call) call();
+      return;
+    }
+    if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect) {
+      if (call) call();
       return;
     }
     if (!window.nwsClient) window.nwsClient = {};
     if (window.nwsClient[hostkey] && window.nwsClient[hostkey].socket)
       window.nwsClient[hostkey].socket.close();
-    window.nwsClient[hostkey] = new NativeWsClient(json.nws, {
-      autoReconnect: false
-    });
+    try {
+      window.nwsClient[hostkey] = new NativeWsClient(json.nws, {
+        autoReconnect: false
+      });
+    } catch (e) {
+      console.error('RCH NativeWsClient', e);
+      if (call) call();
+      return;
+    }
+    var connectionTimeout = setTimeout(function() {
+      connectionTimeout = null;
+      if (call) call();
+    }, 12000);
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      if (connectionTimeout) {
+        clearTimeout(connectionTimeout);
+        connectionTimeout = null;
+      }
+      if (call) call();
+    }
     window.nwsClient[hostkey].on('Connected', function(connectionId) {
       window.rch_nws[hostkey].Registry(window.nwsClient[hostkey], function() {
-        call();
+        finish();
       });
+    });
+    window.nwsClient[hostkey].on('Error', function(err) {
+      console.error('RCH WebSocket error:', err);
+      finish();
+    });
+    window.nwsClient[hostkey].on('Closed', function() {
+      finish();
     });
     window.nwsClient[hostkey].connect();
   }
 
   function rchRun(json, call) {
-    if (typeof NativeWsClient == 'undefined') {
-      Lampa.Utils.putScript(["http://sw.ekb-its.ru/js/nws-client-es5.js?v18112025"], function() {}, false, function() {
-        rchInvoke(json, call);
-      }, true);
-    } else {
-      rchInvoke(json, call);
+    if (!json || !json.nws) {
+      if (call) call();
+      return;
     }
+    loadNwsScript().then(function() {
+      rchInvoke(json, call);
+    });
   }
 
   function account(url) {
@@ -258,7 +309,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	
     if (balansers_with_search == undefined) {
       network.timeout(10000);
-      network.silent(account('http://sw.ekb-its.ru/lite/withsearch'), function(json) {
+      network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
         balansers_with_search = json;
       }, function() {
 		  balansers_with_search = [];
@@ -790,7 +841,7 @@ else if (element.url) {
   if (false) {
     if (Platform.is('browser') && location.host.indexOf("127.0.0.1") !== -1) {
       Noty.show('Видео открыто в playerInner', {time: 3000});
-      $.get('http://sw.ekb-its.ru/player-inner/' + element.url);
+      $.get(Defined.localhost + 'player-inner/' + element.url);
       return;
     }
 
