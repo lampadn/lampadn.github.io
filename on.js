@@ -404,7 +404,7 @@
 				return getServerUrl();
 			},
 			NwsClientScript:
-				"https://amikd.github.io/nws-client-es5.js",
+				"https://lampadn.github.io/nws-client-es5.js",
 			GithubCheck: "https://github.com/",
 			CorsCheckPath: "/cors/check"
 		},
@@ -4375,7 +4375,7 @@
 		var network = new Lampa.Reguest();
 		network.timeout(10000);
 		network.silent(
-			"https://amikd.github.io/working_online_lampa.json",
+			"https://lampadn.github.io/working_online_lampa.json",
 			function (json) {
 				if (!Lampa.Arrays.isArray(json) || json.length === 0) {
 					Lampa.Noty.show(Lampa.Lang.translate("lampac_no_servers_found"));
@@ -4558,5 +4558,6 @@
 		});
 	}
 })();
+
 
 
