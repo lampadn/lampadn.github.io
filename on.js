@@ -6,7 +6,7 @@
 	var STORAGE_KEY_ACTIVE_SERVER = "lamponline_active_server";
 	var STORAGE_KEY_SERVER_COUNTRIES = "lamponline_server_countries";
 	var STORAGE_KEY_SERVER_TOKENS = "lamponline_server_tokens";
-	var BWA_HOST = "rc.bwa.to";
+	var BWA_HOST = "rc.bwa.ad";
 
 	function getServersList() {
 		var servers = Lampa.Storage.get(STORAGE_KEY_SERVERS, []);
@@ -4558,6 +4558,7 @@
 		});
 	}
 })();
+
 
 
 
