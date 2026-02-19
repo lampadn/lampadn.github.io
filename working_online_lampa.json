@@ -104,6 +104,46 @@
         "status": "not_checked"
     },
     {
+        "base_url": "http://142.111.244.96:80",
+        "full_check_url": "http://142.111.244.96:80/?card=1084242&media=movie&source=cub",
+        "ip": "142.111.244.96",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://pr0xy.su:80",
+        "full_check_url": "http://pr0xy.su:80/?card=1084242&media=movie&source=cub",
+        "ip": "142.111.244.96",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampac.velvo.xyz:443",
+        "full_check_url": "https://lampac.velvo.xyz:443/?card=1084242&media=movie&source=cub",
+        "ip": "138.124.69.107",
+        "port": 443,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://138.124.14.54:8080",
+        "full_check_url": "http://138.124.14.54:8080/?card=1084242&media=movie&source=cub",
+        "ip": "138.124.14.54",
+        "port": 8080,
+        "country": "ES",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://141.148.240.48:9118",
+        "full_check_url": "http://141.148.240.48:9118/?card=1084242&media=movie&source=cub",
+        "ip": "141.148.240.48",
+        "port": 9118,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
         "base_url": "https://95.85.249.18:443",
         "full_check_url": "https://95.85.249.18:443/?card=1084242&media=movie&source=cub",
         "ip": "95.85.249.18",
@@ -933,30 +973,6 @@
         "ip": "144.31.0.160",
         "port": 80,
         "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://142.111.244.96:80",
-        "full_check_url": "http://142.111.244.96:80/?card=1084242&media=movie&source=cub",
-        "ip": "142.111.244.96",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://pr0xy.su:80",
-        "full_check_url": "http://pr0xy.su:80/?card=1084242&media=movie&source=cub",
-        "ip": "142.111.244.96",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://138.124.14.54:8080",
-        "full_check_url": "http://138.124.14.54:8080/?card=1084242&media=movie&source=cub",
-        "ip": "138.124.14.54",
-        "port": 8080,
-        "country": "ES",
         "status": "not_checked"
     },
     {
