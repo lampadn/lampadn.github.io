@@ -32,7 +32,9 @@
 
     if (!window.rch) {
         Lampa.Utils.putScript([Defined.localhost + 'invc-rch.js'], function() {}, false, function() {
-            if (!window.rch.startTypeInvoke) window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
+            if (window.rch && typeof window.rch.typeInvoke === 'function' && !window.rch.startTypeInvoke) {
+                window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
+            }
         }, true);
     }
 
