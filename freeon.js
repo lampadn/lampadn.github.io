@@ -25,8 +25,8 @@
     Lampa.Storage.set('lampac_unic_id', unic_id);
 
     if (!window.rch) {
-        Lampa.Utils.putScript([prox_prefix + Defined.localhost + 'invc-rch.js'], function() {}, false, function() {
-            if (!window.rch.startTypeInvoke) window.rch.typeInvoke(prox_prefix + Defined.localhost, function() {});
+        Lampa.Utils.putScript([prox_prefix + encodeURIComponent(Defined.localhost + 'invc-rch.js')], function() {}, false, function() {
+            if (!window.rch.startTypeInvoke) window.rch.typeInvoke(prox_prefix + encodeURIComponent(Defined.localhost), function() {});
         }, true);
     }
 
@@ -47,7 +47,7 @@
 
     function rchRun(json, call) {
         if (typeof signalR == 'undefined') {
-            Lampa.Utils.putScript([prox_prefix + Defined.localhost + 'signalr-6.0.25_es5.js'], function() {}, false, function() {
+            Lampa.Utils.putScript([prox_prefix + encodeURIComponent(Defined.localhost + 'signalr-6.0.25_es5.js')], function() {}, false, function() {
                 rchInvoke(json, call);
             }, true);
         } else {
@@ -96,7 +96,7 @@
 
         if (balansers_with_search == undefined) {
             network.timeout(10000);
-            network.silent(prox_prefix + account(Defined.localhost + 'lite/withsearch'), function(json) {
+            network.silent(prox_prefix + encodeURIComponent(account(Defined.localhost + 'lite/withsearch')), function(json) {
                 balansers_with_search = json;
             }, function() { balansers_with_search = []; });
         }
@@ -184,7 +184,7 @@
                 sources[object.balanser] = {name: object.balanser};
                 balanser = object.balanser;
                 filter_sources = [];
-                return network["native"](prox_prefix + account(object.url.replace('rjson=','nojson=')), this.parse.bind(this), function(){
+                return network["native"](prox_prefix + encodeURIComponent(account(object.url.replace('rjson=','nojson='))), this.parse.bind(this), function(){
                     files.render().find('.torrent-filter').remove();
                     _this.empty();
                 }, false, { dataType: 'text' });
@@ -219,7 +219,7 @@
                     if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
                     var url = Defined.localhost + 'externalids?' + query.join('&');
                     network.timeout(10000);
-                    network.silent(prox_prefix + account(url), function(json) {
+                    network.silent(prox_prefix + encodeURIComponent(account(url)), function(json) {
                         for (var name in json) {
                             object.movie[name] = json[name];
                         }
@@ -317,7 +317,7 @@
                 };
                 var fin = function fin(call) {
                     network.timeout(3000);
-                    network.silent(prox_prefix + account(url), function(json) {
+                    network.silent(prox_prefix + encodeURIComponent(account(url)), function(json) {
                         life_wait_times++;
                         filter_sources = [];
                         sources = {};
@@ -357,7 +357,7 @@
             return new Promise(function(resolve, reject) {
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
                 network.timeout(15000);
-                network.silent(prox_prefix + account(url), function(json) {
+                network.silent(prox_prefix + encodeURIComponent(account(url)), function(json) {
                     if (json.accsdb) return reject(json);
                     if (json.life) {
                         _this4.memkey = json.memkey;
@@ -390,7 +390,7 @@
         this.request = function(url) {
             number_of_requests++;
             if (number_of_requests < 10) {
-                network["native"](prox_prefix + account(url), this.parse.bind(this), this.doesNotAnswer.bind(this), false, { dataType: 'text' });
+                network["native"](prox_prefix + encodeURIComponent(account(url)), this.parse.bind(this), this.doesNotAnswer.bind(this), false, { dataType: 'text' });
                 clearTimeout(number_of_requests_timer);
                 number_of_requests_timer = setTimeout(function() { number_of_requests = 0; }, 4000);
             } else this.empty();
@@ -437,7 +437,7 @@
             } else if (file.method == 'play') call(file, {});
             else {
                 Lampa.Loading.start(function() { Lampa.Loading.stop(); Lampa.Controller.toggle('content'); network.clear(); });
-                network["native"](prox_prefix + account(file.url), function(json) {
+                network["native"](prox_prefix + encodeURIComponent(account(file.url)), function(json) {
                     if(json.rch){
                         _this.rch(json,function(){
                             Lampa.Loading.stop();
@@ -636,7 +636,7 @@
                     item.find('.online-prestige__folder').empty().append(image);
                     if (elem.img !== undefined) {
                         if (elem.img.charAt(0) === '/') elem.img = Defined.localhost + elem.img.substring(1);
-                        if (elem.img.indexOf('/proxyimg') !== -1) elem.img = prox_prefix + account(elem.img);
+                        if (elem.img.indexOf('/proxyimg') !== -1) elem.img = prox_prefix + encodeURIComponent(account(elem.img));
                     }
                     Lampa.Utils.imgLoad(image, elem.img);
                 }
@@ -1162,7 +1162,7 @@
                                         item.balanser = spiderUri;
                                         if (item.img !== undefined) {
                                             if (item.img.charAt(0) === '/') item.img = Defined.localhost + item.img.substring(1);
-                                            if (item.img.indexOf('/proxyimg') !== -1) item.img = prox_prefix + account(item.img);
+                                            if (item.img.indexOf('/proxyimg') !== -1) item.img = prox_prefix + encodeURIComponent(account(item.img));
                                         }
                                         return item;
                                     });
@@ -1172,7 +1172,7 @@
                             oncomplite(rows);
                         };
                         keys.forEach(function(name) {
-                            network.silent(prox_prefix + account(links[name]), function(data) {
+                            network.silent(prox_prefix + encodeURIComponent(account(links[name])), function(data) {
                                 status.append(name, data);
                             }, function() { status.error(); });
                         });
@@ -1180,10 +1180,10 @@
                         oncomplite([]);
                     }
                 }
-                network.silent(prox_prefix + account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(json) {
+                network.silent(prox_prefix + encodeURIComponent(account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query)), function(json) {
                     if (json.rch) {
                         rchRun(json, function() {
-                            network.silent(prox_prefix + account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(links) {
+                            network.silent(prox_prefix + encodeURIComponent(account(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query)), function(links) {
                                 searchComplite(links);
                             }, function() { oncomplite([]); });
                         });
