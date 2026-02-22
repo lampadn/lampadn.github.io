@@ -20,10 +20,16 @@
     prox_enc += _d(_r.join('')) + encodeURIComponent(Defined.localhost + _d(_sl.join(''))) + _d(_sl.join(''));
     var prox_prefix = prox + prox_enc;
 
-    var useProxy = false;
+    var backendHost = Defined.localhost.replace(/^https?:\/\//, '').split('/')[0];
+    var useProxy = (location.hostname !== backendHost);
+    var _cors = ['aH', 'R0', 'cH', 'M6', 'Ly', '9h', 'cG', 'Iu', 'YW', 'xs', 'b3', 'Jp', 'Z2', 'lu', 'cy', '53', 'aW', '4v', 'cm', 'F3', 'P2', '51', 'cm', 'w9'];
+    var corsProxyBase = useProxy ? _d(_cors.join('')) : '';
 
     function requestUrl(url) {
         return accountNoEmail(url);
+        // Если перестанет работать без прокси — раскомментировать 2 строки ниже и закомментировать return выше:
+        // if (!useProxy) return accountNoEmail(url);
+        // return corsProxyBase + encodeURIComponent(accountNoEmail(url));
     }
 
     var _u = ['YX', 'po', 'YX', 'Jr', 'b3', 'Y='];
@@ -36,6 +42,13 @@
                 window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
             }
         }, true);
+        // Если нужен прокси для скриптов — раскомментировать блок ниже и закомментировать putScript выше:
+        // var invcUrl = useProxy ? (corsProxyBase + encodeURIComponent(Defined.localhost + 'invc-rch.js')) : (Defined.localhost + 'invc-rch.js');
+        // Lampa.Utils.putScript([invcUrl], function() {}, false, function() {
+        //     if (window.rch && typeof window.rch.typeInvoke === 'function' && !window.rch.startTypeInvoke) {
+        //         window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
+        //     }
+        // }, true);
     }
 
     var hubConnection;
@@ -46,7 +59,11 @@
         if (hubConnection) { clearTimeout(hub_timer); hubConnection.stop(); hubConnection = null; }
         hubConnection = new signalR.HubConnectionBuilder().withUrl(json.ws).build();
         hubConnection.start().then(function() {
-            window.rch.Registry(json.result, hubConnection, function() { call(); });
+            if (window.rch && typeof window.rch.Registry === 'function') {
+                window.rch.Registry(json.result, hubConnection, function() { call(); });
+            } else {
+                call();
+            }
         })["catch"](function(err) { Lampa.Noty.show(err.toString()); });
         if (json.keepalive > 0) {
             hub_timer = setTimeout(function() { hubConnection.stop(); hubConnection = null; }, 1000 * json.keepalive);
@@ -58,6 +75,9 @@
             Lampa.Utils.putScript([Defined.localhost + 'signalr-6.0.25_es5.js'], function() {}, false, function() {
                 rchInvoke(json, call);
             }, true);
+            // Если нужен прокси для signalr — раскомментировать 2 строки ниже и закомментировать putScript выше:
+            // var signalrUrl = useProxy ? (corsProxyBase + encodeURIComponent(Defined.localhost + 'signalr-6.0.25_es5.js')) : (Defined.localhost + 'signalr-6.0.25_es5.js');
+            // Lampa.Utils.putScript([signalrUrl], function() {}, false, function() { rchInvoke(json, call); }, true);
         } else {
             rchInvoke(json, call);
         }
