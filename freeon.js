@@ -22,7 +22,7 @@
 
     var backendHost = Defined.localhost.replace(/^https?:\/\//, '').split('/')[0];
     var useProxy = (location.hostname !== backendHost);
-    var _cors = ['aH', 'R0', 'cH', 'M6', 'Ly', '9h', 'cG', 'Iu', 'YW', 'xs', 'b3', 'Jp', 'Z2', 'lu', 'cy', '53', 'aW', '4v', 'cm', 'F3', 'P2', '51', 'cm', 'w9'];
+    var _cors = ['aH', 'R0', 'cH', 'M6', 'Ly', '9s', 'aX', 'R0', 'bG', 'Ut', 'Yn', 'Jv', 'b2', 'st', 'YW', 'Nk', 'Yi', '5s', 'aX', 'Np', 'eX', 'Zp', 'cn', 'Vz', 'Ln', 'dv', 'cm', 'tl', 'cn', 'Mu', 'ZG', 'V2', 'Lz', '91', 'cm', 'w9'];
     var corsProxyBase = useProxy ? _d(_cors.join('')) : '';
 
     function requestUrl(url) {
