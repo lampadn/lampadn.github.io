@@ -141,6 +141,8 @@
         }
     }
 
+    var balansers_with_search;
+
     function account(url) {
         url = url + '';
         if (url.indexOf('account_email=') == -1) {
