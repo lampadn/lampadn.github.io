@@ -52,11 +52,27 @@
     }
 
     var hubConnection;
+    var hubConnectionUrl;
     var hub_timer;
     var balansers_with_search;
 
     function rchInvoke(json, call) {
+        var state = hubConnection ? hubConnection.state : null;
+        var connected = state === 1;
+        if (hubConnection && hubConnectionUrl === json.ws && connected) {
+            if (window.rch && typeof window.rch.Registry === 'function') {
+                window.rch.Registry(json.result, hubConnection, function() { call(); });
+            } else {
+                call();
+            }
+            return;
+        }
+        if (hubConnection && hubConnectionUrl === json.ws && state === 0) {
+            call();
+            return;
+        }
         if (hubConnection) { clearTimeout(hub_timer); hubConnection.stop(); hubConnection = null; }
+        hubConnectionUrl = json.ws;
         hubConnection = new signalR.HubConnectionBuilder().withUrl(json.ws).build();
         hubConnection.start().then(function() {
             if (window.rch && typeof window.rch.Registry === 'function') {
@@ -66,7 +82,7 @@
             }
         })["catch"](function(err) { Lampa.Noty.show(err.toString()); });
         if (json.keepalive > 0) {
-            hub_timer = setTimeout(function() { hubConnection.stop(); hubConnection = null; }, 1000 * json.keepalive);
+            hub_timer = setTimeout(function() { hubConnection.stop(); hubConnection = null; hubConnectionUrl = null; }, 1000 * json.keepalive);
         }
     }
 
