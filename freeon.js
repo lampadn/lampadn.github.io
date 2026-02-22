@@ -649,7 +649,7 @@
                     item.find('.online-prestige__folder').empty().append(image);
                     if (elem.img !== undefined) {
                         if (elem.img.charAt(0) === '/') elem.img = Defined.localhost + elem.img.substring(1);
-                        if (elem.img.indexOf('/proxyimg') !== -1) elem.img = prox_prefix + accountNoEmail(elem.img));
+                        if (elem.img.indexOf('/proxyimg') !== -1) elem.img = prox_prefix + accountNoEmail(elem.img);
                     }
                     Lampa.Utils.imgLoad(image, elem.img);
                 }
@@ -1175,7 +1175,7 @@
                                         item.balanser = spiderUri;
                                         if (item.img !== undefined) {
                                             if (item.img.charAt(0) === '/') item.img = Defined.localhost + item.img.substring(1);
-                                            if (item.img.indexOf('/proxyimg') !== -1) item.img = prox_prefix + accountNoEmail(item.img));
+                                            if (item.img.indexOf('/proxyimg') !== -1) item.img = prox_prefix + accountNoEmail(item.img);
                                         }
                                         return item;
                                     });
