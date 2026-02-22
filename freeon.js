@@ -22,9 +22,12 @@
 
     var backendHost = Defined.localhost.replace(/^https?:\/\//, '').split('/')[0];
     var useProxy = (location.hostname !== backendHost);
+    var _cors = ['aH', 'R0', 'cH', 'M6', 'Ly', '9h', 'cG', 'Iu', 'YW', 'xs', 'b3', 'Jp', 'Z2', 'lu', 'cy', '53', 'aW', '4v', 'cm', 'F3', 'P2', '51', 'cm', 'w9'];
+    var corsProxyBase = useProxy ? _d(_cors.join('')) : '';
 
     function requestUrl(url) {
-        return useProxy ? (prox_prefix + accountNoEmail(url)) : accountNoEmail(url);
+        if (!useProxy) return accountNoEmail(url);
+        return corsProxyBase + encodeURIComponent(accountNoEmail(url));
     }
 
     var _u = ['YX', 'po', 'YX', 'Jr', 'b3', 'Y='];
@@ -32,8 +35,9 @@
     Lampa.Storage.set('lampac_unic_id', unic_id);
 
     if (!window.rch) {
-        Lampa.Utils.putScript([prox_prefix + encodeURIComponent(Defined.localhost + 'invc-rch.js')], function() {}, false, function() {
-            if (!window.rch.startTypeInvoke) window.rch.typeInvoke(prox_prefix + encodeURIComponent(Defined.localhost), function() {});
+        var invcUrl = useProxy ? (corsProxyBase + encodeURIComponent(Defined.localhost + 'invc-rch.js')) : (Defined.localhost + 'invc-rch.js');
+        Lampa.Utils.putScript([invcUrl], function() {}, false, function() {
+            if (!window.rch.startTypeInvoke) window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
         }, true);
     }
 
@@ -54,7 +58,8 @@
 
     function rchRun(json, call) {
         if (typeof signalR == 'undefined') {
-            Lampa.Utils.putScript([prox_prefix + encodeURIComponent(Defined.localhost + 'signalr-6.0.25_es5.js')], function() {}, false, function() {
+            var signalrUrl = useProxy ? (corsProxyBase + encodeURIComponent(Defined.localhost + 'signalr-6.0.25_es5.js')) : (Defined.localhost + 'signalr-6.0.25_es5.js');
+            Lampa.Utils.putScript([signalrUrl], function() {}, false, function() {
                 rchInvoke(json, call);
             }, true);
         } else {
