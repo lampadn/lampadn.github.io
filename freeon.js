@@ -20,6 +20,13 @@
     prox_enc += _d(_r.join('')) + encodeURIComponent(Defined.localhost + _d(_sl.join(''))) + _d(_sl.join(''));
     var prox_prefix = prox + prox_enc;
 
+    var backendHost = Defined.localhost.replace(/^https?:\/\//, '').split('/')[0];
+    var useProxy = (location.hostname !== backendHost);
+
+    function requestUrl(url) {
+        return useProxy ? (prox_prefix + accountNoEmail(url)) : accountNoEmail(url);
+    }
+
     var _u = ['YX', 'po', 'YX', 'Jr', 'b3', 'Y='];
     var unic_id = _d(_u.join(''));
     Lampa.Storage.set('lampac_unic_id', unic_id);
@@ -109,7 +116,7 @@
 
         if (balansers_with_search == undefined) {
             network.timeout(10000);
-            network.silent(prox_prefix + accountNoEmail(Defined.localhost + 'lite/withsearch'), function(json) {
+            network.silent(requestUrl(Defined.localhost + 'lite/withsearch'), function(json) {
                 balansers_with_search = json;
             }, function() { balansers_with_search = []; });
         }
@@ -197,7 +204,7 @@
                 sources[object.balanser] = {name: object.balanser};
                 balanser = object.balanser;
                 filter_sources = [];
-                return network["native"](prox_prefix + accountNoEmail(object.url.replace('rjson=','nojson=')), this.parse.bind(this), function(){
+                return network["native"](requestUrl(object.url.replace('rjson=','nojson=')), this.parse.bind(this), function(){
                     files.render().find('.torrent-filter').remove();
                     _this.empty();
                 }, false, { dataType: 'text' });
@@ -232,7 +239,7 @@
                     if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
                     var url = Defined.localhost + 'externalids?' + query.join('&');
                     network.timeout(10000);
-                    network.silent(prox_prefix + accountNoEmail(url), function(json) {
+                    network.silent(requestUrl(url), function(json) {
                         for (var name in json) {
                             object.movie[name] = json[name];
                         }
@@ -330,7 +337,7 @@
                 };
                 var fin = function fin(call) {
                     network.timeout(3000);
-                    network.silent(prox_prefix + accountNoEmail(url), function(json) {
+                    network.silent(requestUrl(url), function(json) {
                         life_wait_times++;
                         filter_sources = [];
                         sources = {};
@@ -370,7 +377,7 @@
             return new Promise(function(resolve, reject) {
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
                 network.timeout(15000);
-                network.silent(prox_prefix + accountNoEmail(url), function(json) {
+                network.silent(requestUrl(url), function(json) {
                     if (json.accsdb) return reject(json);
                     if (json.life) {
                         _this4.memkey = json.memkey;
@@ -403,7 +410,7 @@
         this.request = function(url) {
             number_of_requests++;
             if (number_of_requests < 10) {
-                network["native"](prox_prefix + accountNoEmail(url), this.parse.bind(this), this.doesNotAnswer.bind(this), false, { dataType: 'text' });
+                network["native"](requestUrl(url), this.parse.bind(this), this.doesNotAnswer.bind(this), false, { dataType: 'text' });
                 clearTimeout(number_of_requests_timer);
                 number_of_requests_timer = setTimeout(function() { number_of_requests = 0; }, 4000);
             } else this.empty();
@@ -450,7 +457,7 @@
             } else if (file.method == 'play') call(file, {});
             else {
                 Lampa.Loading.start(function() { Lampa.Loading.stop(); Lampa.Controller.toggle('content'); network.clear(); });
-                network["native"](prox_prefix + accountNoEmail(file.url), function(json) {
+                network["native"](requestUrl(file.url), function(json) {
                     if(json.rch){
                         _this.rch(json,function(){
                             Lampa.Loading.stop();
@@ -649,7 +656,7 @@
                     item.find('.online-prestige__folder').empty().append(image);
                     if (elem.img !== undefined) {
                         if (elem.img.charAt(0) === '/') elem.img = Defined.localhost + elem.img.substring(1);
-                        if (elem.img.indexOf('/proxyimg') !== -1) elem.img = prox_prefix + accountNoEmail(elem.img);
+                        if (elem.img.indexOf('/proxyimg') !== -1) elem.img = requestUrl(elem.img);
                     }
                     Lampa.Utils.imgLoad(image, elem.img);
                 }
@@ -1175,7 +1182,7 @@
                                         item.balanser = spiderUri;
                                         if (item.img !== undefined) {
                                             if (item.img.charAt(0) === '/') item.img = Defined.localhost + item.img.substring(1);
-                                            if (item.img.indexOf('/proxyimg') !== -1) item.img = prox_prefix + accountNoEmail(item.img);
+                                            if (item.img.indexOf('/proxyimg') !== -1) item.img = requestUrl(item.img);
                                         }
                                         return item;
                                     });
@@ -1185,7 +1192,7 @@
                             oncomplite(rows);
                         };
                         keys.forEach(function(name) {
-                            network.silent(prox_prefix + accountNoEmail(links[name]), function(data) {
+                            network.silent(requestUrl(links[name]), function(data) {
                                 status.append(name, data);
                             }, function() { status.error(); });
                         });
@@ -1193,10 +1200,10 @@
                         oncomplite([]);
                     }
                 }
-                network.silent(prox_prefix + accountNoEmail(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(json) {
+                network.silent(requestUrl(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(json) {
                     if (json.rch) {
                         rchRun(json, function() {
-                            network.silent(prox_prefix + accountNoEmail(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(links) {
+                            network.silent(requestUrl(Defined.localhost + 'lite/' + spiderUri + '?title=' + params.query), function(links) {
                                 searchComplite(links);
                             }, function() { oncomplite([]); });
                         });
