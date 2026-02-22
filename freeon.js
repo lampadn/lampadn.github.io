@@ -10,90 +10,132 @@
         apn: _d(_a.join('')) 
     };
 
-    var _px = ['aH', 'R0', 'cH', 'M6', 'Ly', '9h', 'cG', '4t', 'bG', 'F0', 'ZX', 'N0', 'Lm', '9u', 'cm', 'Vu', 'ZG', 'Vy', 'Lm', 'Nv', 'bS', '9p', 'cC', '8='];
-    var prox = _d(_px.join(''));
-    var prox_enc = '';
-    var _o = ['cG', 'Fy', 'YW', '0v', 'T3', 'Jp', 'Z2', 'lu', 'PQ', '=='];
-    var _r = ['cG', 'Fy', 'YW', '0v', 'Um', 'Vm', 'ZX', 'Jl', 'cj0', '='];
-    var _sl = ['Lw', '=='];
-    prox_enc += _d(_o.join('')) + encodeURIComponent(Defined.localhost) + _d(_sl.join(''));
-    prox_enc += _d(_r.join('')) + encodeURIComponent(Defined.localhost + _d(_sl.join(''))) + _d(_sl.join(''));
-    var prox_prefix = prox + prox_enc;
-
-    var backendHost = Defined.localhost.replace(/^https?:\/\//, '').split('/')[0];
-    var useProxy = (location.hostname !== backendHost);
-    var _cors = ['aH', 'R0', 'cH', 'M6', 'Ly', '9h', 'cG', 'Iu', 'YW', 'xs', 'b3', 'Jp', 'Z2', 'lu', 'cy', '53', 'aW', '4v', 'cm', 'F3', 'P2', '51', 'cm', 'w9'];
-    var corsProxyBase = useProxy ? _d(_cors.join('')) : '';
-
     function requestUrl(url) {
         return accountNoEmail(url);
-        // Если перестанет работать без прокси — раскомментировать 2 строки ниже и закомментировать return выше:
-        // if (!useProxy) return accountNoEmail(url);
-        // return corsProxyBase + encodeURIComponent(accountNoEmail(url));
     }
 
     var _u = ['YX', 'po', 'YX', 'Jr', 'b3', 'Y='];
     var unic_id = _d(_u.join(''));
     Lampa.Storage.set('lampac_unic_id', unic_id);
 
-    if (!window.rch) {
-        Lampa.Utils.putScript([Defined.localhost + 'invc-rch.js'], function() {}, false, function() {
-            if (window.rch && typeof window.rch.typeInvoke === 'function' && !window.rch.startTypeInvoke) {
-                window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
+    function getAndroidVersion() {
+        if (Lampa.Platform.is('android')) {
+            try {
+                var current = AndroidJS.appVersion().split('-');
+                return parseInt(current.pop());
+            } catch (e) {
+                return 0;
             }
-        }, true);
-        // Если нужен прокси для скриптов — раскомментировать блок ниже и закомментировать putScript выше:
-        // var invcUrl = useProxy ? (corsProxyBase + encodeURIComponent(Defined.localhost + 'invc-rch.js')) : (Defined.localhost + 'invc-rch.js');
-        // Lampa.Utils.putScript([invcUrl], function() {}, false, function() {
-        //     if (window.rch && typeof window.rch.typeInvoke === 'function' && !window.rch.startTypeInvoke) {
-        //         window.rch.typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
-        //     }
-        // }, true);
+        }
+        return 0;
     }
 
-    var hubConnection;
-    var hubConnectionUrl;
-    var hub_timer;
-    var balansers_with_search;
+    var hostkey = Defined.localhost.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+    if (!window.rch_nws || !window.rch_nws[hostkey]) {
+        if (!window.rch_nws) window.rch_nws = {};
+        window.rch_nws[hostkey] = {
+            type: Lampa.Platform.is('android') ? 'apk' : Lampa.Platform.is('tizen') ? 'cors' : undefined,
+            startTypeInvoke: false,
+            rchRegistry: false,
+            apkVersion: getAndroidVersion()
+        };
+    }
+
+    window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
+        if (!window.rch_nws[hostkey].startTypeInvoke) {
+            window.rch_nws[hostkey].startTypeInvoke = true;
+            var check = function(good) {
+                window.rch_nws[hostkey].type = Lampa.Platform.is('android') ? 'apk' : good ? 'cors' : 'web';
+                call();
+            };
+            if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
+            else {
+                var net = new Lampa.Reguest();
+                net.silent(Defined.localhost.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() { check(true); }, function() { check(false); }, false, { dataType: 'text' });
+            }
+        } else call();
+    };
+
+    window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
+        window.rch_nws[hostkey].typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {
+            client.invoke("RchRegistry", JSON.stringify({
+                version: 151,
+                host: location.host,
+                rchtype: Lampa.Platform.is('android') ? 'apk' : Lampa.Platform.is('tizen') ? 'cors' : (window.rch_nws[hostkey].type || 'web'),
+                apkVersion: window.rch_nws[hostkey].apkVersion,
+                player: Lampa.Storage.field('player'),
+                account_email: Lampa.Storage.get('account_email', ''),
+                unic_id: Lampa.Storage.get('lampac_unic_id', ''),
+                profile_id: Lampa.Storage.get('lampac_profile_id', ''),
+                token: ''
+            }));
+            if (client._shouldReconnect && window.rch_nws[hostkey].rchRegistry) {
+                if (startConnection) startConnection();
+                return;
+            }
+            window.rch_nws[hostkey].rchRegistry = true;
+            client.on('RchRegistry', function(clientIp) {
+                if (startConnection) startConnection();
+            });
+            client.on("RchClient", function(rchId, url, data, headers, returnHeaders) {
+                var network = new Lampa.Reguest();
+                function sendResult(uri, html) {
+                    $.ajax({
+                        url: Defined.localhost + 'rch/' + uri + '?id=' + rchId,
+                        type: 'POST',
+                        data: html,
+                        async: true,
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(j) {},
+                        error: function() { client.invoke("RchResult", rchId, ''); }
+                    });
+                }
+                function result(html) {
+                    if (Lampa.Arrays.isObject(html) || Lampa.Arrays.isArray(html)) html = JSON.stringify(html);
+                    if (typeof CompressionStream !== 'undefined' && html && html.length > 1000) {
+                        var compressionStream = new CompressionStream('gzip');
+                        var encoder = new TextEncoder();
+                        var readable = new ReadableStream({ start: function(controller) { controller.enqueue(encoder.encode(html)); controller.close(); } });
+                        new Response(readable.pipeThrough(compressionStream)).arrayBuffer().then(function(compressedBuffer) {
+                            var compressedArray = new Uint8Array(compressedBuffer);
+                            if (compressedArray.length > html.length) sendResult('result', html);
+                            else sendResult('gzresult', compressedArray);
+                        }).catch(function() { sendResult('result', html); });
+                    } else sendResult('result', html);
+                }
+                if (url == 'eval') { result(eval(data)); }
+                else if (url == 'evalrun') { eval(data); }
+                else if (url == 'ping') { result('pong'); }
+                else {
+                    network["native"](url, result, function(e) { result(''); }, data, { dataType: 'text', timeout: 1000 * 8, headers: headers, returnHeaders: returnHeaders });
+                }
+            });
+            client.on('Connected', function(connectionId) {
+                window.rch_nws[hostkey].connectionId = connectionId;
+            });
+            client.on('Closed', function() {});
+            client.on('Error', function(err) {});
+        });
+    };
+    window.rch_nws[hostkey].typeInvoke(Defined.localhost.replace(/\/$/, ''), function() {});
 
     function rchInvoke(json, call) {
-        var state = hubConnection ? hubConnection.state : null;
-        var connected = state === 1;
-        if (hubConnection && hubConnectionUrl === json.ws && connected) {
-            if (window.rch && typeof window.rch.Registry === 'function') {
-                window.rch.Registry(json.result, hubConnection, function() { call(); });
-            } else {
-                call();
-            }
-            return;
-        }
-        if (hubConnection && hubConnectionUrl === json.ws && state === 0) {
-            call();
-            return;
-        }
-        if (hubConnection) { clearTimeout(hub_timer); hubConnection.stop(); hubConnection = null; }
-        hubConnectionUrl = json.ws;
-        hubConnection = new signalR.HubConnectionBuilder().withUrl(json.ws).build();
-        hubConnection.start().then(function() {
-            if (window.rch && typeof window.rch.Registry === 'function') {
-                window.rch.Registry(json.result, hubConnection, function() { call(); });
-            } else {
-                call();
-            }
-        })["catch"](function(err) { Lampa.Noty.show(err.toString()); });
-        if (json.keepalive > 0) {
-            hub_timer = setTimeout(function() { hubConnection.stop(); hubConnection = null; hubConnectionUrl = null; }, 1000 * json.keepalive);
-        }
+        if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect) { call(); return; }
+        if (!window.nwsClient) window.nwsClient = {};
+        if (window.nwsClient[hostkey] && window.nwsClient[hostkey].socket) window.nwsClient[hostkey].socket.close();
+        window.nwsClient[hostkey] = new NativeWsClient(json.nws, { autoReconnect: false });
+        window.nwsClient[hostkey].on('Connected', function(connectionId) {
+            window.rch_nws[hostkey].Registry(window.nwsClient[hostkey], function() { call(); });
+        });
+        window.nwsClient[hostkey].connect();
     }
 
     function rchRun(json, call) {
-        if (typeof signalR == 'undefined') {
-            Lampa.Utils.putScript([Defined.localhost + 'signalr-6.0.25_es5.js'], function() {}, false, function() {
-                rchInvoke(json, call);
-            }, true);
-            // Если нужен прокси для signalr — раскомментировать 2 строки ниже и закомментировать putScript выше:
-            // var signalrUrl = useProxy ? (corsProxyBase + encodeURIComponent(Defined.localhost + 'signalr-6.0.25_es5.js')) : (Defined.localhost + 'signalr-6.0.25_es5.js');
-            // Lampa.Utils.putScript([signalrUrl], function() {}, false, function() { rchInvoke(json, call); }, true);
+        if (typeof NativeWsClient == 'undefined') {
+            Lampa.Utils.putScript([Defined.localhost + 'js/nws-client-es5.js?v18112025'], function() {}, false, function() { rchInvoke(json, call); }, true);
         } else {
             rchInvoke(json, call);
         }
@@ -112,6 +154,10 @@
         if (url.indexOf('token=') == -1) {
             var token = '';
             if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
+        }
+        if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
+            var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
+            if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
         }
         return url;
     }
@@ -314,7 +360,7 @@
             query.push('original_language=' + (object.movie.original_language || ''));
             query.push('year=' + ((object.movie.release_date || object.movie.first_air_date || '0000') + '').slice(0, 4));
             query.push('source=' + card_source);
-            query.push('rchtype=' + (window.rch ? window.rch.type : ''));
+            query.push('rchtype=' + (window.rch_nws && window.rch_nws[hostkey] ? window.rch_nws[hostkey].type : ''));
             query.push('clarification=' + (object.clarification ? 1 : 0));
             query.push('similar=' + (object.similar ? true : false));
             if (Lampa.Storage.get('account_email', '')) query.push('cub_id=' + Lampa.Utils.hash(Lampa.Storage.get('account_email', '')));
@@ -1191,10 +1237,8 @@
             scroll.destroy();
             clearInterval(balanser_timer);
             clearTimeout(life_wait_timer);
-            if (hubConnection) {
-                clearTimeout(hub_timer);
-                hubConnection.stop();
-                hubConnection = null;
+            if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey].socket) {
+                window.nwsClient[hostkey].socket.close();
             }
         };
     }
