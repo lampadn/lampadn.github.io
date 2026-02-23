@@ -31,7 +31,7 @@ if (!window.rch_nws || !window.rch_nws[hostkey]) {
   if (!window.rch_nws) window.rch_nws = {};
 
   window.rch_nws[hostkey] = {
-    type: Lampa.Platform.is('android') ? 'apk' : Lampa.Platform.is('tizen') ? 'cors' : undefined,
+    type: Lampa.Platform.is('android') ? 'cors' : Lampa.Platform.is('tizen') ? 'cors' : undefined,
     startTypeInvoke: false,
     rchRegistry: false,
     apkVersion: getAndroidVersion()
@@ -43,7 +43,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
     window.rch_nws[hostkey].startTypeInvoke = true;
 
     var check = function check(good) {
-      window.rch_nws[hostkey].type = Lampa.Platform.is('android') ? 'apk' : good ? 'cors' : 'web';
+      window.rch_nws[hostkey].type = Lampa.Platform.is('android') ? 'cors' : good ? 'cors' : 'web';
       call();
     };
 
@@ -67,7 +67,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     client.invoke("RchRegistry", JSON.stringify({
       version: 151,
       host: location.host,
-      rchtype: Lampa.Platform.is('android') ? 'apk' : Lampa.Platform.is('tizen') ? 'cors' : (window.rch_nws[hostkey].type || 'web'),
+      rchtype: Lampa.Platform.is('android') ? 'cors' : Lampa.Platform.is('tizen') ? 'cors' : (window.rch_nws[hostkey].type || 'web'),
       apkVersion: window.rch_nws[hostkey].apkVersion,
       player: Lampa.Storage.field('player'),
 	  account_email: Lampa.Storage.get('account_email', ''),
