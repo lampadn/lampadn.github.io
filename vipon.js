@@ -72,6 +72,8 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
 
 window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
   window.rch_nws[hostkey].typeInvoke(serverBase, function() {
+    var st = getServerToken();
+    var tokenVal = (st && st.indexOf('=') >= 0) ? st.split('=').slice(1).join('=') : (st || '');
 
     client.invoke("RchRegistry", JSON.stringify({
       version: 151,
@@ -82,7 +84,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	  account_email: Lampa.Storage.get('account_email', ''),
 	  unic_id: Lampa.Storage.get('lampac_unic_id', ''),
 	  profile_id: Lampa.Storage.get('lampac_profile_id', ''),
-	  token: ''
+	  token: tokenVal
     }));
 
     if (client._shouldReconnect && window.rch_nws[hostkey].rchRegistry) {
@@ -213,6 +215,15 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     }
   }
 
+  function getServerToken() {
+    var raw = Lampa.Storage.get('lamponline_server_tokens', '{}');
+    var tokens = raw;
+    if (typeof raw === 'string') {
+      try { tokens = JSON.parse(raw); } catch (e) { tokens = {}; }
+    }
+    return tokens[serverBase] || tokens[serverBase + '/'] || '';
+  }
+
   function account(url) {
     url = url + '';
     if (url.indexOf('account_email=') == -1) {
@@ -223,9 +234,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var uid = Lampa.Storage.get('lampac_unic_id', '');
       if (uid) url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(uid));
     }
-    if (url.indexOf('token=') == -1) {
-      var token = '';
-      if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
+    var serverToken = getServerToken();
+    if (serverToken) {
+      var tokenParts = serverToken.split('=');
+      var tokenKey = tokenParts[0];
+      if (tokenKey && url.indexOf(tokenKey + '=') == -1) {
+        url = Lampa.Utils.addUrlComponent(url, serverToken);
+      }
     }
     if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
       var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
