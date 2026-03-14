@@ -829,13 +829,21 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                   first.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
                 }
                 if (!first.headers['Referer']) {
-                  try {
-                    var streamOrigin = first.url.match(/^https?:\/\/[^\/]+/);
-                    if (streamOrigin) first.headers['Referer'] = streamOrigin[0] + '/';
-                  } catch (e) {}
                   var u = first.url.toLowerCase();
-                  if (u.indexOf('rezka') !== -1 && !first.headers['Referer']) first.headers['Referer'] = 'https://rezka.ag/';
-                  if (u.indexOf('kinopub') !== -1 && !first.headers['Referer']) first.headers['Referer'] = 'https://kinopub.net/';
+                  if (u.indexOf('rezka') !== -1) first.headers['Referer'] = 'https://rezka.ag/';
+                  else if (u.indexOf('kinopub') !== -1 || u.indexOf('cdntogo') !== -1) first.headers['Referer'] = 'https://kinopub.net/';
+                  else {
+                    try {
+                      var streamOrigin = first.url.match(/^https?:\/\/[^\/]+/);
+                      if (streamOrigin) first.headers['Referer'] = streamOrigin[0] + '/';
+                    } catch (e) {}
+                  }
+                }
+                if (!first.headers['Origin']) {
+                  try {
+                    var origin = first.url.match(/^https?:\/\/[^\/]+/);
+                    if (origin) first.headers['Origin'] = origin[0];
+                  } catch (e) {}
                 }
               }
               if (item.season) {
@@ -862,13 +870,21 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                                 cell.headers = cell.headers || {};
                                 if (!cell.headers['User-Agent']) cell.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
                                 if (!cell.headers['Referer']) {
-                                  try {
-                                    var o = cell.url.match(/^https?:\/\/[^\/]+/);
-                                    if (o) cell.headers['Referer'] = o[0] + '/';
-                                  } catch (e) {}
                                   var ul = cell.url.toLowerCase();
-                                  if (ul.indexOf('rezka') !== -1 && !cell.headers['Referer']) cell.headers['Referer'] = 'https://rezka.ag/';
-                                  if (ul.indexOf('kinopub') !== -1 && !cell.headers['Referer']) cell.headers['Referer'] = 'https://kinopub.net/';
+                                  if (ul.indexOf('rezka') !== -1) cell.headers['Referer'] = 'https://rezka.ag/';
+                                  else if (ul.indexOf('kinopub') !== -1 || ul.indexOf('cdntogo') !== -1) cell.headers['Referer'] = 'https://kinopub.net/';
+                                  else {
+                                    try {
+                                      var o = cell.url.match(/^https?:\/\/[^\/]+/);
+                                      if (o) cell.headers['Referer'] = o[0] + '/';
+                                    } catch (e) {}
+                                  }
+                                }
+                                if (!cell.headers['Origin']) {
+                                  try {
+                                    var co = cell.url.match(/^https?:\/\/[^\/]+/);
+                                    if (co) cell.headers['Origin'] = co[0];
+                                  } catch (e) {}
                                 }
                               }
                               elem.mark();
