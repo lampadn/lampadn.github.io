@@ -5,11 +5,39 @@
   var _l = ['aH', 'R0', 'cH', 'M6', 'Ly', '9s', 'YW', '1w', 'YS', '52', 'aX', 'Av'];
   var _n = ['bG', 'Ft', 'cG', 'Eu', 'dm', 'lw'];
 
-  var serverBase = _d(_l.join('')).replace(/\/$/, '');
+  var defaultBase = _d(_l.join('')).replace(/\/$/, '');
+  var defaultHostkey = defaultBase.replace('http://', '').replace('https://', '');
+
+  function getServerUrlFromStorage() {
+    var servers = Lampa.Storage.get('lamponline_servers', []);
+    if (typeof servers === 'string') {
+      try { servers = JSON.parse(servers); } catch (e) { servers = []; }
+    }
+    if (!Lampa.Arrays.isArray(servers) || servers.length === 0) return '';
+    var activeIndex = parseInt(Lampa.Storage.get('lamponline_active_server', 0)) || 0;
+    if (activeIndex >= servers.length) activeIndex = 0;
+    var server = servers[activeIndex] || '';
+    if (!server) return '';
+    server = server.replace(/\/+$/, '');
+    if (server.indexOf('http://') !== 0 && server.indexOf('https://') !== 0) server = 'http://' + server;
+    return server;
+  }
+
+  var storedUrl = getServerUrlFromStorage();
+  var storedHostkey = storedUrl ? storedUrl.replace(/^https?:\/\//, '').replace(/\/+$/, '') : '';
+  var serverBase;
+  if (storedUrl && storedHostkey === defaultHostkey) {
+    serverBase = storedUrl.replace(/\/+$/, '');
+  } else {
+    serverBase = defaultBase;
+    if (!storedUrl && defaultHostkey && defaultBase.indexOf('https://') === 0) {
+      serverBase = 'http://' + defaultHostkey;
+    }
+  }
 
   var Defined = {
     api: _d(_p.join('')),
-    localhost: _d(_l.join('')) + '/',
+    localhost: serverBase + '/',
     apn: ''
   };
 
