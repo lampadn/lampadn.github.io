@@ -725,12 +725,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
     this.getFileUrl = function(file, call, waiting_rch) {
 	  var _this = this;
-	  
-      if(Lampa.Storage.field('player') !== 'inner' && file.stream && Lampa.Platform.is('apple')){
+	  var isExternal = Lampa.Storage.field('player') !== 'inner';
+      if (isExternal && file.stream) {
 		  var newfile = Lampa.Arrays.clone(file);
 		  newfile.method = 'play';
 		  newfile.url = file.stream;
 		  call(newfile, {});
+		  return;
 	  }
       else if (file.method == 'play') call(file, {});
       else {
@@ -756,6 +757,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 			}
 			else{
 				Lampa.Loading.stop();
+				if (json && json.url && isExternal) file.stream = json.url;
 				call(json, json);
 			}
         }, function() {
@@ -831,17 +833,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                   if (elem == item) cell.url = json.url;
                   else {
                     if (elem.method == 'call') {
-                      if (Lampa.Storage.field('player') !== 'inner') {
+                      if (Lampa.Storage.field('player') !== 'inner' && elem.stream) {
                         cell.url = elem.stream;
 						delete cell.quality;
                       } else {
                         cell.url = function(call) {
                           _this5.getFileUrl(elem, function(stream, stream_json) {
-                            if (stream.url) {
+                            if (stream && stream.url) {
                               cell.url = stream.url;
-                              cell.quality = stream_json.quality || elem.qualitys;
-							  cell.segments = stream_json.segments || elem.segments;
-                              cell.subtitles = stream.subtitles;
+                              cell.quality = stream_json && stream_json.quality || elem.qualitys;
+							  cell.segments = stream_json && stream_json.segments || elem.segments;
+                              cell.subtitles = stream && stream.subtitles;
+                              cell.headers = stream_json && (stream_json.headers || stream_json.header);
                               _this5.orUrlReserve(cell);
                               _this5.setDefaultQuality(cell);
                               elem.mark();
