@@ -823,6 +823,21 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 			  }
               _this5.orUrlReserve(first);
               _this5.setDefaultQuality(first);
+              if (Lampa.Platform.is('android') && first.url) {
+                first.headers = first.headers || {};
+                if (!first.headers['User-Agent']) {
+                  first.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+                }
+                if (!first.headers['Referer']) {
+                  try {
+                    var streamOrigin = first.url.match(/^https?:\/\/[^\/]+/);
+                    if (streamOrigin) first.headers['Referer'] = streamOrigin[0] + '/';
+                  } catch (e) {}
+                  var u = first.url.toLowerCase();
+                  if (u.indexOf('rezka') !== -1 && !first.headers['Referer']) first.headers['Referer'] = 'https://rezka.ag/';
+                  if (u.indexOf('kinopub') !== -1 && !first.headers['Referer']) first.headers['Referer'] = 'https://kinopub.net/';
+                }
+              }
               if (item.season) {
                 videos.forEach(function(elem) {
                   var cell = _this5.toPlayElement(elem);
@@ -837,11 +852,25 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                           _this5.getFileUrl(elem, function(stream, stream_json) {
                             if (stream && stream.url) {
                               cell.url = stream.url;
+                              cell.headers = stream_json && (stream_json.headers || stream_json.header) || {};
                               cell.quality = stream_json && stream_json.quality || elem.qualitys;
 							  cell.segments = stream_json && stream_json.segments || elem.segments;
                               cell.subtitles = stream && stream.subtitles;
                               _this5.orUrlReserve(cell);
                               _this5.setDefaultQuality(cell);
+                              if (Lampa.Platform.is('android') && cell.url) {
+                                cell.headers = cell.headers || {};
+                                if (!cell.headers['User-Agent']) cell.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+                                if (!cell.headers['Referer']) {
+                                  try {
+                                    var o = cell.url.match(/^https?:\/\/[^\/]+/);
+                                    if (o) cell.headers['Referer'] = o[0] + '/';
+                                  } catch (e) {}
+                                  var ul = cell.url.toLowerCase();
+                                  if (ul.indexOf('rezka') !== -1 && !cell.headers['Referer']) cell.headers['Referer'] = 'https://rezka.ag/';
+                                  if (ul.indexOf('kinopub') !== -1 && !cell.headers['Referer']) cell.headers['Referer'] = 'https://kinopub.net/';
+                                }
+                              }
                               elem.mark();
                             } else {
                               cell.url = '';
