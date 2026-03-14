@@ -1,42 +1,7 @@
 (function() {
   'use strict';
 
-  var STORAGE_KEY_SERVERS = 'lamponline_servers';
-  var STORAGE_KEY_ACTIVE_SERVER = 'lamponline_active_server';
-
-  function getServersList() {
-    var servers = Lampa.Storage.get(STORAGE_KEY_SERVERS, []);
-    if (typeof servers === 'string') {
-      try { servers = JSON.parse(servers); } catch (e) { servers = []; }
-    }
-    if (!Lampa.Arrays.isArray(servers)) servers = [];
-    return servers;
-  }
-
-  function getActiveServerIndex() {
-    var servers = getServersList();
-    var active = parseInt(Lampa.Storage.get(STORAGE_KEY_ACTIVE_SERVER, 0)) || 0;
-    if (active >= servers.length) active = 0;
-    return active;
-  }
-
-  function getServerUrl() {
-    var servers = getServersList();
-    if (servers.length === 0) return '';
-    var server = servers[getActiveServerIndex()] || '';
-    if (!server) return '';
-    server = server.replace(/\/+$/, '');
-    if (server.indexOf('http://') !== 0 && server.indexOf('https://') !== 0) server = 'https://' + server;
-    return server;
-  }
-
-  function getHostKeyFromUrl(url) {
-    if (!url) return '';
-    return url.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-  }
-
-  var serverBase = getServerUrl() || 'https://lampa.vip';
-  serverBase = serverBase.replace(/\/+$/, '');
+  var serverBase = 'https://lampa.vip';
 
   var Defined = {
     api: 'lampac',
@@ -44,7 +9,7 @@
     apn: ''
   };
 
-  var hostkey = getHostKeyFromUrl(serverBase);
+  var hostkey = serverBase.replace('http://', '').replace('https://', '');
 
   var balansers_with_search = [];
   
