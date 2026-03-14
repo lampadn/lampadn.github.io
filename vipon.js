@@ -221,9 +221,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     if (typeof raw === 'string') {
       try { tokens = JSON.parse(raw); } catch (e) { tokens = {}; }
     }
-    var keys = [serverBase, serverBase + '/', 'https://' + hostkey, 'http://' + hostkey, hostkey];
+    var servers = Lampa.Storage.get('lamponline_servers', []);
+    if (typeof servers === 'string') {
+      try { servers = JSON.parse(servers); } catch (e) { servers = []; }
+    }
+    var activeIndex = parseInt(Lampa.Storage.get('lamponline_active_server', 0)) || 0;
+    if (activeIndex >= servers.length) activeIndex = 0;
+    var activeServerUrl = servers[activeIndex] || '';
+    var keys = [activeServerUrl, serverBase, serverBase + '/', 'https://' + hostkey, 'http://' + hostkey, hostkey];
     for (var i = 0; i < keys.length; i++) {
-      if (tokens[keys[i]]) return tokens[keys[i]];
+      if (keys[i] && tokens[keys[i]]) return tokens[keys[i]];
     }
     var single = Lampa.Storage.get('lampac_token', '');
     if (single) return single.indexOf('=') >= 0 ? single : 'token=' + encodeURIComponent(single);
@@ -242,13 +249,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function account(url) {
     url = url + '';
+    if (url.indexOf('uid=') == -1) {
+      var visitorId = Lampa.Storage.get('lampac_unic_id', '') || 'guest';
+      url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(visitorId));
+    }
     if (url.indexOf('account_email=') == -1) {
       var email = Lampa.Storage.get('account_email');
       if (email) url = Lampa.Utils.addUrlComponent(url, 'account_email=' + encodeURIComponent(email));
-    }
-    if (url.indexOf('uid=') == -1) {
-      var uid = Lampa.Storage.get('lampac_unic_id', '');
-      if (uid) url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(uid));
     }
     var serverToken = getServerToken();
     if (serverToken) {
