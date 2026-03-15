@@ -1869,7 +1869,7 @@ else if (element.url) {
     var manifst = {
       type: 'video',
       version: '',
-      name: _d(_n.join('')) + ' ⭐',
+      name: _d(_n.join('')),
       description: '',
       component: 'lampa_vip',
       
