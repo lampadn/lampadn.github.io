@@ -3,7 +3,7 @@
 
     var Config = {
             Plugin: {
-                displayName: "LampOnline"
+                displayName: "LampaOnline"
             },
             Server: {
                 baseUrl: "http://78.40.199.67:10630"
@@ -38,6 +38,7 @@
                 apn: ""
             }
         },
+        PLUGIN_COMPONENT = "lamponline_o",
         rawBase = String(Config.Server.baseUrl).trim().replace(/\/+$/, ""),
         serverBase = /^https?:\/\//i.test(rawBase) ? rawBase : "http://" + rawBase.replace(/^\/+/, ""),
         serverLocalhost = serverBase + "/",
@@ -1274,7 +1275,7 @@
                     t(), Lampa.Activity.push({
                         url: e.element.url,
                         title: "Lampac - " + e.element.title,
-                        component: "lamponline",
+                        component: PLUGIN_COMPONENT,
                         movie: e.element,
                         page: 1,
                         search: e.element.title,
@@ -1288,21 +1289,21 @@
     }
 
     function startPlugin() {
-        window.lamponline_plugin = !0;
+        window.lamponline_o_plugin = !0;
         var e = {
             type: "video",
             version: "",
             name: Config.Plugin.displayName,
             description: "Просмотр онлайна",
-            component: "lamponline",
+            component: PLUGIN_COMPONENT,
             onContextLauch: function(e) {
-                Lampa.Component.add("lamponline", component);
+                Lampa.Component.add(PLUGIN_COMPONENT, component);
                 var t = Lampa.Utils.hash(e.number_of_seasons ? e.original_name : e.original_title),
                     i = Lampa.Storage.get(Config.StorageKeys.ClarificationSearch, "{}");
                 Lampa.Activity.push({
                     url: "",
                     title: Lampa.Lang.translate("title_online"),
-                    component: "lamponline",
+                    component: PLUGIN_COMPONENT,
                     search: i[t] ? i[t] : e.title,
                     search_one: e.title,
                     search_two: e.original_title,
@@ -1312,7 +1313,10 @@
                 })
             }
         };
-        addSourceSearch("Онлайн", "spider"), Lampa.Manifest.plugins = e, Lampa.Lang.add({
+        addSourceSearch("Онлайн", "spider"), function(t) {
+            var n = Lampa.Manifest.plugins;
+            n ? Lampa.Arrays.isArray(n) ? n.push(t) : Lampa.Manifest.plugins = [n, t] : Lampa.Manifest.plugins = t
+        }(e), Lampa.Lang.add({
             lampac_watch: {
                 ru: "Смотреть онлайн",
                 en: "Watch online",
@@ -1410,19 +1414,19 @@
                 zh: "搜索 ({balanser}) 未返回任何结果"
             }
         });
-        var t = '<div class="full-start__button selector view--online lampac--button" data-subtitle="'.concat(e.name, " ").concat(e.version, '">\n         <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M27 7H5a2 2 0 00-2 2v14a2 2 0 002 2h22a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M7 13l3 6.5 3-6.5M16.5 13v6.5M20.5 17.275h1.48c.651 0 1.277-.275 1.721-.75a2.338 2.338 0 00.215-2.932 1.394 1.394 0 00-1.14-.593H20.5v4.275zm0 0V19.5"/></svg>\n        <span>#{title_online}</span>\n    </div>');
+        var t = '<div class="full-start__button selector view--online lampac--button lampac--button-lamponline_o" data-subtitle="'.concat(e.name, " ").concat(e.version, '">\n         <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M27 7H5a2 2 0 00-2 2v14a2 2 0 002 2h22a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M7 13l3 6.5 3-6.5M16.5 13v6.5M20.5 17.275h1.48c.651 0 1.277-.275 1.721-.75a2.338 2.338 0 00.215-2.932 1.394 1.394 0 00-1.14-.593H20.5v4.275zm0 0V19.5"/></svg>\n        <span>#{title_online}</span>\n    </div>');
 
         function i(e) {
-            if (!e.render.find(".lampac--button").length) {
+            if (!e.render.find(".lampac--button-lamponline_o").length) {
                 var i = $(Lampa.Lang.translate(t));
                 i.on("hover:enter", (function() {
-                    Lampa.Component.add("lamponline", component);
+                    Lampa.Component.add(PLUGIN_COMPONENT, component);
                     var t = Lampa.Utils.hash(e.movie.number_of_seasons ? e.movie.original_name : e.movie.original_title),
                         i = Lampa.Storage.get(Config.StorageKeys.ClarificationSearch, "{}");
                     Lampa.Activity.push({
                         url: "",
                         title: Lampa.Lang.translate("title_online"),
-                        component: "lamponline",
+                        component: PLUGIN_COMPONENT,
                         search: i[t] ? i[t] : e.movie.title,
                         search_one: e.movie.title,
                         search_two: e.movie.original_title,
@@ -1433,7 +1437,7 @@
                 })), e.render.before(i)
             }
         }
-        Lampa.Component.add("lamponline", component), Lampa.Listener.follow("full", (function(e) {
+        Lampa.Component.add(PLUGIN_COMPONENT, component), Lampa.Listener.follow("full", (function(e) {
             "complite" == e.type && i({
                 render: e.object.activity.render().find(".view--torrent"),
                 movie: e.data.movie
@@ -1455,19 +1459,19 @@
     }
 
     function initBalanserInFilterMenu() {
-        window.lamponline_src_filter_plugin || (window.lamponline_src_filter_plugin = !0, Lampa.Controller.listener.follow("toggle", (function(e) {
+        window.lamponline_o_src_filter_plugin || (window.lamponline_o_src_filter_plugin = !0, Lampa.Controller.listener.follow("toggle", (function(e) {
             if ("select" === e.name) {
                 var t = Lampa.Activity.active();
-                if (t && t.component && "lamponline" === t.component.toLowerCase()) {
+                if (t && t.component && PLUGIN_COMPONENT === t.component.toLowerCase()) {
                     var i = $(".selectbox__title");
                     if (1 === i.length && i.text() === Lampa.Lang.translate("title_filter")) {
                         var n = $(".simple-button--filter.filter--sort");
-                        if (!(1 !== n.length || n.hasClass("hide") || $(".selectbox-item[data-lamponline-source]").length > 0)) {
+                        if (!(1 !== n.length || n.hasClass("hide") || $(".selectbox-item[data-lamponline-o-source]").length > 0)) {
                             var a = Lampa.Template.get("selectbox_item", {
                                 title: Lampa.Lang.translate("settings_rest_source"),
                                 subtitle: $("div", n).text()
                             });
-                            a.attr("data-lamponline-source", "true"), a.on("hover:enter", (function() {
+                            a.attr("data-lamponline-o-source", "true"), a.on("hover:enter", (function() {
                                 n.trigger("hover:enter")
                             })), $(".selectbox-item").first().after(a), Lampa.Controller.collectionSet($("body > .selectbox").find(".scroll__body"))
                         }
@@ -1476,7 +1480,7 @@
             }
         })))
     }
-    window.lamponline_plugin || startPlugin(), window.appready ? initBalanserInFilterMenu() : Lampa.Listener.follow("app", (function(e) {
+    window.lamponline_o_plugin || startPlugin(), window.appready ? initBalanserInFilterMenu() : Lampa.Listener.follow("app", (function(e) {
         "ready" === e.type && initBalanserInFilterMenu()
     }))
 })();
