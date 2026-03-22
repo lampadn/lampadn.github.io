@@ -1,10 +1,14 @@
 (function() {
     "use strict";
+
     var Config = {
-            HostKey: "78.40.199.67:10630",
+            Plugin: {
+                displayName: "LampOnline"
+            },
+            Server: {
+                baseUrl: "http://78.40.199.67:10630"
+            },
             Urls: {
-                Localhost: "http://78.40.199.67:10630/",
-                LampOnline: "http://78.40.199.67:10630",
                 NwsClientScript: "https://lampadn.github.io/nws-client-es5.js",
                 GithubCheck: "https://github.com/",
                 CorsCheckPath: "/cors/check"
@@ -34,9 +38,13 @@
                 apn: ""
             }
         },
+        rawBase = String(Config.Server.baseUrl).trim().replace(/\/+$/, ""),
+        serverBase = /^https?:\/\//i.test(rawBase) ? rawBase : "http://" + rawBase.replace(/^\/+/, ""),
+        serverLocalhost = serverBase + "/",
+        serverHostKey = serverBase.replace(/^https?:\/\//i, ""),
         Defined = {
             api: Config.Defined.api,
-            localhost: Config.Urls.Localhost,
+            localhost: serverLocalhost,
             apn: Config.Defined.apn
         },
         MY_AUTH = {
@@ -68,7 +76,7 @@
             MY_AUTH.lampac_unic_id = uid;
         }
     })();
-    var hostkey = Config.HostKey,
+    var hostkey = serverHostKey,
         domParser = null,
         lamponline_css_inited = !1,
         Promise = function() {
@@ -153,7 +161,7 @@
                 window.rch_nws[hostkey].type = Lampa.Platform.is("android") ? "apk" : e ? "cors" : "web", t()
             };
             if (Lampa.Platform.is("android") || Lampa.Platform.is("tizen")) i(!0);
-            else(new Lampa.Reguest).silent(Config.Urls.LampOnline.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : e + Config.Urls.CorsCheckPath, (function() {
+            else(new Lampa.Reguest).silent(serverBase.indexOf(location.host) >= 0 ? Config.Urls.GithubCheck : e + Config.Urls.CorsCheckPath, (function() {
                 i(!0)
             }), (function() {
                 i(!1)
@@ -163,7 +171,7 @@
         }
     }), "function" != typeof window.rch_nws[hostkey].Registry && (window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
         new Promise((function(e) {
-            window.rch_nws[hostkey].typeInvoke(Config.Urls.LampOnline, e)
+            window.rch_nws[hostkey].typeInvoke(serverBase, e)
         })).then((function() {
             client.invoke("RchRegistry", JSON.stringify({
                 version: Config.Rch.RegistryVersion,
@@ -197,7 +205,7 @@
         })).catch((function(e) {
             console.error(e), startConnection && startConnection()
         }))
-    }), window.rch_nws[hostkey].typeInvoke(Config.Urls.LampOnline, (function() {}));
+    }), window.rch_nws[hostkey].typeInvoke(serverBase, (function() {}));
     var RchController = function() {
         var e;
 
@@ -1283,8 +1291,8 @@
         window.lamponline_plugin = !0;
         var e = {
             type: "video",
-            version: "1.0.0",
-            name: "",
+            version: "",
+            name: Config.Plugin.displayName,
             description: "Просмотр онлайна",
             component: "lamponline",
             onContextLauch: function(e) {
@@ -1402,7 +1410,7 @@
                 zh: "搜索 ({balanser}) 未返回任何结果"
             }
         });
-        var t = '<div class="full-start__button selector view--online lampac--button" data-subtitle="'.concat(e.name, ' ', e.version, '">\n         <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">\n<path d="M11.783 10.094c-1.699.998-3.766 1.684-5.678 1.95a1.66 1.66 0 0 1-.684.934c.512 1.093 1.249 2.087 2.139 2.987a7.98 7.98 0 0 0 6.702-3.074l.083-.119c-.244-.914-.648-1.784-1.145-2.644q-.134.038-.261.062c-.143.04-.291.068-.446.068a1.7 1.7 0 0 1-.71-.164M9.051 5.492a18 18 0 0 0-2.004-1.256 1.67 1.67 0 0 1-1.907.985c-.407 1.535-.624 3.162-.511 4.694a1.67 1.67 0 0 1 1.52 1.354c1.695-.279 3.47-.879 4.967-1.738a1.67 1.67 0 0 1-.297-.949c0-.413.156-.786.403-1.078-.654-.736-1.389-1.443-2.171-2.012M4 9.989c-.137-1.634.104-3.392.541-5.032a1.67 1.67 0 0 1-.713-1.369c0-.197.039-.386.104-.562a18 18 0 0 0-1.974-.247c-.089.104-.185.204-.269.314a7.98 7.98 0 0 0-1.23 7.547 9.5 9.5 0 0 0 2.397.666A1.67 1.67 0 0 1 4 9.989m9.928-.3c-.029.037-.064.067-.096.1.433.736.799 1.482 1.053 2.268a7.98 7.98 0 0 0 .832-6.122c-.09.133-.176.267-.271.396-.436.601-.875 1.217-1.354 1.772.045.152.076.311.076.479v.004c.084.374.013.779-.24 1.103M7.164 3.447c.799.414 1.584.898 2.33 1.44.84.611 1.627 1.373 2.324 2.164.207-.092.434-.145.676-.145.5 0 .945.225 1.252.572.404-.492.783-1.022 1.161-1.54.194-.268.372-.543.544-.82A7.96 7.96 0 0 0 7.701.012q-.173.217-.339.439c-.401.552-.739 1.08-1.04 1.637.039.029.064.066.1.1.417.276.697.734.742 1.259m-4.285 8.518a10 10 0 0 1-2.07-.487 7.95 7.95 0 0 0 5.806 4.397 11 11 0 0 1-1.753-2.66 1.675 1.675 0 0 1-1.983-1.25m1.635-9.723a1.32 1.32 0 0 1 1.199-.416C6.025 1.24 6.377.683 6.794.104a7.97 7.97 0 0 0-4.247 2.062c.59.066 1.176.14 1.761.252q.096-.095.206-.176" fill="currentColor"/>\n</svg>\n\n        <span>#{title_online}</span>\n    </div>');
+        var t = '<div class="full-start__button selector view--online lampac--button" data-subtitle="'.concat(e.name, " ").concat(e.version, '">\n         <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M27 7H5a2 2 0 00-2 2v14a2 2 0 002 2h22a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M7 13l3 6.5 3-6.5M16.5 13v6.5M20.5 17.275h1.48c.651 0 1.277-.275 1.721-.75a2.338 2.338 0 00.215-2.932 1.394 1.394 0 00-1.14-.593H20.5v4.275zm0 0V19.5"/></svg>\n        <span>#{title_online}</span>\n    </div>');
 
         function i(e) {
             if (!e.render.find(".lampac--button").length) {
