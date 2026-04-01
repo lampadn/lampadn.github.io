@@ -24,66 +24,9 @@
         return v === true || v === 'true';
     }
 
-    function isMonoEnabled() {
-        return getBool('interface_mod_new_mono_mode', false);
-    }
-
-    function isMonoFor(settingKey) {
-        return isMonoEnabled() && getBool(settingKey, false);
-    }
-
-    function applyMonoBadgeStyle(el) {
-        if (!el || !el.style) return;
-        ['background-color','color','border','border-color','border-width','border-style','box-shadow','text-shadow'].forEach(function (p) {
-            try { el.style.removeProperty(p); } catch (e) {}
-        });
-        el.style.setProperty('border-width', '1px', 'important');
-        el.style.setProperty('border-style', 'solid', 'important');
-        el.style.setProperty('border-color', 'rgba(255,255,255,.45)', 'important');
-        el.style.setProperty('background-color', 'rgba(255,255,255,.08)', 'important');
-        el.style.setProperty('color', '#fff', 'important');
-    }
-
-    function calculateAverageEpisodeDuration(movie) {
-        if (!movie || typeof movie !== 'object') return 0;
-        var total = 0, count = 0;
-        if (Array.isArray(movie.episode_run_time) && movie.episode_run_time.length) {
-            movie.episode_run_time.forEach(function (m) {
-                if (m > 0 && m <= 200) { total += m; count++; }
-            });
-        } else if (Array.isArray(movie.seasons)) {
-            movie.seasons.forEach(function (s) {
-                if (Array.isArray(s.episodes)) {
-                    s.episodes.forEach(function (e) {
-                        if (e.runtime && e.runtime > 0 && e.runtime <= 200) { total += e.runtime; count++; }
-                    });
-                }
-            });
-        }
-        if (count > 0) return Math.round(total / count);
-        if (movie.last_episode_to_air && movie.last_episode_to_air.runtime && movie.last_episode_to_air.runtime > 0 && movie.last_episode_to_air.runtime <= 200) {
-            return movie.last_episode_to_air.runtime;
-        }
-        return 0;
-    }
-
-    function formatDurationMinutes(minutes) {
-        if (!minutes || minutes <= 0) return '';
-        var h = Math.floor(minutes / 60), m = minutes % 60, out = '';
-        if (h > 0) {
-            out += h + ' ' + plural(h, 'час', 'часа', 'часов');
-            if (m > 0) out += ' ' + m + ' ' + plural(m, 'минута', 'минуты', 'минут');
-        } else {
-            out += m + ' ' + plural(m, 'минута', 'минуты', 'минут');
-        }
-        return out;
-    }
-
     var __ifx_last = { details: null, movie: null, isTv: null, originalHTML: null };
 
     function buildInfoPanel(details, movie, isTvShow, originalDetails) {
-        var mono = isMonoFor('interface_mod_new_info_panel');
-
         var container = $('<div>').css({
             display: 'flex', 'flex-direction': 'column', width: '100%', gap: '0em', margin: '-1.0em 0 0.2em 0.45em'
         });
@@ -132,11 +75,6 @@
         };
 
         function badgeCss(bg, text) {
-            if (mono) {
-                return $.extend({}, baseBadge, {
-                    'background-color': 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.45)'
-                });
-            }
             return $.extend({}, baseBadge, { 'background-color': bg, color: text });
         }
 
@@ -146,11 +84,6 @@
         };
 
         function genreCss(bg, text) {
-            if (mono) {
-                return $.extend({}, baseGenre, {
-                    'background-color': 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.45)'
-                });
-            }
             return $.extend({}, baseGenre, { 'background-color': bg, color: text });
         }
 
@@ -796,10 +729,6 @@ function updateVoteColors() {
     if (!InterFaceMod.settings.colored_ratings) return;
 
     function apply(el) {
-        if (isMonoFor('interface_mod_new_colored_ratings')) {
-            $(el).css('color', '#fff');
-            return;
-        }
         var text = $(el).text().trim();
         var m = text.match(/(\d+[\.,]\d+|\d+)/);
         if (!m) return;
@@ -855,16 +784,6 @@ function setupVoteColorsForDetailPage() {
             post:      { bg: 'rgba(0,188,212,0.8)',  text: 'white' }
         };
         function apply(el) {
-        if (isMonoFor('interface_mod_new_colored_age')) {
-                $(el).css({
-                    backgroundColor: 'rgba(255,255,255,.08)',
-                    color: '#fff',
-                    border: '1px solid rgba(255,255,255,.45)',
-                    borderRadius: '0.3em',
-                    display: 'inline-block'
-                });
-                return;
-            }
             var t = $(el).text().trim().toLowerCase();
             var cfg = null;
             if (t.includes('заверш') || t.includes('ended'))      cfg = map.completed;
@@ -923,18 +842,6 @@ function colorizeAgeRating() {
     function apply(el) {
         // ИСПРАВЛЕНИЕ: Не красим элементы внутри explorer (окно выбора серий)
         if ($(el).closest('.explorer').length) return;
-
-        if (isMonoEnabled()) {
-            $(el).css({
-                backgroundColor: 'rgba(255,255,255,.08)',
-                color: '#fff',
-                border: '1px solid rgba(255,255,255,.45)',
-                borderRadius: '0.3em',
-                padding: '0.2em 0.4em',
-                display: 'inline-block'
-            });
-            return;
-        }
 
         var t = $(el).text().trim();
         var grp = null;
@@ -1134,20 +1041,6 @@ function colorizeAgeRating() {
             }
         });
 
-        // монохромный режим
-        Lampa.SettingsApi.addParam({
-            component: 'season_info',
-            param: { name: 'interface_mod_new_mono_mode', type: 'trigger', default: false },
-            field: { name: 'Монохромный режим', description: 'Ч/Б оформление для цветных элементов' },
-            onChange: function (v) {
-                if (InterFaceMod.settings.colored_ratings) setupVoteColorsObserver();
-                if (InterFaceMod.settings.colored_elements) {
-                    colorizeSeriesStatus();
-                    colorizeAgeRating();
-                }
-            }
-        });
-
         // информационная панель
         Lampa.SettingsApi.addParam({
             component: 'season_info',
@@ -1194,7 +1087,6 @@ function colorizeAgeRating() {
         InterFaceMod.settings.theme                = Lampa.Storage.get('theme_select', 'default');
         InterFaceMod.settings.colored_ratings      = Lampa.Storage.get('colored_ratings', true);
         InterFaceMod.settings.colored_elements     = Lampa.Storage.get('colored_elements', true);
-        InterFaceMod.settings.mono_mode            = Lampa.Storage.get('mono_mode', true);
 
         // применить тему сразу
         applyTheme(InterFaceMod.settings.theme);
