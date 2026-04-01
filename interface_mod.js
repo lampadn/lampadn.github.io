@@ -1051,34 +1051,6 @@ function colorizeAgeRating() {
             }
         });
 
-        // цветные статусы
-        Lampa.SettingsApi.addParam({
-            component: 'season_info',
-            param: { name: 'interface_mod_new_colored_status', type: 'trigger', default: true },
-            field: { name: 'Цветные статусы', description: 'Отображать статусы сериалов цветными' },
-            onChange: function (v) {
-                if (v) {
-                    colorizeSeriesStatus();
-                } else {
-                    $('.full-start__status').css({ backgroundColor: '', color: '', borderRadius: '', display: '' });
-                }
-            }
-        });
-
-        // цветной возраст
-        Lampa.SettingsApi.addParam({
-            component: 'season_info',
-            param: { name: 'interface_mod_new_colored_age', type: 'trigger', default: true },
-            field: { name: 'Цветной возраст', description: 'Отображать возрастной рейтинг цветным' },
-            onChange: function (v) {
-                if (v) {
-                    colorizeAgeRating();
-                } else {
-                    $('.full-start__pg').css({ backgroundColor: '', color: '' });
-                }
-            }
-        });
-
         // загрузить сохранённые
         InterFaceMod.settings.seasons_info_mode    = Lampa.Storage.get('seasons_info_mode', 'none');
         InterFaceMod.settings.label_position       = Lampa.Storage.get('label_position', 'top-right');
