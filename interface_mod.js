@@ -307,13 +307,12 @@
             .serial-label { background-color: #4285F4!important; }
             .movie-label  { background-color: #4285F4!important; }
             body[data-movie-labels="on"] .card--tv .card__type { display: none!important; }
-            .card__type.ifx-movie-type, .card__type.ifx-serial-type {
+            .card__type.ifx-movie-type {
                 background: #4285F4 !important;
                 color: #fff !important;
                 display: block !important;
             }
-            body:not(.ifx-alt-type-badges) .card__type.ifx-movie-type,
-            body:not(.ifx-alt-type-badges) .card__type.ifx-serial-type { display: none !important; }
+            body:not(.ifx-alt-type-badges) .card__type.ifx-movie-type { display: none !important; }
         </style>`);
         $('head').append(style);
         $('body').attr('data-movie-labels', InterFaceMod.settings.show_movie_type ? 'on' : 'off');
@@ -357,23 +356,28 @@
                 else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|TВ|TV)/i)) isTV = true;
             }
 
-            var lbl = $('<div class="content-label"></div>');
-            if (isTV) {
-                lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
-                
-                var $serialType = view.children('.ifx-serial-type');
-                if (!$serialType.length) {
-                    $('<div class="card__type ifx-serial-type">TV</div>').appendTo(view);
+            var cardText = $(card).text().toLowerCase();
+            var hasMovieTraits = $(card).find('.card__age').length > 0 || 
+                                 $(card).find('.card__vote').length > 0 || 
+                                 /\b(19|20)\d{2}\b/.test(cardText);
+
+            if (isTV || hasMovieTraits) {
+                var lbl = $('<div class="content-label"></div>');
+                if (isTV) {
+                    lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
+                    view.children('.ifx-movie-type').remove();
+                } else {
+                    lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
+                    
+                    var $movieType = view.children('.ifx-movie-type');
+                    if (!$movieType.length) {
+                        $('<div class="card__type ifx-movie-type">Movie</div>').appendTo(view);
+                    }
                 }
+                view.append(lbl);
             } else {
-                lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
-                
-                var $movieType = view.children('.ifx-movie-type');
-                if (!$movieType.length) {
-                    $('<div class="card__type ifx-movie-type">Movie</div>').appendTo(view);
-                }
+                view.children('.ifx-movie-type').remove();
             }
-            view.append(lbl);
         }
 
         function processAll() {
