@@ -9,6 +9,7 @@
             enabled: true,
             buttons_mode: 'default',
             show_movie_type: true,
+            type_badges_bottom: true,
             theme: 'default',
             colored_ratings: true,
             seasons_info_mode: 'none',
@@ -307,13 +308,26 @@
             .serial-label { background-color: #3498db!important; }
             .movie-label  { background-color: #3498db!important; }
             body[data-movie-labels="on"] .card--tv .card__type { display: none!important; }
+            .ifx-bottom-left-stack {
+                position: absolute; left: .3em; bottom: .3em;
+                display: flex; flex-direction: column; align-items: flex-start;
+                gap: 2px; z-index: 10; pointer-events: none;
+            }
+            .ifx-bottom-left-stack > * { pointer-events: auto; }
+            .ifx-pill { color: #fff !important; padding: 0.3em 0.5em !important; border-radius: 0.3em !important; font-size: 0.75em !important; font-weight: 600 !important; }
+            .ifx-pill-movie { background-color: #4285F4 !important; }
+            .ifx-pill-series { background-color: #3498db !important; }
+            body.ifx-type-badges .card__type { display: none !important; }
         </style>`);
         $('head').append(style);
         $('body').attr('data-movie-labels', InterFaceMod.settings.show_movie_type ? 'on' : 'off');
+        
+        if (InterFaceMod.settings.type_badges_bottom) {
+            $('body').addClass('ifx-type-badges');
+        }
 
         function addLabel(card) {
             if (!InterFaceMod.settings.show_movie_type) return;
-            // ИСПРАВЛЕНИЕ: Не добавляем лейблы внутри окна онлайн/эксплорера
             if ($(card).closest('.explorer, .layer--online, .select-box').length) {
                 $(card).find('.content-label').remove();
                 return;
@@ -336,9 +350,7 @@
                 if (id && Lampa.Storage.cache('card_' + id)) {
                     meta = Object.assign(meta, Lampa.Storage.cache('card_' + id));
                 }
-            } catch (e) {
-                // парсинг мог упасть — игнорируем
-            }
+            } catch (e) {}
 
             var isTV = false;
             if (meta.type === 'tv' || meta.card_type === 'tv' ||
@@ -349,7 +361,7 @@
             }
             if (!isTV) {
                 if ($(card).hasClass('card--tv') || $(card).data('type') === 'tv') isTV = true;
-                else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|ТВ|TV)/i)) isTV = true;
+                else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|TВ|TV)/i)) isTV = true;
             }
 
             var lbl = $('<div class="content-label"></div>');
@@ -359,6 +371,21 @@
                 lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
             }
             view.append(lbl);
+            
+            if (InterFaceMod.settings.type_badges_bottom) {
+                var $leftStack = view.children('.ifx-bottom-left-stack');
+                if (!$leftStack.length) {
+                    $leftStack = $('<div class="ifx-bottom-left-stack"></div>').appendTo(view);
+                }
+                var typeText = isTV ? 'Сериал' : 'Фильм';
+                var $typePill = $leftStack.children('.ifx-type-pill');
+                if (!$typePill.length) {
+                    $typePill = $('<div class="ifx-pill ifx-type-pill"></div>').appendTo($leftStack);
+                }
+                $typePill.text(typeText);
+                $typePill.removeClass('ifx-pill-movie ifx-pill-series');
+                $typePill.addClass(isTV ? 'ifx-pill-series' : 'ifx-pill-movie');
+            }
         }
 
         function processAll() {
@@ -778,6 +805,18 @@ function colorizeAgeRating() {
             }
         });
 
+        // бейджи снизу
+        Lampa.SettingsApi.addParam({
+            component: 'season_info',
+            param: { name: 'type_badges_bottom', type: 'trigger', default: true },
+            field: { name: 'Бейджи "Фильм/Сериал" снизу', description: 'Показывать бейджи снизу постера' },
+            onChange: function (v) {
+                InterFaceMod.settings.type_badges_bottom = v;
+                $('body').toggleClass('ifx-type-badges', v);
+                Lampa.Settings.update();
+            }
+        });
+
         // тема
         Lampa.SettingsApi.addParam({
             component: 'season_info',
@@ -856,6 +895,7 @@ function colorizeAgeRating() {
         InterFaceMod.settings.label_position       = Lampa.Storage.get('label_position', 'top-right');
         InterFaceMod.settings.show_buttons         = Lampa.Storage.get('show_buttons', false);
         InterFaceMod.settings.show_movie_type      = Lampa.Storage.get('season_info_show_movie_type', true);
+        InterFaceMod.settings.type_badges_bottom   = Lampa.Storage.get('type_badges_bottom', true);
         InterFaceMod.settings.theme                = Lampa.Storage.get('theme_select', 'default');
         InterFaceMod.settings.colored_ratings      = Lampa.Storage.get('colored_ratings', true);
         InterFaceMod.settings.colored_elements     = Lampa.Storage.get('colored_elements', true);
