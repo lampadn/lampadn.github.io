@@ -15,23 +15,248 @@
             show_episodes_on_main: false,
             label_position: 'top-right',
             show_buttons: false,
-            colored_elements: true,
-            mono_mode: true
+            colored_elements: true
         }
     };
 
-    function isMonoEnabled() {
-        return InterFaceMod.settings.mono_mode === true;
+    function getBool(key, def) {
+        var v = Lampa.Storage.get(key, def);
+        return v === true || v === 'true';
     }
 
-    function applyMonoStyle(el, originalBg, originalColor) {
+    function isMonoEnabled() {
+        return getBool('interface_mod_new_mono_mode', false);
+    }
+
+    function isMonoFor(settingKey) {
+        return isMonoEnabled() && getBool(settingKey, false);
+    }
+
+    function applyMonoBadgeStyle(el) {
         if (!el || !el.style) return;
-        if (isMonoEnabled()) {
-            el.style.backgroundColor = 'rgba(255,255,255,.08)';
-            el.style.color = '#fff';
-            el.style.border = '1px solid rgba(255,255,255,.45)';
+        ['background-color','color','border','border-color','border-width','border-style','box-shadow','text-shadow'].forEach(function (p) {
+            try { el.style.removeProperty(p); } catch (e) {}
+        });
+        el.style.setProperty('border-width', '1px', 'important');
+        el.style.setProperty('border-style', 'solid', 'important');
+        el.style.setProperty('border-color', 'rgba(255,255,255,.45)', 'important');
+        el.style.setProperty('background-color', 'rgba(255,255,255,.08)', 'important');
+        el.style.setProperty('color', '#fff', 'important');
+    }
+
+    function calculateAverageEpisodeDuration(movie) {
+        if (!movie || typeof movie !== 'object') return 0;
+        var total = 0, count = 0;
+        if (Array.isArray(movie.episode_run_time) && movie.episode_run_time.length) {
+            movie.episode_run_time.forEach(function (m) {
+                if (m > 0 && m <= 200) { total += m; count++; }
+            });
+        } else if (Array.isArray(movie.seasons)) {
+            movie.seasons.forEach(function (s) {
+                if (Array.isArray(s.episodes)) {
+                    s.episodes.forEach(function (e) {
+                        if (e.runtime && e.runtime > 0 && e.runtime <= 200) { total += e.runtime; count++; }
+                    });
+                }
+            });
+        }
+        if (count > 0) return Math.round(total / count);
+        if (movie.last_episode_to_air && movie.last_episode_to_air.runtime && movie.last_episode_to_air.runtime > 0 && movie.last_episode_to_air.runtime <= 200) {
+            return movie.last_episode_to_air.runtime;
+        }
+        return 0;
+    }
+
+    function formatDurationMinutes(minutes) {
+        if (!minutes || minutes <= 0) return '';
+        var h = Math.floor(minutes / 60), m = minutes % 60, out = '';
+        if (h > 0) {
+            out += h + ' ' + plural(h, 'час', 'часа', 'часов');
+            if (m > 0) out += ' ' + m + ' ' + plural(m, 'минута', 'минуты', 'минут');
+        } else {
+            out += m + ' ' + plural(m, 'минута', 'минуты', 'минут');
+        }
+        return out;
+    }
+
+    var __ifx_last = { details: null, movie: null, isTv: null, originalHTML: null };
+
+    function buildInfoPanel(details, movie, isTvShow, originalDetails) {
+        var mono = isMonoFor('interface_mod_new_info_panel');
+
+        var container = $('<div>').css({
+            display: 'flex', 'flex-direction': 'column', width: '100%', gap: '0em', margin: '-1.0em 0 0.2em 0.45em'
+        });
+
+        var row1 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'center', margin: '0 0 0.2em 0' });
+        var row2 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'center', margin: '0 0 0.2em 0' });
+        var row3 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'center', margin: '0 0 0.2em 0' });
+        var row4 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'flex-start', margin: '0 0 0.2em 0' });
+
+        var colors = {
+            seasons: { bg: 'rgba(52,152,219,0.8)', text: 'white' },
+            episodes:{ bg: 'rgba(46,204,113,0.8)', text: 'white' },
+            duration:{ bg: 'rgba(52,152,219,0.8)', text: 'white' },
+            next:    { bg: 'rgba(230,126,34,0.9)', text: 'white' },
+            genres: {
+                'Боевик': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'Приключения': { bg: 'rgba(39,174,96,.85)', text: 'white' },
+                'Мультфильм': { bg: 'rgba(155,89,182,.85)', text: 'white' }, 'Комедия': { bg: 'rgba(241,196,15,.9)', text: 'black' },
+                'Криминал': { bg: 'rgba(88,24,69,.85)', text: 'white' }, 'Документальный': { bg: 'rgba(22,160,133,.85)', text: 'white' },
+                'Драма': { bg: 'rgba(102,51,153,.85)', text: 'white' }, 'Семейный': { bg: 'rgba(139,195,74,.90)', text: 'white' },
+                'Фэнтези': { bg: 'rgba(22,110,116,.85)', text: 'white' }, 'История': { bg: 'rgba(121,85,72,.85)', text: 'white' },
+                'Ужасы': { bg: 'rgba(155,27,48,.85)', text: 'white' }, 'Музыка': { bg: 'rgba(63,81,181,.85)', text: 'white' },
+                'Детектив': { bg: 'rgba(52,73,94,.85)', text: 'white' }, 'Мелодрама': { bg: 'rgba(233,30,99,.85)', text: 'white' },
+                'Фантастика': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'Триллер': { bg: 'rgba(165,27,11,.90)', text: 'white' },
+                'Военный': { bg: 'rgba(85,107,47,.85)', text: 'white' }, 'Вестерн': { bg: 'rgba(211,84,0,.85)', text: 'white' },
+                'Детский': { bg: 'rgba(0,188,212,.85)', text: 'white' }, 'Новости': { bg: 'rgba(70,130,180,.85)', text: 'white' },
+                'Реалити-шоу': { bg: 'rgba(230,126,34,.9)', text: 'white' }, 'Ток-шоу': { bg: 'rgba(241,196,15,.9)', text: 'black' },
+                'Война и политика': { bg: 'rgba(96,125,139,.85)', text: 'white' }, 'Аниме': { bg: 'rgba(156,39,176,.85)', text: 'white' },
+                'боевик': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'приключения': { bg: 'rgba(39,174,96,.85)', text: 'white' },
+                'мультфильм': { bg: 'rgba(155,89,182,.85)', text: 'white' }, 'комедия': { bg: 'rgba(241,196,15,.9)', text: 'black' },
+                'криминал': { bg: 'rgba(88,24,69,.85)', text: 'white' }, 'документальный': { bg: 'rgba(22,160,133,.85)', text: 'white' },
+                'драма': { bg: 'rgba(102,51,153,.85)', text: 'white' }, 'семейный': { bg: 'rgba(139,195,74,.90)', text: 'white' },
+                'фэнтези': { bg: 'rgba(22,110,116,.85)', text: 'white' }, 'история': { bg: 'rgba(121,85,72,.85)', text: 'white' },
+                'ужасы': { bg: 'rgba(155,27,48,.85)', text: 'white' }, 'музыка': { bg: 'rgba(63,81,181,.85)', text: 'white' },
+                'детектив': { bg: 'rgba(52,73,94,.85)', text: 'white' }, 'мелодрама': { bg: 'rgba(233,30,99,.85)', text: 'white' },
+                'фантастика': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'триллер': { bg: 'rgba(165,27,11,.90)', text: 'white' },
+                'военный': { bg: 'rgba(85,107,47,.85)', text: 'white' }, 'вестерн': { bg: 'rgba(211,84,0,.85)', text: 'white' },
+                'детский': { bg: 'rgba(0,188,212,.85)', text: 'white' }, 'новости': { bg: 'rgba(70,130,180,.85)', text: 'white' },
+                'реалити-шоу': { bg: 'rgba(230,126,34,.9)', text: 'white' }, 'ток-шоу': { bg: 'rgba(241,196,15,.9)', text: 'black' },
+                'война и политика': { bg: 'rgba(96,125,139,.85)', text: 'white' }, 'аниме': { bg: 'rgba(156,39,176,.85)', text: 'white' }
+            }
+        };
+
+        var baseBadge = {
+            'border-radius': '0.3em', border: '0', 'font-size': '1.0em', padding: '0.2em 0.6em',
+            display: 'inline-block', 'white-space': 'nowrap', 'line-height': '1.2em', 'margin-right': '0.4em', 'margin-bottom': '0.2em'
+        };
+
+        function badgeCss(bg, text) {
+            if (mono) {
+                return $.extend({}, baseBadge, {
+                    'background-color': 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.45)'
+                });
+            }
+            return $.extend({}, baseBadge, { 'background-color': bg, color: text });
+        }
+
+        var baseGenre = {
+            'border-radius': '0.3em', border: '0', 'font-size': '1.0em', padding: '0.2em 0.6em',
+            display: 'inline-block', 'white-space': 'nowrap', 'line-height': '1.2em', 'margin-right': '0.4em', 'margin-bottom': '0.2em'
+        };
+
+        function genreCss(bg, text) {
+            if (mono) {
+                return $.extend({}, baseGenre, {
+                    'background-color': 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.45)'
+                });
+            }
+            return $.extend({}, baseGenre, { 'background-color': bg, color: text });
+        }
+
+        if (isTvShow && Array.isArray(movie.seasons)) {
+            var totalEps = 0, airedEps = 0, now = new Date(), hasEpisodes = false;
+            movie.seasons.forEach(function (s) {
+                if (s.season_number === 0) return;
+                if (s.episode_count) totalEps += s.episode_count;
+                if (Array.isArray(s.episodes) && s.episodes.length) {
+                    hasEpisodes = true;
+                    s.episodes.forEach(function (e) {
+                        if (e.air_date && new Date(e.air_date) <= now) airedEps++;
+                    });
+                } else if (s.air_date && new Date(s.air_date) <= now && s.episode_count) {
+                    airedEps += s.episode_count;
+                }
+            });
+            if (!hasEpisodes && movie.next_episode_to_air && movie.next_episode_to_air.season_number && movie.next_episode_to_air.episode_number) {
+                var nextS = movie.next_episode_to_air.season_number, nextE = movie.next_episode_to_air.episode_number, rem = 0;
+                movie.seasons.forEach(function (s) {
+                    if (s.season_number === nextS) rem += (s.episode_count || 0) - nextE + 1;
+                    else if (s.season_number > nextS) rem += s.episode_count || 0;
+                });
+                if (rem > 0 && totalEps > 0) airedEps = Math.max(0, totalEps - rem);
+            }
+            var epsText = '';
+            if (totalEps > 0 && airedEps > 0 && airedEps < totalEps) epsText = airedEps + ' ' + plural(airedEps, 'серия', 'серии', 'серий') + ' из ' + totalEps;
+            else if (totalEps > 0) epsText = totalEps + ' ' + plural(totalEps, 'серия', 'серии', 'серий');
+            if (epsText) row1.append($('<span>').text(epsText).css(badgeCss(colors.episodes.bg, colors.episodes.text)));
+        }
+
+        if (isTvShow && movie.next_episode_to_air && movie.next_episode_to_air.air_date) {
+            var nextDate = new Date(movie.next_episode_to_air.air_date), today = new Date();
+            nextDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+            var diff = Math.floor((nextDate - today) / (1000 * 60 * 60 * 24));
+            var txt = diff === 0 ? 'Следующая серия уже сегодня' : diff === 1 ? 'Следующая серия уже завтра' : diff > 1 ? ('Следующая серия через ' + diff + ' ' + plural(diff, 'день', 'дня', 'дней')) : '';
+            if (txt) row2.append($('<span>').text(txt).css(badgeCss(colors.next.bg, colors.next.text)));
+        }
+
+        if (!isTvShow && movie.runtime > 0) {
+            var mins = movie.runtime, h = Math.floor(mins / 60), m = mins % 60;
+            var tt = 'Длительность фильма: ';
+            if (h > 0) tt += h + ' ' + plural(h, 'час', 'часа', 'часов');
+            if (m > 0) tt += (h > 0 ? ' ' : '') + m + ' мин.';
+            row3.append($('<span>').text(tt).css(badgeCss(colors.duration.bg, colors.duration.text)));
+        } else if (isTvShow) {
+            var avg = calculateAverageEpisodeDuration(movie);
+            if (avg > 0) row3.append($('<span>').text('Длительность серии ≈ ' + formatDurationMinutes(avg)).css(badgeCss(colors.duration.bg, colors.duration.text)));
+        }
+
+        var seasonsCount = (movie.season_count || movie.number_of_seasons || (movie.seasons ? movie.seasons.filter(function (s) { return s.season_number !== 0; }).length : 0)) || 0;
+        if (isTvShow && seasonsCount > 0) {
+            row4.append($('<span>').text('Сезоны: ' + seasonsCount).css(badgeCss(colors.seasons.bg, colors.seasons.text)));
+        }
+
+        var genreList = [];
+        if (Array.isArray(movie.genres) && movie.genres.length) {
+            genreList = movie.genres.map(function (g) { return g.name; });
+        }
+        genreList = genreList.filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; });
+        genreList.forEach(function (gn) {
+            var c = colors.genres[gn] || { bg: 'rgba(255,255,255,.12)', text: 'white' };
+            row4.append($('<span>').text(gn).css(genreCss(c.bg, c.text)));
+        });
+
+        container.append(row1);
+        if (row2.children().length) container.append(row2);
+        if (row3.children().length) container.append(row3);
+        if (row4.children().length) container.append(row4);
+
+        details.append(container);
+    }
+
+    function rebuildInfoPanelActive() {
+        var enabled = getBool('interface_mod_new_info_panel', true);
+        if (!__ifx_last.details || !__ifx_last.details.length) return;
+        __ifx_last.details.find('.ifx-info-panel').remove();
+        if (enabled) {
+            buildInfoPanel(__ifx_last.details, __ifx_last.movie, __ifx_last.isTv, __ifx_last.originalHTML);
         }
     }
+
+    function onMovieFullDetails(details, movie, isTvShow) {
+        if (!getBool('interface_mod_new_info_panel', true)) return;
+        __ifx_last = { details: details, movie: movie, isTv: isTvShow };
+        details.find('.ifx-info-panel').remove();
+        var panel = $('<div class="ifx-info-panel"></div>');
+        details.append(panel);
+        buildInfoPanel(panel, movie, isTvShow);
+    }
+
+    Lampa.Listener.follow('full', function (e) {
+        if (e.type === 'complite') {
+            var details = $(e.object.activity.render()).find('.full-start__info, .full-start-new__info').first();
+            if (details.length) {
+                var m = e.data.movie;
+                if (m) {
+                    var isTv = m.number_of_seasons > 0 || m.seasons || m.type === 'tv';
+                    onMovieFullDetails(details, m, isTv);
+                }
+            }
+        }
+    });
+
+    window.rebuildInfoPanelActive = rebuildInfoPanelActive;
 
     /*** 1) СЕЗОНЫ И ЭПИЗОДЫ ***/
     function addSeasonInfo() {
@@ -559,16 +784,22 @@
         $('head').append(style);
     }
 
-/*** 5) ЦВЕТНЫЕ РЕЙТИНГИ И СТАТУСЫ ***/
+    function applyMonoStyle(el) {
+        if (!el || !el.style) return;
+        el.style.backgroundColor = 'rgba(255,255,255,.08)';
+        el.style.color = '#fff';
+        el.style.border = '1px solid rgba(255,255,255,.45)';
+    }
+
+    /*** 5) ЦВЕТНЫЕ РЕЙТИНГИ И СТАТУСЫ ***/
 function updateVoteColors() {
     if (!InterFaceMod.settings.colored_ratings) return;
 
     function apply(el) {
-        if (isMonoEnabled()) {
+        if (isMonoFor('interface_mod_new_colored_ratings')) {
             $(el).css('color', '#fff');
             return;
         }
-
         var text = $(el).text().trim();
         var m = text.match(/(\d+[\.,]\d+|\d+)/);
         if (!m) return;
@@ -624,7 +855,7 @@ function setupVoteColorsForDetailPage() {
             post:      { bg: 'rgba(0,188,212,0.8)',  text: 'white' }
         };
         function apply(el) {
-            if (isMonoEnabled()) {
+        if (isMonoFor('interface_mod_new_colored_age')) {
                 $(el).css({
                     backgroundColor: 'rgba(255,255,255,.08)',
                     color: '#fff',
@@ -906,15 +1137,51 @@ function colorizeAgeRating() {
         // монохромный режим
         Lampa.SettingsApi.addParam({
             component: 'season_info',
-            param: { name: 'mono_mode', type: 'trigger', default: true },
+            param: { name: 'interface_mod_new_mono_mode', type: 'trigger', default: false },
             field: { name: 'Монохромный режим', description: 'Ч/Б оформление для цветных элементов' },
             onChange: function (v) {
-                InterFaceMod.settings.mono_mode = v;
-                Lampa.Settings.update();
                 if (InterFaceMod.settings.colored_ratings) setupVoteColorsObserver();
                 if (InterFaceMod.settings.colored_elements) {
                     colorizeSeriesStatus();
                     colorizeAgeRating();
+                }
+            }
+        });
+
+        // информационная панель
+        Lampa.SettingsApi.addParam({
+            component: 'season_info',
+            param: { name: 'interface_mod_new_info_panel', type: 'trigger', default: true },
+            field: { name: 'Информационная панель', description: 'Показывать информацию о фильме/сериале' },
+            onChange: function (v) {
+                rebuildInfoPanel();
+            }
+        });
+
+        // цветные статусы
+        Lampa.SettingsApi.addParam({
+            component: 'season_info',
+            param: { name: 'interface_mod_new_colored_status', type: 'trigger', default: true },
+            field: { name: 'Цветные статусы', description: 'Отображать статусы сериалов цветными' },
+            onChange: function (v) {
+                if (v) {
+                    colorizeSeriesStatus();
+                } else {
+                    $('.full-start__status').css({ backgroundColor: '', color: '', borderRadius: '', display: '' });
+                }
+            }
+        });
+
+        // цветной возраст
+        Lampa.SettingsApi.addParam({
+            component: 'season_info',
+            param: { name: 'interface_mod_new_colored_age', type: 'trigger', default: true },
+            field: { name: 'Цветной возраст', description: 'Отображать возрастной рейтинг цветным' },
+            onChange: function (v) {
+                if (v) {
+                    colorizeAgeRating();
+                } else {
+                    $('.full-start__pg').css({ backgroundColor: '', color: '' });
                 }
             }
         });
@@ -943,6 +1210,16 @@ function colorizeAgeRating() {
         if (InterFaceMod.settings.colored_elements) {
             colorizeSeriesStatus();
             colorizeAgeRating();
+        }
+        
+        if (getBool('interface_mod_new_info_panel', true)) {
+            rebuildInfoPanel();
+        }
+    }
+
+    function rebuildInfoPanel() {
+        if (typeof window.rebuildInfoPanelActive === 'function') {
+            window.rebuildInfoPanelActive();
         }
     }
 
