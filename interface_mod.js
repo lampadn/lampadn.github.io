@@ -9,7 +9,6 @@
             enabled: true,
             buttons_mode: 'default',
             show_movie_type: true,
-            type_badges_bottom: true,
             theme: 'default',
             colored_ratings: true,
             seasons_info_mode: 'none',
@@ -305,26 +304,20 @@
     function changeMovieTypeLabels() {
         var style = $(`<style id="movie_type_styles">
             .content-label { position: absolute!important; top: 1.4em!important; left: -0.8em!important; color: white!important; padding: 0.4em 0.4em!important; border-radius: 0.3em!important; font-size: 0.8em!important; z-index: 10!important; }
-            .serial-label { background-color: #3498db!important; }
-            .movie-label  { background-color: #3498db!important; }
+            .serial-label { background-color: #4285F4!important; }
+            .movie-label  { background-color: #4285F4!important; }
             body[data-movie-labels="on"] .card--tv .card__type { display: none!important; }
-            .ifx-bottom-left-stack {
-                position: absolute; left: .3em; bottom: .3em;
-                display: flex; flex-direction: column; align-items: flex-start;
-                gap: 2px; z-index: 10; pointer-events: none;
+            .card__type.ifx-movie-type, .card__type.ifx-serial-type {
+                background: #4285F4 !important;
+                color: #fff !important;
+                display: block !important;
             }
-            .ifx-bottom-left-stack > * { pointer-events: auto; }
-            .ifx-pill { color: #fff !important; padding: 0.3em 0.5em !important; border-radius: 0.3em !important; font-size: 0.75em !important; font-weight: 600 !important; }
-            .ifx-pill-movie { background-color: #4285F4 !important; }
-            .ifx-pill-series { background-color: #3498db !important; }
-            body.ifx-type-badges .card__type { display: none !important; }
+            body:not(.ifx-alt-type-badges) .card__type.ifx-movie-type,
+            body:not(.ifx-alt-type-badges) .card__type.ifx-serial-type { display: none !important; }
         </style>`);
         $('head').append(style);
         $('body').attr('data-movie-labels', InterFaceMod.settings.show_movie_type ? 'on' : 'off');
-        
-        if (InterFaceMod.settings.type_badges_bottom) {
-            $('body').addClass('ifx-type-badges');
-        }
+        $('body').addClass('ifx-alt-type-badges');
 
         function addLabel(card) {
             if (!InterFaceMod.settings.show_movie_type) return;
@@ -367,25 +360,20 @@
             var lbl = $('<div class="content-label"></div>');
             if (isTV) {
                 lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
+                
+                var $serialType = view.children('.ifx-serial-type');
+                if (!$serialType.length) {
+                    $('<div class="card__type ifx-serial-type">TV</div>').appendTo(view);
+                }
             } else {
                 lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
+                
+                var $movieType = view.children('.ifx-movie-type');
+                if (!$movieType.length) {
+                    $('<div class="card__type ifx-movie-type">Movie</div>').appendTo(view);
+                }
             }
             view.append(lbl);
-            
-            if (InterFaceMod.settings.type_badges_bottom) {
-                var $leftStack = view.children('.ifx-bottom-left-stack');
-                if (!$leftStack.length) {
-                    $leftStack = $('<div class="ifx-bottom-left-stack"></div>').appendTo(view);
-                }
-                var typeText = isTV ? 'Сериал' : 'Фильм';
-                var $typePill = $leftStack.children('.ifx-type-pill');
-                if (!$typePill.length) {
-                    $typePill = $('<div class="ifx-pill ifx-type-pill"></div>').appendTo($leftStack);
-                }
-                $typePill.text(typeText);
-                $typePill.removeClass('ifx-pill-movie ifx-pill-series');
-                $typePill.addClass(isTV ? 'ifx-pill-series' : 'ifx-pill-movie');
-            }
         }
 
         function processAll() {
@@ -408,9 +396,9 @@
                         fontSize: '0.8em', zIndex: 10
                     });
                     if (isTV) {
-                        lbl.addClass('serial-label').text('Сериал').css('backgroundColor', '#3498db');
+                        lbl.addClass('serial-label').text('Сериал').css('backgroundColor', '#4285F4');
                     } else {
-                        lbl.addClass('movie-label').text('Фильм').css('backgroundColor', '#3498db');
+                        lbl.addClass('movie-label').text('Фильм').css('backgroundColor', '#4285F4');
                     }
                     poster.css('position', 'relative').append(lbl);
                 }
@@ -805,18 +793,6 @@ function colorizeAgeRating() {
             }
         });
 
-        // бейджи снизу
-        Lampa.SettingsApi.addParam({
-            component: 'season_info',
-            param: { name: 'type_badges_bottom', type: 'trigger', default: true },
-            field: { name: 'Бейджи "Фильм/Сериал" снизу', description: 'Показывать бейджи снизу постера' },
-            onChange: function (v) {
-                InterFaceMod.settings.type_badges_bottom = v;
-                $('body').toggleClass('ifx-type-badges', v);
-                Lampa.Settings.update();
-            }
-        });
-
         // тема
         Lampa.SettingsApi.addParam({
             component: 'season_info',
@@ -895,7 +871,6 @@ function colorizeAgeRating() {
         InterFaceMod.settings.label_position       = Lampa.Storage.get('label_position', 'top-right');
         InterFaceMod.settings.show_buttons         = Lampa.Storage.get('show_buttons', false);
         InterFaceMod.settings.show_movie_type      = Lampa.Storage.get('season_info_show_movie_type', true);
-        InterFaceMod.settings.type_badges_bottom   = Lampa.Storage.get('type_badges_bottom', true);
         InterFaceMod.settings.theme                = Lampa.Storage.get('theme_select', 'default');
         InterFaceMod.settings.colored_ratings      = Lampa.Storage.get('colored_ratings', true);
         InterFaceMod.settings.colored_elements     = Lampa.Storage.get('colored_elements', true);
