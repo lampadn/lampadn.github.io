@@ -15,9 +15,23 @@
             show_episodes_on_main: false,
             label_position: 'top-right',
             show_buttons: false,
-            colored_elements: true
+            colored_elements: true,
+            mono_mode: true
         }
     };
+
+    function isMonoEnabled() {
+        return InterFaceMod.settings.mono_mode === true;
+    }
+
+    function applyMonoStyle(el, originalBg, originalColor) {
+        if (!el || !el.style) return;
+        if (isMonoEnabled()) {
+            el.style.backgroundColor = 'rgba(255,255,255,.08)';
+            el.style.color = '#fff';
+            el.style.border = '1px solid rgba(255,255,255,.45)';
+        }
+    }
 
     /*** 1) СЕЗОНЫ И ЭПИЗОДЫ ***/
     function addSeasonInfo() {
@@ -550,9 +564,11 @@ function updateVoteColors() {
     if (!InterFaceMod.settings.colored_ratings) return;
 
     function apply(el) {
-        // ИСПРАВЛЕНИЕ: ИСПРАВЛЕНИЕ: Не красим explorer-card (окно выбора серий)
-        if ($(el).closest('.explorer').length) return;
-        
+        if (isMonoEnabled()) {
+            $(el).css('color', '#fff');
+            return;
+        }
+
         var text = $(el).text().trim();
         var m = text.match(/(\d+[\.,]\d+|\d+)/);
         if (!m) return;
@@ -608,6 +624,16 @@ function setupVoteColorsForDetailPage() {
             post:      { bg: 'rgba(0,188,212,0.8)',  text: 'white' }
         };
         function apply(el) {
+            if (isMonoEnabled()) {
+                $(el).css({
+                    backgroundColor: 'rgba(255,255,255,.08)',
+                    color: '#fff',
+                    border: '1px solid rgba(255,255,255,.45)',
+                    borderRadius: '0.3em',
+                    display: 'inline-block'
+                });
+                return;
+            }
             var t = $(el).text().trim().toLowerCase();
             var cfg = null;
             if (t.includes('заверш') || t.includes('ended'))      cfg = map.completed;
@@ -667,6 +693,18 @@ function colorizeAgeRating() {
         // ИСПРАВЛЕНИЕ: Не красим элементы внутри explorer (окно выбора серий)
         if ($(el).closest('.explorer').length) return;
 
+        if (isMonoEnabled()) {
+            $(el).css({
+                backgroundColor: 'rgba(255,255,255,.08)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,.45)',
+                borderRadius: '0.3em',
+                padding: '0.2em 0.4em',
+                display: 'inline-block'
+            });
+            return;
+        }
+
         var t = $(el).text().trim();
         var grp = null;
         for (var key in groups) {
@@ -718,12 +756,7 @@ function colorizeAgeRating() {
         Lampa.SettingsApi.addComponent({
             component: 'season_info',
             name: 'Интерфейс мод',
-                icon: ''
-     + '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'
-     +   '<path d="M4 5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V7C20 7.55228 19.5523 8 19 8H5C4.44772 8 4 7.55228 4 7V5Z" fill="currentColor"/>'
-     +   '<path d="M4 11C4 10.4477 4.44772 10 5 10H19C19.5523 10 20 10.4477 20 11V13C20 13.5523 19.5523 14 19 14H5C4.44772 14 4 13.5523 4 13V11Z" fill="currentColor"/>'
-     +   '<path d="M4 17C4 16.4477 4.44772 16 5 16H19C19.5523 16 20 16.4477 20 17V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V17Z" fill="currentColor"/>'
-     + '</svg>'
+            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V7C20 7.55228 19.5523 8 19 8H5C4.44772 8 4 7.55228 4 7V5Z" fill="currentColor"/><path d="M4 11C4 10.4477 4.44772 10 5 10H19C19.5523 10 20 10.4477 20 11V13C20 13.5523 19.5523 14 19 14H5C4.44772 14 4 13.5523 4 13V11Z" fill="currentColor"/><path d="M4 17C4 16.4477 4.44772 16 5 16H19C19.5523 16 20 16.4477 20 17V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V17Z" fill="currentColor"/></svg>'
         });
 
         // режим серий
@@ -870,6 +903,22 @@ function colorizeAgeRating() {
             }
         });
 
+        // монохромный режим
+        Lampa.SettingsApi.addParam({
+            component: 'season_info',
+            param: { name: 'mono_mode', type: 'trigger', default: true },
+            field: { name: 'Монохромный режим', description: 'Ч/Б оформление для цветных элементов' },
+            onChange: function (v) {
+                InterFaceMod.settings.mono_mode = v;
+                Lampa.Settings.update();
+                if (InterFaceMod.settings.colored_ratings) setupVoteColorsObserver();
+                if (InterFaceMod.settings.colored_elements) {
+                    colorizeSeriesStatus();
+                    colorizeAgeRating();
+                }
+            }
+        });
+
         // загрузить сохранённые
         InterFaceMod.settings.seasons_info_mode    = Lampa.Storage.get('seasons_info_mode', 'none');
         InterFaceMod.settings.label_position       = Lampa.Storage.get('label_position', 'top-right');
@@ -878,6 +927,7 @@ function colorizeAgeRating() {
         InterFaceMod.settings.theme                = Lampa.Storage.get('theme_select', 'default');
         InterFaceMod.settings.colored_ratings      = Lampa.Storage.get('colored_ratings', true);
         InterFaceMod.settings.colored_elements     = Lampa.Storage.get('colored_elements', true);
+        InterFaceMod.settings.mono_mode            = Lampa.Storage.get('mono_mode', true);
 
         // применить тему сразу
         applyTheme(InterFaceMod.settings.theme);
