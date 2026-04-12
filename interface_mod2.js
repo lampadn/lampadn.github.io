@@ -861,6 +861,27 @@ function colorizeAgeRating() {
             }
         });
 
+        function moveAfterInterface() {
+            var $folders = $('.settings-folder');
+            var $interface = $folders.filter(function () {
+                return $(this).data('component') === 'interface';
+            });
+            var $mod = $folders.filter(function () {
+                return $(this).data('component') === 'season_info';
+            });
+            if ($interface.length && $mod.length && $mod.prev()[0] !== $interface[0]) $mod.insertAfter($interface);
+        }
+
+        var moveTries = 0,
+            moveTimer = setInterval(function () {
+                moveAfterInterface();
+                if (++moveTries >= 40) clearInterval(moveTimer);
+            }, 150);
+
+        new MutationObserver(function () {
+            moveAfterInterface();
+        }).observe(document.body, { childList: true, subtree: true });
+
         // загрузить сохранённые
         InterFaceMod.settings.seasons_info_mode    = Lampa.Storage.get('seasons_info_mode', 'none');
         InterFaceMod.settings.label_position       = Lampa.Storage.get('label_position', 'top-right');
