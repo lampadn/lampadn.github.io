@@ -352,11 +352,20 @@
                 else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|ТВ|TV)/i)) isTV = true;
             }
 
-            // ИСПРАВЛЕНИЕ: Если это не сериал (фильм), выходим и не добавляем лейбл
-            if (!isTV) return;
+            var isPerson = $(card).hasClass('card--person') || $(card).closest('.scroll--persons, .items--persons, .crew').length > 0;
+            if (isPerson) return;
+
+            var hasMovieTraits = $(card).find('.card__age').length > 0 ||
+                                 $(card).find('.card__vote').length > 0 ||
+                                 /\b(19|20)\d{2}\b/.test($(card).text());
+            if (!isTV && !hasMovieTraits) return;
 
             var lbl = $('<div class="content-label"></div>');
-            lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
+            if (isTV) {
+                lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
+            } else {
+                lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
+            }
             view.append(lbl);
         }
 
@@ -374,16 +383,17 @@
                 if (InterFaceMod.settings.show_movie_type) {
                     poster.find('.content-label').remove();
                     
-                    // ИСПРАВЛЕНИЕ: Добавляем лейбл только если это сериал
+                    var lbl = $('<div class="content-label"></div>').css({
+                        position: 'absolute', top: '1.4em', left: '-0.8em',
+                        color: 'white', padding: '0.4em', borderRadius: '0.3em',
+                        fontSize: '0.8em', zIndex: 10
+                    });
                     if (isTV) {
-                        var lbl = $('<div class="content-label"></div>').css({
-                            position: 'absolute', top: '1.4em', left: '-0.8em',
-                            color: 'white', padding: '0.4em', borderRadius: '0.3em',
-                            fontSize: '0.8em', zIndex: 10
-                        });
                         lbl.addClass('serial-label').text('Сериал').css('backgroundColor', '#3498db');
-                        poster.css('position', 'relative').append(lbl);
+                    } else {
+                        lbl.addClass('movie-label').text('Фильм').css('backgroundColor', '#2ecc71');
                     }
+                    poster.css('position', 'relative').append(lbl);
                 }
             }
         });
