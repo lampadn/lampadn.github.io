@@ -19,178 +19,6 @@
         }
     };
 
-    function getBool(key, def) {
-        var v = Lampa.Storage.get(key, def);
-        return v === true || v === 'true';
-    }
-
-    var __ifx_last = { details: null, movie: null, isTv: null, originalHTML: null };
-
-    function buildInfoPanel(details, movie, isTvShow, originalDetails) {
-        var container = $('<div>').css({
-            display: 'flex', 'flex-direction': 'column', width: '100%', gap: '0em', margin: '-1.0em 0 0.2em 0.45em'
-        });
-
-        var row1 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'center', margin: '0 0 0.2em 0' });
-        var row2 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'center', margin: '0 0 0.2em 0' });
-        var row3 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'center', margin: '0 0 0.2em 0' });
-        var row4 = $('<div>').css({ display: 'flex', 'flex-wrap': 'wrap', gap: '0.2em', 'align-items': 'flex-start', margin: '0 0 0.2em 0' });
-
-        var colors = {
-            seasons: { bg: 'rgba(52,152,219,0.8)', text: 'white' },
-            episodes:{ bg: 'rgba(46,204,113,0.8)', text: 'white' },
-            duration:{ bg: 'rgba(52,152,219,0.8)', text: 'white' },
-            next:    { bg: 'rgba(230,126,34,0.9)', text: 'white' },
-            genres: {
-                'Боевик': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'Приключения': { bg: 'rgba(39,174,96,.85)', text: 'white' },
-                'Мультфильм': { bg: 'rgba(155,89,182,.85)', text: 'white' }, 'Комедия': { bg: 'rgba(241,196,15,.9)', text: 'black' },
-                'Криминал': { bg: 'rgba(88,24,69,.85)', text: 'white' }, 'Документальный': { bg: 'rgba(22,160,133,.85)', text: 'white' },
-                'Драма': { bg: 'rgba(102,51,153,.85)', text: 'white' }, 'Семейный': { bg: 'rgba(139,195,74,.90)', text: 'white' },
-                'Фэнтези': { bg: 'rgba(22,110,116,.85)', text: 'white' }, 'История': { bg: 'rgba(121,85,72,.85)', text: 'white' },
-                'Ужасы': { bg: 'rgba(155,27,48,.85)', text: 'white' }, 'Музыка': { bg: 'rgba(63,81,181,.85)', text: 'white' },
-                'Детектив': { bg: 'rgba(52,73,94,.85)', text: 'white' }, 'Мелодрама': { bg: 'rgba(233,30,99,.85)', text: 'white' },
-                'Фантастика': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'Триллер': { bg: 'rgba(165,27,11,.90)', text: 'white' },
-                'Военный': { bg: 'rgba(85,107,47,.85)', text: 'white' }, 'Вестерн': { bg: 'rgba(211,84,0,.85)', text: 'white' },
-                'Детский': { bg: 'rgba(0,188,212,.85)', text: 'white' }, 'Новости': { bg: 'rgba(70,130,180,.85)', text: 'white' },
-                'Реалити-шоу': { bg: 'rgba(230,126,34,.9)', text: 'white' }, 'Ток-шоу': { bg: 'rgba(241,196,15,.9)', text: 'black' },
-                'Война и политика': { bg: 'rgba(96,125,139,.85)', text: 'white' }, 'Аниме': { bg: 'rgba(156,39,176,.85)', text: 'white' },
-                'боевик': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'приключения': { bg: 'rgba(39,174,96,.85)', text: 'white' },
-                'мультфильм': { bg: 'rgba(155,89,182,.85)', text: 'white' }, 'комедия': { bg: 'rgba(241,196,15,.9)', text: 'black' },
-                'криминал': { bg: 'rgba(88,24,69,.85)', text: 'white' }, 'документальный': { bg: 'rgba(22,160,133,.85)', text: 'white' },
-                'драма': { bg: 'rgba(102,51,153,.85)', text: 'white' }, 'семейный': { bg: 'rgba(139,195,74,.90)', text: 'white' },
-                'фэнтези': { bg: 'rgba(22,110,116,.85)', text: 'white' }, 'история': { bg: 'rgba(121,85,72,.85)', text: 'white' },
-                'ужасы': { bg: 'rgba(155,27,48,.85)', text: 'white' }, 'музыка': { bg: 'rgba(63,81,181,.85)', text: 'white' },
-                'детектив': { bg: 'rgba(52,73,94,.85)', text: 'white' }, 'мелодрама': { bg: 'rgba(233,30,99,.85)', text: 'white' },
-                'фантастика': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'триллер': { bg: 'rgba(165,27,11,.90)', text: 'white' },
-                'военный': { bg: 'rgba(85,107,47,.85)', text: 'white' }, 'вестерн': { bg: 'rgba(211,84,0,.85)', text: 'white' },
-                'детский': { bg: 'rgba(0,188,212,.85)', text: 'white' }, 'новости': { bg: 'rgba(70,130,180,.85)', text: 'white' },
-                'реалити-шоу': { bg: 'rgba(230,126,34,.9)', text: 'white' }, 'ток-шоу': { bg: 'rgba(241,196,15,.9)', text: 'black' },
-                'война и политика': { bg: 'rgba(96,125,139,.85)', text: 'white' }, 'аниме': { bg: 'rgba(156,39,176,.85)', text: 'white' }
-            }
-        };
-
-        var baseBadge = {
-            'border-radius': '0.3em', border: '0', 'font-size': '1.0em', padding: '0.2em 0.6em',
-            display: 'inline-block', 'white-space': 'nowrap', 'line-height': '1.2em', 'margin-right': '0.4em', 'margin-bottom': '0.2em'
-        };
-
-        function badgeCss(bg, text) {
-            return $.extend({}, baseBadge, { 'background-color': bg, color: text });
-        }
-
-        var baseGenre = {
-            'border-radius': '0.3em', border: '0', 'font-size': '1.0em', padding: '0.2em 0.6em',
-            display: 'inline-block', 'white-space': 'nowrap', 'line-height': '1.2em', 'margin-right': '0.4em', 'margin-bottom': '0.2em'
-        };
-
-        function genreCss(bg, text) {
-            return $.extend({}, baseGenre, { 'background-color': bg, color: text });
-        }
-
-        if (isTvShow && Array.isArray(movie.seasons)) {
-            var totalEps = 0, airedEps = 0, now = new Date(), hasEpisodes = false;
-            movie.seasons.forEach(function (s) {
-                if (s.season_number === 0) return;
-                if (s.episode_count) totalEps += s.episode_count;
-                if (Array.isArray(s.episodes) && s.episodes.length) {
-                    hasEpisodes = true;
-                    s.episodes.forEach(function (e) {
-                        if (e.air_date && new Date(e.air_date) <= now) airedEps++;
-                    });
-                } else if (s.air_date && new Date(s.air_date) <= now && s.episode_count) {
-                    airedEps += s.episode_count;
-                }
-            });
-            if (!hasEpisodes && movie.next_episode_to_air && movie.next_episode_to_air.season_number && movie.next_episode_to_air.episode_number) {
-                var nextS = movie.next_episode_to_air.season_number, nextE = movie.next_episode_to_air.episode_number, rem = 0;
-                movie.seasons.forEach(function (s) {
-                    if (s.season_number === nextS) rem += (s.episode_count || 0) - nextE + 1;
-                    else if (s.season_number > nextS) rem += s.episode_count || 0;
-                });
-                if (rem > 0 && totalEps > 0) airedEps = Math.max(0, totalEps - rem);
-            }
-            var epsText = '';
-            if (totalEps > 0 && airedEps > 0 && airedEps < totalEps) epsText = airedEps + ' ' + plural(airedEps, 'серия', 'серии', 'серий') + ' из ' + totalEps;
-            else if (totalEps > 0) epsText = totalEps + ' ' + plural(totalEps, 'серия', 'серии', 'серий');
-            if (epsText) row1.append($('<span>').text(epsText).css(badgeCss(colors.episodes.bg, colors.episodes.text)));
-        }
-
-        if (isTvShow && movie.next_episode_to_air && movie.next_episode_to_air.air_date) {
-            var nextDate = new Date(movie.next_episode_to_air.air_date), today = new Date();
-            nextDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            var diff = Math.floor((nextDate - today) / (1000 * 60 * 60 * 24));
-            var txt = diff === 0 ? 'Следующая серия уже сегодня' : diff === 1 ? 'Следующая серия уже завтра' : diff > 1 ? ('Следующая серия через ' + diff + ' ' + plural(diff, 'день', 'дня', 'дней')) : '';
-            if (txt) row2.append($('<span>').text(txt).css(badgeCss(colors.next.bg, colors.next.text)));
-        }
-
-        if (!isTvShow && movie.runtime > 0) {
-            var mins = movie.runtime, h = Math.floor(mins / 60), m = mins % 60;
-            var tt = 'Длительность фильма: ';
-            if (h > 0) tt += h + ' ' + plural(h, 'час', 'часа', 'часов');
-            if (m > 0) tt += (h > 0 ? ' ' : '') + m + ' мин.';
-            row3.append($('<span>').text(tt).css(badgeCss(colors.duration.bg, colors.duration.text)));
-        } else if (isTvShow) {
-            var avg = calculateAverageEpisodeDuration(movie);
-            if (avg > 0) row3.append($('<span>').text('Длительность серии ≈ ' + formatDurationMinutes(avg)).css(badgeCss(colors.duration.bg, colors.duration.text)));
-        }
-
-        var seasonsCount = (movie.season_count || movie.number_of_seasons || (movie.seasons ? movie.seasons.filter(function (s) { return s.season_number !== 0; }).length : 0)) || 0;
-        if (isTvShow && seasonsCount > 0) {
-            row4.append($('<span>').text('Сезоны: ' + seasonsCount).css(badgeCss(colors.seasons.bg, colors.seasons.text)));
-        }
-
-        var genreList = [];
-        if (Array.isArray(movie.genres) && movie.genres.length) {
-            genreList = movie.genres.map(function (g) { return g.name; });
-        }
-        genreList = genreList.filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; });
-        genreList.forEach(function (gn) {
-            var c = colors.genres[gn] || { bg: 'rgba(255,255,255,.12)', text: 'white' };
-            row4.append($('<span>').text(gn).css(genreCss(c.bg, c.text)));
-        });
-
-        container.append(row1);
-        if (row2.children().length) container.append(row2);
-        if (row3.children().length) container.append(row3);
-        if (row4.children().length) container.append(row4);
-
-        details.append(container);
-    }
-
-    function rebuildInfoPanelActive() {
-        var enabled = getBool('interface_mod_new_info_panel', true);
-        if (!__ifx_last.details || !__ifx_last.details.length) return;
-        __ifx_last.details.find('.ifx-info-panel').remove();
-        if (enabled) {
-            buildInfoPanel(__ifx_last.details, __ifx_last.movie, __ifx_last.isTv, __ifx_last.originalHTML);
-        }
-    }
-
-    function onMovieFullDetails(details, movie, isTvShow) {
-        if (!getBool('interface_mod_new_info_panel', true)) return;
-        __ifx_last = { details: details, movie: movie, isTv: isTvShow };
-        details.find('.ifx-info-panel').remove();
-        var panel = $('<div class="ifx-info-panel"></div>');
-        details.append(panel);
-        buildInfoPanel(panel, movie, isTvShow);
-    }
-
-    Lampa.Listener.follow('full', function (e) {
-        if (e.type === 'complite') {
-            var details = $(e.object.activity.render()).find('.full-start__info, .full-start-new__info').first();
-            if (details.length) {
-                var m = e.data.movie;
-                if (m) {
-                    var isTv = m.number_of_seasons > 0 || m.seasons || m.type === 'tv';
-                    onMovieFullDetails(details, m, isTv);
-                }
-            }
-        }
-    });
-
-    window.rebuildInfoPanelActive = rebuildInfoPanelActive;
-
     /*** 1) СЕЗОНЫ И ЭПИЗОДЫ ***/
     function addSeasonInfo() {
         Lampa.Listener.follow('full', function (data) {
@@ -476,22 +304,16 @@
     function changeMovieTypeLabels() {
         var style = $(`<style id="movie_type_styles">
             .content-label { position: absolute!important; top: 1.4em!important; left: -0.8em!important; color: white!important; padding: 0.4em 0.4em!important; border-radius: 0.3em!important; font-size: 0.8em!important; z-index: 10!important; }
-            .serial-label { background-color: #4285F4!important; }
-            .movie-label  { background-color: #4285F4!important; }
+            .serial-label { background-color: #3498db!important; }
+            .movie-label  { background-color: #2ecc71!important; }
             body[data-movie-labels="on"] .card--tv .card__type { display: none!important; }
-            .card__type.ifx-movie-type {
-                background: #4285F4 !important;
-                color: #fff !important;
-                display: block !important;
-            }
-            body:not(.ifx-alt-type-badges) .card__type.ifx-movie-type { display: none !important; }
         </style>`);
         $('head').append(style);
         $('body').attr('data-movie-labels', InterFaceMod.settings.show_movie_type ? 'on' : 'off');
-        $('body').addClass('ifx-alt-type-badges');
 
         function addLabel(card) {
             if (!InterFaceMod.settings.show_movie_type) return;
+            // ИСПРАВЛЕНИЕ: Не добавляем лейблы внутри окна онлайн/эксплорера
             if ($(card).closest('.explorer, .layer--online, .select-box').length) {
                 $(card).find('.content-label').remove();
                 return;
@@ -514,7 +336,9 @@
                 if (id && Lampa.Storage.cache('card_' + id)) {
                     meta = Object.assign(meta, Lampa.Storage.cache('card_' + id));
                 }
-            } catch (e) {}
+            } catch (e) {
+                // парсинг мог упасть — игнорируем
+            }
 
             var isTV = false;
             if (meta.type === 'tv' || meta.card_type === 'tv' ||
@@ -525,31 +349,24 @@
             }
             if (!isTV) {
                 if ($(card).hasClass('card--tv') || $(card).data('type') === 'tv') isTV = true;
-                else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|TВ|TV)/i)) isTV = true;
+                else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|ТВ|TV)/i)) isTV = true;
             }
 
-            var cardText = $(card).text().toLowerCase();
-            var hasMovieTraits = $(card).find('.card__age').length > 0 || 
-                                 $(card).find('.card__vote').length > 0 || 
-                                 /\b(19|20)\d{2}\b/.test(cardText);
+            var isPerson = $(card).hasClass('card--person') || $(card).closest('.scroll--persons, .items--persons, .crew').length > 0;
+            if (isPerson) return;
 
-            if (isTV || hasMovieTraits) {
-                var lbl = $('<div class="content-label"></div>');
-                if (isTV) {
-                    lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
-                    view.children('.ifx-movie-type').remove();
-                } else {
-                    lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
-                    
-                    var $movieType = view.children('.ifx-movie-type');
-                    if (!$movieType.length) {
-                        $('<div class="card__type ifx-movie-type">Movie</div>').appendTo(view);
-                    }
-                }
-                view.append(lbl);
+            var hasMovieTraits = $(card).find('.card__age').length > 0 ||
+                                 $(card).find('.card__vote').length > 0 ||
+                                 /\b(19|20)\d{2}\b/.test($(card).text());
+            if (!isTV && !hasMovieTraits) return;
+
+            var lbl = $('<div class="content-label"></div>');
+            if (isTV) {
+                lbl.addClass('serial-label').text('Сериал').data('type', 'serial');
             } else {
-                view.children('.ifx-movie-type').remove();
+                lbl.addClass('movie-label').text('Фильм').data('type', 'movie');
             }
+            view.append(lbl);
         }
 
         function processAll() {
@@ -572,9 +389,9 @@
                         fontSize: '0.8em', zIndex: 10
                     });
                     if (isTV) {
-                        lbl.addClass('serial-label').text('Сериал').css('backgroundColor', '#4285F4');
+                        lbl.addClass('serial-label').text('Сериал').css('backgroundColor', '#3498db');
                     } else {
-                        lbl.addClass('movie-label').text('Фильм').css('backgroundColor', '#4285F4');
+                        lbl.addClass('movie-label').text('Фильм').css('backgroundColor', '#2ecc71');
                     }
                     poster.css('position', 'relative').append(lbl);
                 }
@@ -603,66 +420,66 @@
 
     /*** 4) ТЕМЫ ОФОРМЛЕНИЯ ***/
     function applyTheme(theme) {
-        $('#interface_mod_theme').remove();
-        if (theme === 'default') return;
-        var style = $('<style id="interface_mod_theme"></style>');
-        
+        var old = document.getElementById('interface_mod_theme');
+        if (old) old.remove();
+        if (!theme || theme === 'default') return;
+
         var b = '.menu__item, .settings-folder, .settings-param, .selectbox-item, .full-start__button, .full-descr__tag, .player-panel .button, .custom-online-btn, .custom-torrent-btn, .main2-more-btn, .simple-button, .menu__version';
         var f = '.menu__item.focus, .menu__item.traverse, .menu__item.hover, .settings-folder.focus, .settings-param.focus, .selectbox-item.focus, .full-start__button.focus, .full-descr__tag.focus, .player-panel .button.focus, .custom-online-btn.focus, .custom-torrent-btn.focus, .main2-more-btn.focus, .simple-button.focus, .menu__version.focus';
         var c = '.card.focus .card__view::after, .card.hover .card__view::after';
         var m = '.settings__content, .settings-input__content, .selectbox__content, .modal__content';
         var performanceCss = b + ' { transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out, color 0.2s ease-out !important; } ';
 
-        var themes = {
+        var themeCss = {
             emerald_v1: 
                 'body { background: linear-gradient(135deg, #0c1619 0%, #132730 50%, #18323a 100%) !important; color: #dfdfdf !important; } ' +
                 b + ' { border-radius: 1.0em !important; } ' +
                 f + ' { background: linear-gradient(to right, #1a594d, #0e3652) !important; color: #fff !important; box-shadow: 0 2px 8px rgba(26,89,77,.25) !important; } ' +
                 c + ' { border: 2px solid #1a594d !important; box-shadow: 0 0 10px rgba(26,89,77,.35) !important; border-radius: 1.0em !important; } ' +
                 m + ' { background: rgba(12,22,25,.97) !important; border: 1px solid rgba(26,89,77,.12) !important; border-radius: 1.0em !important; }',
-            
+                
             emerald_v2: 
                 'body { background: radial-gradient(1200px 600px at 70% 10%, #214a57 0%, transparent 60%), linear-gradient(135deg, #112229 0%, #15303a 45%, #0f1c22 100%) !important; color:#e6f2ef !important; } ' +
                 b + ' { border-radius: .85em !important; } ' +
                 f + ' { background: linear-gradient(90deg, rgba(38,164,131,0.95), rgba(18,94,138,0.95)) !important; color:#fff !important; -webkit-backdrop-filter: blur(2px) !important; backdrop-filter: blur(2px) !important; box-shadow:0 6px 18px rgba(18,94,138,.35) !important; } ' +
                 c + ' { border: 3px solid rgba(38,164,131,0.9) !important; box-shadow: 0 0 20px rgba(38,164,131,.45) !important; border-radius: .9em !important; } ' +
                 m + ' { background: rgba(10,24,29,0.98) !important; border: 1px solid rgba(38,164,131,.15) !important; border-radius: .9em !important; }',
-            
+                
             aurora: 
                 'body { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%) !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: .85em !important; } ' +
                 f + ' { background: linear-gradient(90deg, #aa4b6b, #6b6b83, #3b8d99) !important; color:#fff !important; box-shadow: 0 0 20px rgba(170,75,107,.35) !important; } ' +
                 c + ' { border: 2px solid #aa4b6b !important; box-shadow: 0 0 22px rgba(170,75,107,.45) !important; border-radius: .9em !important; } ' +
                 m + ' { background: rgba(20, 32, 39, 0.98) !important; border: 1px solid rgba(59,141,153,.18) !important; border-radius: .9em !important; }',
-            
+                
             netflix: 
                 'body { background: #141414 !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: 0.4em !important; } ' +
                 f + ' { background: #E50914 !important; color: #fff !important; box-shadow: 0 4px 15px rgba(229,9,20,.4) !important; } ' +
                 c + ' { border: 3px solid #E50914 !important; box-shadow: 0 0 18px rgba(229,9,20,.5) !important; border-radius: 0.4em !important; } ' +
                 m + ' { background: rgba(20, 20, 20, 0.98) !important; border: 1px solid rgba(229,9,20,.25) !important; border-radius: 0.4em !important; }',
-            
+                
             spotify: 
                 'body { background: linear-gradient(135deg, #282828 0%, #121212 40%, #000000 100%) !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: 2em !important; } ' +
                 f + ' { background: #1DB954 !important; color: #000 !important; box-shadow: 0 4px 15px rgba(29,185,84,.3) !important; font-weight: bold !important; } ' +
                 c + ' { border: 3px solid #1DB954 !important; box-shadow: 0 0 15px rgba(29,185,84,.4) !important; border-radius: 0.6em !important; } ' +
                 m + ' { background: rgba(18, 18, 18, 0.98) !important; border: 1px solid rgba(29,185,84,.2) !important; border-radius: 0.6em !important; }',
-            
+                
             cyberpunk: 
                 'body { background: linear-gradient(135deg, #09090e 0%, #1a0b2e 100%) !important; color: #e0e0e0 !important; } ' +
                 b + ' { border-radius: 0.3em !important; } ' +
                 f + ' { background: linear-gradient(90deg, #ff003c, #00f0ff) !important; color: #fff !important; box-shadow: 0 0 15px rgba(255,0,60,.6) !important; } ' +
                 c + ' { border: 2px solid #00f0ff !important; box-shadow: 0 0 20px rgba(0,240,255,.6), inset 0 0 10px rgba(255,0,60,.4) !important; border-radius: 0.3em !important; } ' +
                 m + ' { background: rgba(10, 10, 15, 0.96) !important; border: 1px solid #ff003c !important; border-radius: 0.3em !important; }',
-            
+                
             amoled: 
                 'body { background: #000000 !important; color: #dfdfdf !important; } ' +
                 b + ' { border-radius: 0.5em !important; } ' +
                 f + ' { background: #bb86fc !important; color: #000 !important; box-shadow: 0 0 12px rgba(187,134,252,.5) !important; font-weight: 600 !important; } ' +
                 c + ' { border: 2px solid #bb86fc !important; box-shadow: 0 0 15px rgba(187,134,252,.4) !important; border-radius: 0.5em !important; } ' +
                 m + ' { background: #0a0a0a !important; border: 1px solid rgba(187,134,252,.2) !important; border-radius: 0.5em !important; }',
-            
+                
             ocean: 
                 'body { background: radial-gradient(circle at top right, #122238, #050a14) !important; color: #e6f1ff !important; } ' +
                 b + ' { border-radius: 0.4em !important; } ' +
@@ -676,35 +493,35 @@
                 f + ' { background: rgba(0, 184, 148, 0.15) !important; color: #00b894 !important; box-shadow: 0 0 15px rgba(0, 184, 148, 0.25), inset 0 0 0 1px #00b894 !important; -webkit-backdrop-filter: blur(4px) !important; backdrop-filter: blur(4px) !important; } ' +
                 c + ' { border: 2px solid #00b894 !important; box-shadow: 0 0 20px rgba(0, 184, 148, 0.3) !important; border-radius: 0.8em !important; } ' +
                 m + ' { background: rgba(5, 11, 10, 0.98) !important; border: 1px solid rgba(0, 184, 148, 0.2) !important; border-radius: 0.6em !important; }', 
-            
+                
             mint: 
                 'body { background: linear-gradient(135deg, #122220 0%, #1c3633 50%, #254a46 100%) !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: 0.6em !important; } ' +
                 f + ' { background: rgba(46, 204, 113, 0.15) !important; color: #2ecc71 !important; box-shadow: 0 0 15px rgba(46, 204, 113, 0.25), inset 0 0 0 1px #2ecc71 !important; -webkit-backdrop-filter: blur(4px) !important; backdrop-filter: blur(4px) !important; } ' +
                 c + ' { border: 2px solid #2ecc71 !important; box-shadow: 0 0 20px rgba(46, 204, 113, 0.3) !important; border-radius: 0.8em !important; } ' +
                 m + ' { background: rgba(18, 34, 32, 0.98) !important; border: 1px solid rgba(46, 204, 113, 0.2) !important; border-radius: 0.6em !important; }',  
-            
+                
             prime: 
                 'body { background: linear-gradient(135deg, #1e2b3c 0%, #232f3e 100%) !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: 0.4em !important; } ' +
                 f + ' { background: #00a8e1 !important; color: #fff !important; box-shadow: 0 4px 12px rgba(0, 168, 225, 0.4) !important; } ' +
                 c + ' { border: 2px solid #00a8e1 !important; box-shadow: 0 0 15px rgba(0, 168, 225, 0.4) !important; border-radius: 0.4em !important; } ' +
                 m + ' { background: rgba(30, 43, 60, 0.98) !important; border: 1px solid rgba(0, 168, 225, 0.2) !important; border-radius: 0.4em !important; }',
-            
+                
             twitch: 
                 'body { background: radial-gradient(circle at 50% 0%, #201533 0%, #0e0e10 80%) !important; color: #efeff1 !important; } ' +
                 b + ' { border-radius: 0.4em !important; } ' +
                 f + ' { background: #9146FF !important; color: #fff !important; box-shadow: 0 4px 15px rgba(145, 70, 255, 0.4) !important; } ' +
                 c + ' { border: 2px solid #9146FF !important; box-shadow: 0 0 15px rgba(145, 70, 255, 0.4) !important; border-radius: 0.4em !important; } ' +
                 m + ' { background: rgba(24, 24, 27, 0.98) !important; border: 1px solid rgba(145, 70, 255, 0.2) !important; border-radius: 0.4em !important; }',
-            
+                
             apple: 
                 'body { background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%) !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: 0.8em !important; } ' +
                 f + ' { background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.15) 100%) !important; color: #fff !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1.5px rgba(255, 255, 255, 0.6) !important; -webkit-backdrop-filter: blur(15px) !important; backdrop-filter: blur(15px) !important; } ' +
                 c + ' { border: 2px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 0 20px rgba(255, 255, 255, 0.3) !important; border-radius: 0.8em !important; } ' +
                 m + ' { background: rgba(30, 30, 30, 0.2) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; border-radius: 1em !important; -webkit-backdrop-filter: blur(12px) !important; backdrop-filter: blur(12px) !important; }',
-            
+                
             hulu: 
                 'body { background: radial-gradient(ellipse at top, #1a3020 0%, #0f1210 80%) !important; color: #ffffff !important; } ' +
                 b + ' { border-radius: 0.4em !important; } ' +
@@ -713,22 +530,20 @@
                 m + ' { background: rgba(15, 18, 16, 0.98) !important; border: 1px solid rgba(28, 231, 131, 0.2) !important; border-radius: 0.4em !important; }'
         };
 
-        style.html(performanceCss + (themes[theme] || ''));
-        $('head').append(style);
+        var st = document.createElement('style');
+        st.id = 'interface_mod_theme';
+        st.textContent = performanceCss + (themeCss[theme] || ''); 
+        document.head.appendChild(st);
     }
 
-    function applyMonoStyle(el) {
-        if (!el || !el.style) return;
-        el.style.backgroundColor = 'rgba(255,255,255,.08)';
-        el.style.color = '#fff';
-        el.style.border = '1px solid rgba(255,255,255,.45)';
-    }
-
-    /*** 5) ЦВЕТНЫЕ РЕЙТИНГИ И СТАТУСЫ ***/
+/*** 5) ЦВЕТНЫЕ РЕЙТИНГИ И СТАТУСЫ ***/
 function updateVoteColors() {
     if (!InterFaceMod.settings.colored_ratings) return;
 
     function apply(el) {
+        // ИСПРАВЛЕНИЕ: ИСПРАВЛЕНИЕ: Не красим explorer-card (окно выбора серий)
+        if ($(el).closest('.explorer').length) return;
+        
         var text = $(el).text().trim();
         var m = text.match(/(\d+[\.,]\d+|\d+)/);
         if (!m) return;
@@ -894,7 +709,7 @@ function colorizeAgeRating() {
         Lampa.SettingsApi.addComponent({
             component: 'season_info',
             name: 'Интерфейс мод',
-            icon: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5C4 4.44772 4.44772 4 5 4H19C19.5523 4 20 4.44772 20 5V7C20 7.55228 19.5523 8 19 8H5C4.44772 8 4 7.55228 4 7V5Z" fill="currentColor"/><path d="M4 11C4 10.4477 4.44772 10 5 10H19C19.5523 10 20 10.4477 20 11V13C20 13.5523 19.5523 14 19 14H5C4.44772 14 4 13.5523 4 13V11Z" fill="currentColor"/><path d="M4 17C4 16.4477 4.44772 16 5 16H19C19.5523 16 20 16.4477 20 17V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V17Z" fill="currentColor"/></svg>'
+                icon: '<svg viewBox="1 1 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="2"/><path d="M12 15V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 15V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 15V11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         });
 
         // режим серий
@@ -975,21 +790,21 @@ function colorizeAgeRating() {
                 name: 'theme_select',
                 type: 'select',
                 values: {
-                    default: 'Нет',
-                    emerald_v1: 'Emerald V1',
-                    emerald_v2: 'Emerald V2',
-                    aurora: 'Aurora',
-                    netflix: 'Netflix Style',
-                    spotify: 'Spotify Dark',
-                    cyberpunk: 'Cyberpunk Neon',
-                    amoled: 'AMOLED Black',
-                    ocean: 'Ocean Glass',
-                    mint: 'Mint Fresh',
-                    dark_mint: 'Dark Mint',
-                    prime: 'Prime Blue',
-                    twitch: 'Twitch Dark',
-                    apple: 'Apple Glass',
-                    hulu: 'Hulu Green'
+                    'default': 'По умолчанию',
+                    'emerald_v1': 'Изумруд V1',
+                    'emerald_v2': 'Изумруд V2',
+                    'aurora': 'Аврора',
+                    'netflix': 'Netflix стиль',
+                    'spotify': 'Spotify Dark',
+                    'cyberpunk': 'Киберпанк неон',
+                    'amoled': 'AMOLED Black',
+                    'ocean': 'Ocean Glass',
+                    'mint': 'Mint Fresh',
+                    'dark_mint': 'Dark Mint',
+                    'prime': 'Prime Blue',
+                    'twitch': 'Twitch Dark',
+                    'apple': 'Apple Glass',
+                    'hulu': 'Hulu Green'
                 },
                 default: 'default'
             },
@@ -1041,15 +856,26 @@ function colorizeAgeRating() {
             }
         });
 
-        // информационная панель
-        Lampa.SettingsApi.addParam({
-            component: 'season_info',
-            param: { name: 'interface_mod_new_info_panel', type: 'trigger', default: true },
-            field: { name: 'Информационная панель', description: 'Показывать информацию о фильме/сериале' },
-            onChange: function (v) {
-                rebuildInfoPanel();
-            }
-        });
+        function moveAfterInterface() {
+            var $folders = $('.settings-folder');
+            var $interface = $folders.filter(function () {
+                return $(this).data('component') === 'interface';
+            });
+            var $mod = $folders.filter(function () {
+                return $(this).data('component') === 'season_info';
+            });
+            if ($interface.length && $mod.length && $mod.prev()[0] !== $interface[0]) $mod.insertAfter($interface);
+        }
+
+        var moveTries = 0,
+            moveTimer = setInterval(function () {
+                moveAfterInterface();
+                if (++moveTries >= 40) clearInterval(moveTimer);
+            }, 150);
+
+        new MutationObserver(function () {
+            moveAfterInterface();
+        }).observe(document.body, { childList: true, subtree: true });
 
         // загрузить сохранённые
         InterFaceMod.settings.seasons_info_mode    = Lampa.Storage.get('seasons_info_mode', 'none');
@@ -1074,16 +900,6 @@ function colorizeAgeRating() {
         if (InterFaceMod.settings.colored_elements) {
             colorizeSeriesStatus();
             colorizeAgeRating();
-        }
-        
-        if (getBool('interface_mod_new_info_panel', true)) {
-            rebuildInfoPanel();
-        }
-    }
-
-    function rebuildInfoPanel() {
-        if (typeof window.rebuildInfoPanelActive === 'function') {
-            window.rebuildInfoPanelActive();
         }
     }
 
