@@ -304,7 +304,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       'ukrkino',
       'ukrain',
       'махно',
-      'укра',
+      'kinoflix',
       'укр'
     ];
 
@@ -326,7 +326,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     function normalizeBalanser(j) {
       if (!j) return j;
-      if (getBalanserSearchText(j).indexOf('pizdatoehd') !== -1) j.name = 'Rezka';
+      if (getBalanserSearchText(j).indexOf('pizdatoehd') !== -1) j.name = 'Rezka - 720p';
       return j;
     }
 
