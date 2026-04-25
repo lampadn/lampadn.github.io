@@ -297,10 +297,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var raw = ((j && j.balanser) || '') + ' ' + ((j && j.name) || '');
       var name = raw.toLowerCase();
       return name.indexOf('kinoukr') !== -1 ||
+        name.indexOf('uaflix') !== -1 ||
+        name.indexOf('uafilme') !== -1 ||
+        name.indexOf('klonfun') !== -1 ||
         name.indexOf('uakino') !== -1 ||
         name.indexOf('kino-ukr') !== -1 ||
         name.indexOf('ukrkino') !== -1 ||
         name.indexOf('ukrain') !== -1 ||
+        name.indexOf('махно') !== -1 ||
         name.indexOf('укра') !== -1 ||
         name.indexOf('укр') !== -1;
     }
