@@ -293,26 +293,93 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return (bals || name).toLowerCase();
     }
 
+    var hiddenBalanserTerms = [
+      'kinoukr',
+      'uaflix',
+      'uafilme',
+      'uafilmme',
+      'klonfun',
+      'uakino',
+      'kino-ukr',
+      'ukrkino',
+      'ukrain',
+      'махно',
+      'укра',
+      'укр'
+    ];
+
+    function getBalanserSearchText(j) {
+      return [
+        j && j.balanser,
+        j && j.name,
+        j && j.url
+      ].join(' ').toLowerCase();
+    }
+
     function isUkrainianBalanser(j) {
-      var raw = ((j && j.balanser) || '') + ' ' + ((j && j.name) || '');
-      var name = raw.toLowerCase();
-      return name.indexOf('kinoukr') !== -1 ||
-        name.indexOf('uaflix') !== -1 ||
-        name.indexOf('uafilmme') !== -1 ||
-        name.indexOf('klonfun') !== -1 ||
-        name.indexOf('uakino') !== -1 ||
-        name.indexOf('kino-ukr') !== -1 ||
-        name.indexOf('ukrkino') !== -1 ||
-        name.indexOf('ukrain') !== -1 ||
-        name.indexOf('махно') !== -1 ||
-        name.indexOf('укра') !== -1 ||
-        name.indexOf('укр') !== -1;
+      var name = typeof j === 'string' ? j.toLowerCase() : getBalanserSearchText(j);
+      for (var i = 0; i < hiddenBalanserTerms.length; i++) {
+        if (name.indexOf(hiddenBalanserTerms[i]) !== -1) return true;
+      }
+      return false;
+    }
+
+    function normalizeBalanser(j) {
+      if (!j) return j;
+      if (getBalanserSearchText(j).indexOf('pizdatoehd') !== -1) j.name = 'Rezka';
+      return j;
     }
 
     function filterUkrainianBalansers(list) {
       return (list || []).filter(function(j) {
         return !isUkrainianBalanser(j);
+      }).map(function(j) {
+        return normalizeBalanser(j);
       });
+    }
+
+    function visibleBalanserKeys(list) {
+      return (list || []).map(function(j) {
+        return balanserName(j) + ':' + (typeof j.show == 'undefined' ? '1' : String(j.show)) + ':' + ((j && j.name) || '');
+      }).join('|');
+    }
+
+    function saveAvailableSources(list) {
+      var nextSources = {};
+      (list || []).forEach(function(j) {
+        var name = balanserName(j);
+        nextSources[name] = {
+          url: j.url,
+          name: j.name,
+          show: typeof j.show == 'undefined' ? true : j.show
+        };
+      });
+      sources = nextSources;
+      filter_sources = Lampa.Arrays.getKeys(sources);
+    }
+
+    function sanitizeStoredBalanser() {
+      var stored = Lampa.Storage.get('online_balanser', '');
+      if (stored && isUkrainianBalanser(stored)) Lampa.Storage.set('online_balanser', filter_sources.length ? filter_sources[0] : '');
+      var last_select_balanser = Lampa.Storage.cache('online_last_balanser', 3000, {});
+      if (last_select_balanser[object.movie.id] && isUkrainianBalanser(last_select_balanser[object.movie.id])) {
+        delete last_select_balanser[object.movie.id];
+        Lampa.Storage.set('online_last_balanser', last_select_balanser);
+      }
+    }
+
+    function renderSourceFilterIfChanged(sourceKey) {
+      if (renderSourceFilterIfChanged.last === sourceKey) return;
+      renderSourceFilterIfChanged.last = sourceKey;
+      filter.set('sort', filter_sources.map(function(e) {
+        return {
+          title: sources[e].name,
+          source: e,
+          selected: e == balanser,
+          ghost: !sources[e].show
+        };
+      }));
+      filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
     }
 	
 	function clarificationSearchAdd(value){
@@ -508,15 +575,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.startSource = function(json) {
       return new Promise(function(resolve, reject) {
         json = filterUkrainianBalansers(json);
-        json.forEach(function(j) {
-          var name = balanserName(j);
-          sources[name] = {
-            url: j.url,
-            name: j.name,
-            show: typeof j.show == 'undefined' ? true : j.show
-          };
-        });
-        filter_sources = Lampa.Arrays.getKeys(sources);
+        saveAvailableSources(json);
+        sanitizeStoredBalanser();
         if (filter_sources.length) {
           var last_select_balanser = Lampa.Storage.cache('online_last_balanser', 3000, {});
           if (last_select_balanser[object.movie.id]) {
@@ -562,26 +622,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             network.silent(account(url), function(json) {
               life_wait_times++;
               json.online = filterUkrainianBalansers(json.online);
-              filter_sources = [];
-              sources = {};
-            json.online.forEach(function(j) {
-              var name = balanserName(j);
-              sources[name] = {
-                url: j.url,
-                name: j.name,
-                show: typeof j.show == 'undefined' ? true : j.show
-              };
-            });
-            filter_sources = Lampa.Arrays.getKeys(sources);
-            filter.set('sort', filter_sources.map(function(e) {
-              return {
-                title: sources[e].name,
-                source: e,
-                selected: e == balanser,
-                ghost: !sources[e].show
-              };
-            }));
-            filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
+              var sourceKey = visibleBalanserKeys(json.online);
+              saveAvailableSources(json.online);
+              sanitizeStoredBalanser();
+              if (!sources[balanser]) balanser = filter_sources[0];
+              renderSourceFilterIfChanged(sourceKey);
             gou(json);
             var lastb = _this3.getLastChoiceBalanser();
             if (life_wait_times > 15 || json.ready) {
@@ -1120,14 +1165,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (filter_items.voice && filter_items.voice.length) add('voice', Lampa.Lang.translate('torrent_parser_voice'));
       if (filter_items.season && filter_items.season.length) add('season', Lampa.Lang.translate('torrent_serial_season'));
       filter.set('filter', select);
-      filter.set('sort', filter_sources.map(function(e) {
-        return {
-          title: sources[e].name,
-          source: e,
-          selected: e == balanser,
-          ghost: !sources[e].show
-        };
-      }));
+      renderSourceFilterIfChanged(filter_sources.map(function(e) {
+        return e + ':' + (sources[e] ? sources[e].show : '') + ':' + (sources[e] ? sources[e].name : '');
+      }).join('|'));
       this.selected(filter_items);
     };
     /**
