@@ -305,6 +305,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       'ukrain',
       'махно',
       'kinoflix',
+	  'geosaitebi',
       'укр'
     ];
 
