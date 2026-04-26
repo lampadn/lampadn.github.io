@@ -396,6 +396,72 @@ function isMonoEnabled() {
     },
   });
 
+  Lampa.Lang.add({
+    interface_mod_new_group_title: { ru: 'Интерфейс +' },
+    interface_mod_new_plugin_name: { ru: 'Интерфейс +' },
+    interface_mod_new_info_panel: { ru: 'Новая инфо-панель' },
+    interface_mod_new_info_panel_desc: { ru: 'Цветная и перефразированная информационная панель' },
+    interface_mod_new_margins_menu: { ru: 'Настроить отступы панели' },
+    interface_mod_new_margins_menu_desc: { ru: 'Позволяет изменить отступ сверху или снизу для инфо-панели' },
+    interface_mod_new_mt: { ru: 'Изменить верхний отступ' },
+    interface_mod_new_mt_desc: { ru: 'По умолчанию -0.5. Можно вводить положительные и отрицательные значения.' },
+    interface_mod_new_mb: { ru: 'Изменить нижний отступ' },
+    interface_mod_new_mb_desc: { ru: 'По умолчанию 1. Можно вводить положительные и отрицательные значения.' },
+    interface_mod_new_mobile_center: { ru: 'Центрирование на мобильных' },
+    interface_mod_new_mobile_center_desc: { ru: 'Центрировать заголовок, инфо-панель и кнопки на вертикальных экранах' },
+    interface_mod_new_hide_tagline: { ru: 'Скрыть слоган' },
+    interface_mod_new_hide_tagline_desc: { ru: 'Скрывает слоган фильма/сериала под основным названием' },
+    interface_mod_new_colored_bookmarks: { ru: 'Цветные иконки закладок' },
+    interface_mod_new_colored_bookmarks_desc: { ru: 'Подсвечивать цветом иконки: закладки, история, позже' },
+    interface_mod_new_colored_ratings: { ru: 'Цветной рейтинг' },
+    interface_mod_new_colored_ratings_desc: { ru: 'Включить цветное выделение рейтинга в полной карточке' },
+    interface_mod_new_show_status: { ru: 'Показывать статусы' },
+    interface_mod_new_show_status_desc: { ru: 'Отображать или скрывать статус фильма/сериала' },
+    interface_mod_new_show_age: { ru: 'Показывать возрастной рейтинг' },
+    interface_mod_new_show_age_desc: { ru: 'Отображать или скрывать плашку возрастного рейтинга' },
+    interface_mod_new_colored_status: { ru: 'Цветные статусы' },
+    interface_mod_new_colored_status_desc: { ru: 'Подсвечивать статус фильма/сериала в полной карточке' },
+    interface_mod_new_colored_age: { ru: 'Цветной возрастной рейтинг' },
+    interface_mod_new_colored_age_desc: { ru: 'Подсвечивать возрастной рейтинг в полной карточке' },
+    interface_mod_new_mono_mode: { ru: 'Монохромный режим (Ч/Б)' },
+    interface_mod_new_mono_mode_desc: { ru: 'Отключает цвета для статусов, возрастного рейтинга и инфо-панели' },
+    interface_mod_new_theme_select_title: { ru: 'Тема интерфейса' },
+    interface_mod_new_theme_default: { ru: 'По умолчанию' },
+    interface_mod_new_theme_netflix: { ru: 'Стиль Netflix' },
+    interface_mod_new_theme_spotify: { ru: 'Spotify Dark' },
+    interface_mod_new_theme_cyberpunk: { ru: 'Cyberpunk Neon' },
+    interface_mod_new_theme_amoled: { ru: 'Amoled Black' },
+    interface_mod_new_theme_ocean: { ru: 'Ocean Glass' },
+    interface_mod_new_theme_mint: { ru: 'Mint Fresh' },
+    interface_mod_new_theme_dark_mint: { ru: 'Dark Mint' },
+    interface_mod_new_theme_prime: { ru: 'Prime Blue' },
+    interface_mod_new_theme_twitch: { ru: 'Twitch Dark' },
+    interface_mod_new_theme_apple: { ru: 'Apple Glass' },
+    interface_mod_new_theme_hulu: { ru: 'Hulu Green' },
+    interface_mod_new_title_mode: { ru: 'Названия под заголовком' },
+    interface_mod_new_title_mode_desc: { ru: 'Показывать оригинальное, локализованное, оба или отключить' },
+    interface_mod_new_tmdb_api_key_name: { ru: 'TMDB API ключ' },
+    interface_mod_new_tmdb_api_key_desc: { ru: 'Свой ключ для точного получения русских названий' },
+    interface_mod_new_title_mode_off: { ru: 'Нет' },
+    interface_mod_new_title_mode_orig: { ru: 'Оригинальное название' },
+    interface_mod_new_title_mode_loc: { ru: 'Локализованное название' },
+    interface_mod_new_title_mode_orig_loc: { ru: 'Оригинальное / Локализованное название' },
+    interface_mod_new_title_size_name: { ru: 'Размер названия' },
+    interface_mod_new_title_size_desc: { ru: 'Размер шрифта названия, по умолчанию 0.75' },
+    interface_mod_new_all_buttons_v1: { ru: 'Все кнопки в карточке' },
+    interface_mod_new_all_buttons_desc: { ru: 'Показывает все кнопки в карточке, нужна перезагрузка' },
+    interface_mod_new_icon_only: { ru: 'Кнопки без текста' },
+    interface_mod_new_icon_only_desc: { ru: 'Скрывает подписи на кнопках, оставляет только иконки' },
+    interface_mod_new_colored_buttons: { ru: 'Цветные кнопки' },
+    interface_mod_new_colored_buttons_desc: { ru: 'Обновляет иконки и цвета кнопок: онлайн, торренты, трейлеры' },
+    torr_mod_frame: { ru: 'Цветная рамка блока торрентов' },
+    torr_mod_frame_desc: { ru: 'Подсвечивать блоки торрентов цветной рамкой по количеству сидеров' },
+    torr_mod_bitrate: { ru: 'Цветной битрейт' },
+    torr_mod_bitrate_desc: { ru: 'Подсвечивать битрейт цветом в зависимости от размера' },
+    torr_mod_seeds: { ru: 'Цветное количество раздающих' },
+    torr_mod_seeds_desc: { ru: 'Сидеры: 0-5 красный, 6-19 жёлтый, 20 и выше зелёный' }
+  });
+
  function getTitleSizeEm() {
   var raw = Lampa.Storage.get('interface_mod_new_title_size', String(IFX_TITLE_SIZE_DEFAULT));
   var n = parseFloat(String(raw).replace(',', '.'));
@@ -3161,6 +3227,23 @@ function apply() {
     ifx_episode_num_only_desc: { uk:'Всегда показывать номер серии в виде "Серия N" вместо названия', en:'Always show "Episode N" instead of the title' }
 
   
+  });
+
+  Lampa.Lang.add({
+    ifx_year_on_cards: { ru: 'Показывать год на карточке' },
+    ifx_year_on_cards_desc: { ru: 'Включить/выключить отображение года на постере' },
+    ifx_show_rating_on_cards: { ru: 'Показывать рейтинг на карточке' },
+    ifx_show_rating_on_cards_desc: { ru: 'Включить/выключить стандартный рейтинг на постере' },
+    ifx_alt_badges: { ru: 'Альтернативные метки' },
+    ifx_alt_badges_desc: { ru: 'Метки года и рейтинга в другом стиле' },
+    ifx_type_badges: { ru: 'Метки Фильм / Сериал снизу' },
+    ifx_type_badges_desc: { ru: 'Заменяет стандартную TV-метку на цветные метки внизу постера' },
+    ifx_alt_type_badges: { ru: 'Дополнительная метка Фильм сверху' },
+    ifx_alt_type_badges_desc: { ru: 'Добавляет синюю метку Movie на постер' },
+    ifx_episode_alt_cards: { ru: 'Альтернативные ближайшие эпизоды' },
+    ifx_episode_alt_cards_desc: { ru: 'Компактный вид блока ближайших эпизодов' },
+    ifx_episode_num_only: { ru: 'Только номер серии' },
+    ifx_episode_num_only_desc: { ru: 'Показывать "Серия N" вместо названия серии' }
   });
 
   var KEY_YEAR = 'interface_mod_new_year_on_cards';
