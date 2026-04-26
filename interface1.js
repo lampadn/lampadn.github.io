@@ -2,8 +2,8 @@
   'use strict';
 
   var IFX_TITLE_SIZE_DEFAULT = 0.75;
-  var IFX_TMDB_UA_TTL_MS = 1000 * 60 * 60 * 24 * 2; // 2 дня
-  var IFX_TMDB_UA_CACHE_PREFIX = 'ifx_tmdb_ru_title_v1.7:'; // + type:id
+  var IFX_TMDB_RU_TTL_MS = 1000 * 60 * 60 * 24 * 2; // 2 дня
+  var IFX_TMDB_RU_CACHE_PREFIX = 'ifx_tmdb_ru_title_v1.7:'; // + type:id
 
   if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (searchString, position) {
@@ -32,7 +32,7 @@ function cacheGet(key) {
     if (!raw) return null;
     var obj = (typeof raw === 'string') ? JSON.parse(raw) : raw;
     if (!obj || !obj.t || !obj.v) return null;
-    if ((Date.now() - obj.t) > IFX_TMDB_UA_TTL_MS) return null;
+    if ((Date.now() - obj.t) > IFX_TMDB_RU_TTL_MS) return null;
     return String(obj.v || '').trim();
   } catch (e) { return null; }
 }
@@ -57,7 +57,7 @@ function tmdbCacheKey(movie) {
   );
   var type = isTvShow ? 'tv' : 'movie';
 
-  return IFX_TMDB_UA_CACHE_PREFIX + type + ':' + String(id);
+  return IFX_TMDB_RU_CACHE_PREFIX + type + ':' + String(id);
 }
 
 function isMonoEnabled() {
@@ -498,49 +498,49 @@ function applyMargins() {
 
 Lampa.Template.add('settings_ifx_margins', '<div></div>');
   
-function pickUaFromTranslations(res, type){
+function pickRuFromTranslations(res, type){
   try{
     var tr = res && res.translations && res.translations.translations;
     if (!tr || !tr.length) return '';
 
-    var ua = null;
+    var ru = null;
     for (var i=0;i<tr.length;i++){
       var t = tr[i];
       if (!t) continue;
-      if (String(t.iso_639_1 || '').toLowerCase() === 'ru') { ua = t; break; }
+      if (String(t.iso_639_1 || '').toLowerCase() === 'ru') { ru = t; break; }
       
     }
-    if (!ua || !ua.data) return '';
+    if (!ru || !ru.data) return '';
 
-    var s = (type === 'tv') ? (ua.data.name || ua.data.title) : (ua.data.title || ua.data.name);
+    var s = (type === 'tv') ? (ru.data.name || ru.data.title) : (ru.data.title || ru.data.name);
     return String(s || '').trim();
   }catch(e){
     return '';
   }
 }
 
-function pickUaFromTranslations(res, type){
+function pickRuFromTranslations(res, type){
   try{
     var tr = res && res.translations && res.translations.translations;
     if (!tr || !tr.length) return '';
 
-    var ua = null;
+    var ru = null;
     for (var i=0;i<tr.length;i++){
       var t = tr[i];
       if (!t) continue;
-      if (String(t.iso_639_1 || '').toLowerCase() === 'ru') { ua = t; break; }
-      if (String(t.iso_3166_1 || '').toUpperCase() === 'RU') { ua = t; }
+      if (String(t.iso_639_1 || '').toLowerCase() === 'ru') { ru = t; break; }
+      if (String(t.iso_3166_1 || '').toUpperCase() === 'RU') { ru = t; }
     }
-    if (!ua || !ua.data) return '';
+    if (!ru || !ru.data) return '';
 
-    var s = (type === 'tv') ? (ua.data.name || ua.data.title) : (ua.data.title || ua.data.name);
+    var s = (type === 'tv') ? (ru.data.name || ru.data.title) : (ru.data.title || ru.data.name);
     return String(s || '').trim();
   }catch(e){
     return '';
   }
 }
   
-function fetchTmdbUaTitle(movie, cb) {
+function fetchTmdbRuTitle(movie, cb) {
   try {
     if (!movie) return cb('');
 
@@ -580,7 +580,7 @@ function fetchTmdbUaTitle(movie, cb) {
         type: 'GET',
         dataType: 'json',
         success: function(res) {
-          var title = pickUaFromTranslations(res, type);
+          var title = pickRuFromTranslations(res, type);
 
           if (!title) title = (type === 'tv') ? res.name : res.title;
           
@@ -602,7 +602,7 @@ function fetchTmdbUaTitle(movie, cb) {
       if (Lampa.Api && typeof Lampa.Api.tmdb === 'function') {
         var bust = Date.now();
         Lampa.Api.tmdb(type + '/' + id, { language: 'ru-RU', append_to_response: 'translations', _ifx: bust }, function (res) {
-          var title = pickUaFromTranslations(res, type);
+          var title = pickRuFromTranslations(res, type);
           if (!title) title = (type === 'tv') ? res.name : res.title;
           onSuccess(title);
         }, function() { 
@@ -616,7 +616,7 @@ function fetchTmdbUaTitle(movie, cb) {
     function fallbackTMDB() {
       if (Lampa.TMDB && typeof Lampa.TMDB.get === 'function') {
         Lampa.TMDB.get(type, id, { language: 'ru-RU', append_to_response: 'translations' }, function (res) {
-          var title = pickUaFromTranslations(res, type);
+          var title = pickRuFromTranslations(res, type);
           if (!title) title = (type === 'tv') ? res.name : res.title;
           onSuccess(title);
         }, function() {
@@ -635,9 +635,9 @@ function fetchTmdbUaTitle(movie, cb) {
 function getLocalizedTitleAsync(movie, cb) {
     if (!movie) return cb('');
 
-    fetchTmdbUaTitle(movie, function (uaTitle) {
-        if (uaTitle) {
-            return cb(uaTitle);
+    fetchTmdbRuTitle(movie, function (ruTitle) {
+        if (ruTitle) {
+            return cb(ruTitle);
         }
         
         var uiLoc = String((movie && (movie.title || movie.name)) || '').trim();
@@ -657,7 +657,7 @@ function getTitleMode() {
   var m = Lampa.Storage.get('interface_mod_new_title_mode_v1');
   if (typeof m !== 'undefined' && m !== null && m !== '') {
     m = String(m);
-    if (m === 'orig_ua') m = 'orig_loc';
+    if (m === 'orig_ru') m = 'orig_loc';
     if (m !== 'off' && m !== 'orig' && m !== 'loc' && m !== 'orig_loc') m = 'orig';
     return m;
   }
@@ -2468,27 +2468,15 @@ var css = `
     fill: unset !important;
   }
 
-  :root{
-    --ifx-bazarnet-play-color: #8b5cf6;
-  }
-
-  .full-start__button.view--online.lampac--button[data-subtitle*="BazarNetUA"] svg path{
-    fill: var(--ifx-bazarnet-play-color) !important;
-  }
-
-  .full-start__button.view--online.lampac--button[data-subtitle*="BazarNetUA"] svg{
-    color: var(--ifx-bazarnet-play-color) !important;
-  }
-
-  .full-start__button.view--online:not(.ifx-bandera-online):not(.lampac--button) svg path {
+  .full-start__button.view--online:not(.lampac--button) svg path {
     fill: #2196f3 !important;
   }
 
-  .full-start__button.view--online.lampac--button:not(.ifx-bandera-online):not([data-subtitle*="BazarNetUA"]) svg path{
+  .full-start__button.view--online.lampac--button svg path{
   fill:#2196f3 !important;
   }
 
-  .full-start__button.view--online:not(.ifx-bandera-online):not(.lampac--button) svg{
+  .full-start__button.view--online:not(.lampac--button) svg{
   color: #2196f3 !important;
   }
 
@@ -2524,46 +2512,11 @@ var css = `
     if (el) el.remove();
   }
 
-  function makeOnlineUaSvg() {
-    var gid = 'ifx_ua_grad_' + Math.random().toString(16).slice(2);
-
-    return (
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">' +
-        '<defs>' +
-          '<linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
-            '<stop offset="0%" stop-color="#156DD1"/>' +
-            '<stop offset="50%" stop-color="#156DD1"/>' +
-            '<stop offset="50%" stop-color="#FFD948"/>' +
-            '<stop offset="100%" stop-color="#FFD948"/>' +
-          '</linearGradient>' +
-        '</defs>' +
-        '<path style="fill:url(#' + gid + ') !important" d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z"/>' +
-      '</svg>'
-    );
-  }
-
-  function isBanderaOnlineBtn($btn) {
-    if (!$btn || !$btn.length) return false;
-
-    var sub = String($btn.attr('data-subtitle') || '').toLowerCase();
-    var txt = String($btn.text() || '').toLowerCase();
-
-    if (sub.indexOf('bandera online') !== -1) return true;
-    if (txt.indexOf('mmssixxx') !== -1) return true;
-
-    return false;
-  }
-
   var SVG_MAP = {
     torrent: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50px" height="50px"><path d="M25,2C12.317,2,2,12.317,2,25s10.317,23,23,23s23-10.317,23-23S37.683,2,25,2zM40.5,30.963c-3.1,0-4.9-2.4-4.9-2.4S34.1,35,27,35c-1.4,0-3.6-0.837-3.6-0.837l4.17,9.643C26.727,43.92,25.874,44,25,44c-2.157,0-4.222-0.377-6.155-1.039L9.237,16.851c0,0-0.7-1.2,0.4-1.5c1.1-0.3,5.4-1.2,5.4-1.2s1.475-0.494,1.8,0.5c0.5,1.3,4.063,11.112,4.063,11.112S22.6,29,27.4,29c4.7,0,5.9-3.437,5.7-3.937c-1.2-3-4.993-11.862-4.993-11.862s-0.6-1.1,0.8-1.4c1.4-0.3,3.8-0.7,3.8-0.7s1.105-0.163,1.6,0.8c0.738,1.437,5.193,11.262,5.193,11.262s1.1,2.9,3.3,2.9c0.464,0,0.834-0.046,1.152-0.104c-0.082,1.635-0.348,3.221-0.817,4.722C42.541,30.867,41.756,30.963,40.5,30.963z"/></svg>',
     online: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z"/></svg>',
     trailer: '<svg height="70" viewBox="0 0 80 70" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M71.2555 2.08955C74.6975 3.2397 77.4083 6.62804 78.3283 10.9306C80 18.7291 80 35 80 35C80 35 80 51.2709 78.3283 59.0694C77.4083 63.372 74.6975 66.7603 71.2555 67.9104C65.0167 70 40 70 40 70C40 70 14.9833 70 8.74453 67.9104C5.3025 66.7603 2.59172 63.372 1.67172 59.0694C0 51.2709 0 35 0 35C0 35 0 18.7291 1.67172 10.9306C2.59172 6.62804 5.3025 3.2395 8.74453 2.08955C14.9833 0 40 0 40 0C40 0 65.0167 0 71.2555 2.08955ZM55.5909 35.0004L29.9773 49.5714V20.4286L55.5909 35.0004Z"/></svg>'
   };
-
-  function isBazarNetBtn($btn){
-  var sub = String($btn.attr('data-subtitle') || '');
-  return sub.indexOf('BazarNetUA') !== -1;
-}
 
 function replaceIconsIn($root) {
   $root = $root && $root.length ? $root : $(document);
@@ -2584,19 +2537,6 @@ function replaceIconsIn($root) {
 
     if (!$btn.data('ifxOrigSvg')) $btn.data('ifxOrigSvg', $svg.prop('outerHTML'));
 
-    if (isBanderaOnlineBtn($btn)) {
-      $btn.addClass('ifx-bandera-online');
-      $svg.replaceWith(makeOnlineUaSvg());
-      return;
-    }
-
-    if (isBazarNetBtn($btn)) {
-      $btn.removeClass('ifx-bandera-online');
-      $svg.replaceWith(SVG_MAP.online);
-      return;
-    }
-
-    $btn.removeClass('ifx-bandera-online');
     $svg.replaceWith(SVG_MAP.online);
   });
 }
@@ -2614,7 +2554,6 @@ function replaceIconsIn($root) {
       $btn.removeData('ifxOrigSvg');
     }
 
-    $btn.removeClass('ifx-bandera-online');
   });
 }
 
@@ -2744,100 +2683,6 @@ function wireFullCardEnhancers() {
   (function () {
     try {
       (function () {
-        const UKRAINE_FLAG_SVG =
-        '<svg class="ua-flag-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 15" aria-hidden="true" focusable="false">' +
-        '<rect width="20" height="7.5" y="0" fill="#0057B7"/>' +
-        '<rect width="20" height="7.5" y="7.5" fill="#FFD700"/>' +
-        '</svg>';
-        
-        const REPLACEMENTS = [
-          ['Uaflix', 'UAFlix'],
-          ['Zetvideo', 'UaFlix'],
-          ['Історія перегляду відсутня', 'Нет истории просмотра'],
-          ['Дубльований', 'Дублированный'],
-          ['багатоголосий', 'многоголосый'],
-          ['двоголосий', 'двухголосый'],
-          ['Украинский', 'Русский'],
-          ['украинский', 'русский'],
-          ['Український', 'Русский'],
-          ['Украинская', 'Русская'],
-          ['Українська', 'Русская'],
-          {
-            pattern: /\bUkr\b/gi,
-            replacement: 'Rus',
-            condition: (text) => !text.includes('flag-container')
-          },
-          {
-            pattern: /\bUa\b/gi,
-            replacement: 'Ru',
-            condition: (text) => !text.includes('flag-container')
-          }
-        ];
-
-        const FLAG_STYLES = `
-          .flag-container {
-              display: inline-flex;
-              align-items: center;
-              vertical-align: middle;
-              height: 1.27em;
-              margin-left: 3px;
-          }
-          .flag-svg {
-              display: inline-block;
-              vertical-align: middle;
-              margin-right: 2px;
-              margin-top: -5.5px;
-              border-radius: 5px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-              border: 1px solid rgba(0,0,0,0.15);
-              width: 22.56px;
-              height: 17.14px;
-          }
-          @media (max-width: 767px) {
-              .flag-svg {
-                  width: 16.03px;
-                  height: 12.19px;
-                  margin-right: 1px;
-                  margin-top: -4px;
-              }
-          }
-          .flag-container ~ span,
-          .flag-container + * {
-              vertical-align: middle;
-          }
-          .ua-flag-processed {
-              position: relative;
-          }
-          .filter-item .flag-svg,
-          .selector-item .flag-svg,
-          .dropdown-item .flag-svg,
-          .voice-option .flag-svg,
-          .audio-option .flag-svg {
-              margin-right: 1px;
-              margin-top: -2px;
-              width: 18.05px;
-              height: 13.54px;
-          }
-          @media (max-width: 767px) {
-              .filter-item .flag-svg,
-              .selector-item .flag-svg,
-              .dropdown-item .flag-svg,
-              .voice-option .flag-svg,
-              .audio-option .flag-svg {
-                  width: 11.97px;
-                  height: 8.98px;
-                  margin-right: 0px;
-                  margin-top: -1px;
-              }
-          }
-          .online-prestige__description,
-          .video-description,
-          [class*="description"],
-          [class*="info"] {
-              line-height: 1.5;
-          }
-      `;
-
 const STYLES = {
           '.torrent-item__seeds span.low-seeds': { 
           'color': '#ff5f6d',
@@ -2916,142 +2761,10 @@ const STYLES = {
         };
 
         let style = document.createElement('style');
-        style.innerHTML = FLAG_STYLES + '\n' + Object.entries(STYLES).map(([selector, props]) => {
+        style.innerHTML = Object.entries(STYLES).map(([selector, props]) => {
           return `${selector} { ${Object.entries(props).map(([prop, val]) => `${prop}: ${val} !important`).join('; ')} }`;
         }).join('\n');
         document.head.appendChild(style);
-
-        const UKRAINIAN_STUDIOS = [];
-
-        function processVoiceFilters() {
-          const voiceFilterSelectors = [
-            '[data-type="voice"]', '[data-type="audio"]',
-            '.voice-options', '.audio-options',
-            '.voice-list', '.audio-list',
-            '.studio-list', '.translation-filter', '.dubbing-filter'
-          ];
-
-          voiceFilterSelectors.forEach(selector => {
-            try {
-              const filters = document.querySelectorAll(selector);
-              filters.forEach(filter => {
-                if (filter.classList.contains('ua-voice-processed')) return;
-
-                let html = filter.innerHTML;
-                let changed = false;
-
-                UKRAINIAN_STUDIOS.forEach(studio => {
-                  if (html.includes(studio) && !html.includes(UKRAINE_FLAG_SVG)) {
-                    html = html.replace(new RegExp(studio, 'g'), UKRAINE_FLAG_SVG + ' ' + studio);
-                    changed = true;
-                  }
-                });
-
-                if (html.includes('Українська')) {
-                  html = html.replace(/Українська/g, 'Русская');
-                  changed = true;
-                }
-                if (html.includes('Украинская')) {
-                  html = html.replace(/Украинская/g, 'Русская');
-                  changed = true;
-                }
-                if (html.includes('Ukr')) {
-                  html = html.replace(/Ukr/gi, 'Rus');
-                  changed = true;
-                }
-
-                if (changed) {
-                  filter.innerHTML = html;
-                  filter.classList.add('ua-voice-processed');
-
-                  filter.querySelectorAll('svg.ua-flag-svg').forEach(svg => {
-                    if (!svg.closest('.flag-container')) {
-                      svg.classList.add('flag-svg');
-                      const wrapper = document.createElement('span');
-                      wrapper.className = 'flag-container';
-                      svg.parentNode.insertBefore(wrapper, svg);
-                      wrapper.appendChild(svg);
-                    }
-                  });
-                }
-              });
-            } catch (error) {
-              console.warn('Ошибка обработки фильтров озвучки:', error);
-            }
-          });
-        }
-
-        function replaceTexts() {
-          const safeContainers = [
-            '.online-prestige-watched__body',
-            '.online-prestige--full .online-prestige__title',
-            '.online-prestige--full .online-prestige__info',
-            '.online-prestige__description',
-            '.video-description',
-            '.content__description',
-            '.movie-info',
-            '.series-info'
-          ];
-
-          const processSafeElements = () => {
-          const selectors = safeContainers.map(s => s + ':not(.ua-flag-processed)').join(', ');
-            
-            try {
-              const elements = document.querySelectorAll(selectors);
-              elements.forEach(element => {
-                if (element.closest('.hidden, [style*="display: none"]')) return;
-
-                let html = element.innerHTML;
-                let changed = false;
-
-                REPLACEMENTS.forEach(item => {
-                  if (Array.isArray(item)) {
-                    if (html.includes(item[0]) && !html.includes(UKRAINE_FLAG_SVG)) {
-                      html = html.replace(new RegExp(item[0], 'g'), item[1]);
-                      changed = true;
-                    }
-                  } else if (item.pattern) {
-                    if ((!item.condition || item.condition(html)) && item.pattern.test(html) && !html.includes(UKRAINE_FLAG_SVG)) {
-                      html = html.replace(item.pattern, item.replacement);
-                      changed = true;
-                    }
-                  }
-                });
-
-                if (changed) {
-                  element.innerHTML = html;
-                  element.classList.add('ua-flag-processed');
-
-                  element.querySelectorAll('svg.ua-flag-svg').forEach(svg => {
-                  //element.querySelectorAll('svg').forEach(svg => {
-                    if (!svg.closest('.flag-container')) {
-                      svg.classList.add('flag-svg');
-                      const wrapper = document.createElement('span');
-                      wrapper.className = 'flag-container';
-                      svg.parentNode.insertBefore(wrapper, svg);
-                      wrapper.appendChild(svg);
-
-                      if (svg.nextSibling && svg.nextSibling.nodeType === 3) {
-                        wrapper.appendChild(svg.nextSibling);
-                      }
-                    }
-                  });
-                }
-              });
-            } catch (error) {
-              console.warn('Ошибка обработки селекторов:', error);
-            }
-          };
-
-          const startTime = Date.now();
-          const TIME_LIMIT = 50;
-
-          processSafeElements();
-
-          if (Date.now() - startTime < TIME_LIMIT) {
-            processVoiceFilters();
-          }
-        }
 
         function updateTorrentStyles() {
           const visibleElements = {
@@ -3122,7 +2835,6 @@ const STYLES = {
 
         function updateAll() {
           try {
-            replaceTexts();
             updateTorrentStyles();
           } catch (error) {
             console.warn('Ошибка обновления:', error);
@@ -3563,7 +3275,7 @@ function ensureAltBadgesCss(){
   function getYear($root){
     try{
       var el = $root && $root[0];
-      // 1) З кешу (миттєво)
+      // 1) Из кэша (мгновенно)
       if (el && __ifx_yearCache.has(el)) return __ifx_yearCache.get(el);
 
       var y = __ifx_getYear_orig($root) || '';
