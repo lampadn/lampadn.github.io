@@ -1590,28 +1590,25 @@ function buildInfoPanel(details, movie, isTvShow, originalDetails) {
     duration:{ bg: 'rgba(52,152,219,0.8)', text: 'white' },
     next:    { bg: 'rgba(230,126,34,0.9)', text: 'white' },
     genres: {
-      'Бойовик': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'Пригоди': { bg: 'rgba(39,174,96,.85)', text: 'white' },
-      'Мультфільм': { bg: 'rgba(155,89,182,.85)', text: 'white' }, 'Комедія': { bg: 'rgba(241,196,15,.9)', text: 'black' },
-      'Кримінал': { bg: 'rgba(88,24,69,.85)', text: 'white' }, 'Документальний': { bg: 'rgba(22,160,133,.85)', text: 'white' },
-      'Драма': { bg: 'rgba(102,51,153,.85)', text: 'white' }, 'Сімейний': { bg: 'rgba(139,195,74,.90)', text: 'white' },
-      'Фентезі': { bg: 'rgba(22,110,116,.85)', text: 'white' }, 'Історія': { bg: 'rgba(121,85,72,.85)', text: 'white' },
-      'Жахи': { bg: 'rgba(155,27,48,.85)', text: 'white' }, 'Музика': { bg: 'rgba(63,81,181,.85)', text: 'white' },
+      'Боевик': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'Приключения': { bg: 'rgba(39,174,96,.85)', text: 'white' },
+      'Мультфильм': { bg: 'rgba(155,89,182,.85)', text: 'white' }, 'Комедия': { bg: 'rgba(241,196,15,.9)', text: 'black' },
+      'Криминал': { bg: 'rgba(88,24,69,.85)', text: 'white' }, 'Документальный': { bg: 'rgba(22,160,133,.85)', text: 'white' },
+      'Драма': { bg: 'rgba(102,51,153,.85)', text: 'white' }, 'Семейный': { bg: 'rgba(139,195,74,.90)', text: 'white' },
+      'Фэнтези': { bg: 'rgba(22,110,116,.85)', text: 'white' }, 'История': { bg: 'rgba(121,85,72,.85)', text: 'white' },
+      'Ужасы': { bg: 'rgba(155,27,48,.85)', text: 'white' }, 'Музыка': { bg: 'rgba(63,81,181,.85)', text: 'white' },
       'Детектив': { bg: 'rgba(52,73,94,.85)', text: 'white' }, 'Мелодрама': { bg: 'rgba(233,30,99,.85)', text: 'white' },
-      'Фантастика': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'Трилер': { bg: 'rgba(165,27,11,.90)', text: 'white' },
-      'Військовий': { bg: 'rgba(85,107,47,.85)', text: 'white' }, 'Вестерн': { bg: 'rgba(211,84,0,.85)', text: 'white' },
-      'Бойовик і Пригоди': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'Дитячий': { bg: 'rgba(0,188,212,.85)', text: 'white' },
-      'Новини': { bg: 'rgba(70,130,180,.85)', text: 'white' }, 'Реаліті-шоу': { bg: 'rgba(230,126,34,.9)', text: 'white' },
-      'НФ і Фентезі': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'Мильна опера': { bg: 'rgba(233,30,99,.85)', text: 'white' },
-      'Ток-шоу': { bg: 'rgba(241,196,15,.9)', text: 'black' }, 'Війна і Політика': { bg: 'rgba(96,125,139,.85)', text: 'white' },
-      'Екшн і Пригоди': { bg: 'rgba(231,76,60,.85)', text: 'white' },
-      'Екшн': { bg: 'rgba(231,76,60,.85)', text: 'white' },
-      'Науково фантастичний': { bg: 'rgba(40,53,147,.90)', text: 'white' },
-      'Науково-фантастичний': { bg: 'rgba(40,53,147,.90)', text: 'white' },
-      'Наукова фантастика': { bg: 'rgba(40,53,147,.90)', text: 'white' },
-      'Наукова-фантастика': { bg: 'rgba(40,53,147,.90)', text: 'white' },
-      'Науково-фантастика': { bg: 'rgba(40,53,147,.90)', text: 'white' }
+      'Фантастика': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'Триллер': { bg: 'rgba(165,27,11,.90)', text: 'white' },
+      'Военный': { bg: 'rgba(85,107,47,.85)', text: 'white' }, 'Вестерн': { bg: 'rgba(211,84,0,.85)', text: 'white' },
+      'Боевик и приключения': { bg: 'rgba(231,76,60,.85)', text: 'white' }, 'Детский': { bg: 'rgba(0,188,212,.85)', text: 'white' },
+      'Новости': { bg: 'rgba(70,130,180,.85)', text: 'white' }, 'Реалити-шоу': { bg: 'rgba(230,126,34,.9)', text: 'white' },
+      'НФ и фэнтези': { bg: 'rgba(41,128,185,.85)', text: 'white' }, 'Мыльная опера': { bg: 'rgba(233,30,99,.85)', text: 'white' },
+      'Ток-шоу': { bg: 'rgba(241,196,15,.9)', text: 'black' }, 'Война и политика': { bg: 'rgba(96,125,139,.85)', text: 'white' }
     }
   };
+
+  function ruGenreName(name) {
+    return name;
+  }
 
   var baseBadge = {
     'border-radius': '0.3em',
@@ -1706,9 +1703,9 @@ function buildInfoPanel(details, movie, isTvShow, originalDetails) {
     today.setHours(0, 0, 0, 0);
 
     var diff = Math.floor((nextDate - today) / (1000 * 60 * 60 * 24));
-    var txt = diff === 0 ? 'Наступна серія вже сьогодні'
-      : diff === 1 ? 'Наступна серія вже завтра'
-      : diff > 1 ? ('Наступна серія через ' + diff + ' ' + plural(diff, 'день', 'дні', 'днів'))
+    var txt = diff === 0 ? 'Следующая серия уже сегодня'
+      : diff === 1 ? 'Следующая серия уже завтра'
+      : diff > 1 ? ('Следующая серия через ' + diff + ' ' + plural(diff, 'день', 'дня', 'дней'))
       : '';
 
     if (txt) row2.append(
@@ -1718,8 +1715,8 @@ function buildInfoPanel(details, movie, isTvShow, originalDetails) {
 
   if (!isTvShow && movie.runtime > 0) {
     var mins = movie.runtime, h = Math.floor(mins / 60), m = mins % 60;
-    var tt = 'Тривалість фільму: ';
-    if (h > 0) tt += h + ' ' + plural(h, 'година', 'години', 'годин');
+    var tt = 'Длительность фильма: ';
+    if (h > 0) tt += h + ' ' + plural(h, 'час', 'часа', 'часов');
     if (m > 0) tt += (h > 0 ? ' ' : '') + m + ' хв.';
 
     row3.append(
@@ -1728,7 +1725,7 @@ function buildInfoPanel(details, movie, isTvShow, originalDetails) {
   } else if (isTvShow) {
     var avg = calculateAverageEpisodeDuration(movie);
     if (avg > 0) row3.append(
-      $('<span>').text('Тривалість серії ≈ ' + formatDurationMinutes(avg))
+      $('<span>').text('Длительность серии ≈ ' + formatDurationMinutes(avg))
         .css(badgeCss(colors.duration.bg, colors.duration.text))
     );
   }
@@ -1739,13 +1736,13 @@ function buildInfoPanel(details, movie, isTvShow, originalDetails) {
 
   if (isTvShow && seasonsCount > 0) {
     row4.append(
-      $('<span>').text('Сезони: ' + seasonsCount).css(badgeCss(colors.seasons.bg, colors.seasons.text))
+      $('<span>').text('Сезоны: ' + seasonsCount).css(badgeCss(colors.seasons.bg, colors.seasons.text))
     );
   }
 
   var genreList = [];
   if (Array.isArray(movie.genres) && movie.genres.length) {
-    genreList = movie.genres.map(function (g) { return g.name; });
+    genreList = movie.genres.map(function (g) { return ruGenreName(g.name); });
   }
   genreList = genreList.filter(Boolean).filter(function (v, i, a) { return a.indexOf(v) === i; });
 
@@ -1963,16 +1960,30 @@ function applyStatusOnceIn(elRoot) {
     var t = ($(el).text() || '').trim();
     var key = '';
 
-    if (/заверш/i.test(t) || /ended/i.test(t)) key = 'completed';
-    else if (/скасов/i.test(t) || /cancel(l)?ed/i.test(t)) key = 'canceled';
-    else if (/онгоїн|виходить|триває/i.test(t) || /returning/i.test(t)) key = 'ongoing';
-    else if (/виробництв/i.test(t) || /in\s*production/i.test(t)) key = 'production';
-    else if (/заплан/i.test(t) || /planned/i.test(t)) key = 'planned';
-    else if (/пілот/i.test(t) || /pilot/i.test(t)) key = 'pilot';
-    else if (/випущ/i.test(t) || /released/i.test(t)) key = 'released';
-    else if (/чутк/i.test(t) || /rumored/i.test(t)) key = 'rumored';
+    if (/заверш|законч|ended/i.test(t)) key = 'completed';
+    else if (/отмен|cancel(l)?ed/i.test(t)) key = 'canceled';
+    else if (/продолж|возвращ|returning/i.test(t)) key = 'ongoing';
+    else if (/производств|in\s*production/i.test(t)) key = 'production';
+    else if (/заплан|planned/i.test(t)) key = 'planned';
+    else if (/пилот|pilot/i.test(t)) key = 'pilot';
+    else if (/выпущ|released/i.test(t)) key = 'released';
+    else if (/слух|rumored/i.test(t)) key = 'rumored';
     else if (/пост/i.test(t) || /post/i.test(t)) key = 'post';
-    else if (/незабаром|скоро|soon/i.test(t)) key = 'soon';
+    else if (/скоро|soon/i.test(t)) key = 'soon';
+
+    var statusRu = {
+      completed: 'Завершён',
+      canceled: 'Отменён',
+      ongoing: 'Продолжается',
+      production: 'В производстве',
+      planned: 'Запланирован',
+      pilot: 'Пилот',
+      released: 'Выпущен',
+      rumored: 'Слухи',
+      post: 'Постпродакшн',
+      soon: 'Скоро'
+    };
+    if (key && statusRu[key] && t !== statusRu[key]) $(el).text(statusRu[key]);
 
     el.classList.remove('ifx-status-fallback');
 
@@ -2308,7 +2319,7 @@ function applyOriginalTitleToggle() {
     if (/trailer/.test(cls) || /trailer/.test(act) || /трейлер|trailer/.test(txt)) return false;
     if (/(^|\s)(button--play|view--play|button--player|view--player)(\s|$)/.test(cls)) return true;
     if (/(^|\s)(play|player|resume|continue)(\s|$)/.test(act)) return true;
-    if (/^(play|відтворити|продовжити|старт)$/i.test(txt)) return true;
+    if (/^(play|старт|воспроизвести|продолжить)$/i.test(txt)) return true;
     return false;
   }
 
@@ -3104,7 +3115,7 @@ function ensureTypeBadgesCss() {
     .ifx-pill-movie { color: #81c784 !important; }
     .ifx-pill-series { color: #64b5f6 !important; }
     body.ifx-alt-type-badges .card__type.ifx-movie-type {
-        background: #4285F4 !important; /* Синій колір */
+        background: #4285F4 !important; /* Синий цвет */
         color: #fff !important;
     }
 
