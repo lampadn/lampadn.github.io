@@ -87,7 +87,7 @@
         if(typeof Lampa !== 'undefined'){
             clearInterval(timer);
             Lampa.Storage.set('lampac_unic_id', 'zc56aeon');
-            Lampa.Utils.putScriptAsync(["https://beta.l-vid.online/splash.js","https://beta.l-vid.online/online.js","https://beta.l-vid.online/catalog.js"], function() {});
+            Lampa.Utils.putScriptAsync(["https://beta.l-vid.online/online.js","https://beta.l-vid.online/catalog.js"], function() {});
         }
     },200);
 })();
