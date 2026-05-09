@@ -1,6 +1,21 @@
 (function(){
   if(document.getElementById('auth-gate-overlay')) return;
 
+  // Show token for copying
+  (function showToken(){
+    var tok='';
+    try{var c=document.cookie.match(/(?:^|;\s*)lampac_token=([^;]*)/);if(c)tok=decodeURIComponent(c[1]);}catch(e){}
+    try{var v=localStorage.getItem('lampac_auth_token');if(v)tok=v;}catch(e){}
+    if(tok){
+      var d=document.createElement('div');
+      d.id='token-debug-box';
+      d.style.cssText='position:fixed;top:10px;left:10px;z-index:9999999;background:#000;color:#0f0;padding:12px;font-size:13px;word-break:break-all;max-width:90vw;border:3px solid #0f0;font-family:monospace;white-space:pre-wrap;';
+      d.textContent='СКОПИРУЙТЕ ТОКЕН И ОТПРАВЬТЕ В ЧАТ:\n\n'+tok;
+      if(document.body)document.body.appendChild(d);
+      else document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(d);});
+    }
+  })();
+
   var _srvHost='https://beta.l-vid.online';
   var _lo=window.location.origin||'';
   var origin=(_lo&&_lo!=='null'&&_lo.indexOf('http')===0&&_lo.indexOf('127.0.0.1')<0&&_lo.indexOf('localhost')<0)?_lo:_srvHost;
