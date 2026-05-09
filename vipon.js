@@ -1,49 +1,13 @@
 (function() {
   'use strict';
-  var _d = function(s) { return atob(s); };
-  var _p = ['bG', 'Ft', 'cG', 'Fj'];
-  var _l = ['aH', 'R0', 'cH', 'M6', 'Ly', '9s', 'YW', '1w', 'YS', '52', 'aX', 'Av'];
-  var _n = ['bG', 'Ft', 'cG', 'Eu', 'dm', 'lw'];
-
-  var defaultBase = _d(_l.join('')).replace(/\/$/, '');
-  var defaultHostkey = defaultBase.replace('http://', '').replace('https://', '');
-
-  function getServerUrlFromStorage() {
-    var servers = Lampa.Storage.get('lamponline_servers', []);
-    if (typeof servers === 'string') {
-      try { servers = JSON.parse(servers); } catch (e) { servers = []; }
-    }
-    if (!Lampa.Arrays.isArray(servers) || servers.length === 0) return '';
-    var activeIndex = parseInt(Lampa.Storage.get('lamponline_active_server', 0)) || 0;
-    if (activeIndex >= servers.length) activeIndex = 0;
-    var server = servers[activeIndex] || '';
-    if (!server) return '';
-    server = server.replace(/\/+$/, '');
-    if (server.indexOf('http://') !== 0 && server.indexOf('https://') !== 0) server = 'http://' + server;
-    return server;
-  }
-
-  var storedUrl = getServerUrlFromStorage();
-  var storedHostkey = storedUrl ? storedUrl.replace(/^https?:\/\//, '').replace(/\/+$/, '') : '';
-  var serverBase;
-  if (storedUrl && storedHostkey === defaultHostkey) {
-    serverBase = storedUrl.replace(/\/+$/, '');
-  } else {
-    serverBase = defaultBase;
-    if (!storedUrl && defaultHostkey && defaultBase.indexOf('https://') === 0) {
-      serverBase = 'http://' + defaultHostkey;
-    }
-  }
 
   var Defined = {
-    api: _d(_p.join('')),
-    localhost: serverBase + '/',
+    api: 'lampac',
+    localhost: 'http://mx.showypro.com/',
     apn: ''
   };
 
-  var hostkey = serverBase.replace('http://', '').replace('https://', '');
-
-  var balansers_with_search = [];
+  var balansers_with_search;
   
   var unic_id = Lampa.Storage.get('lampac_unic_id', '');
   if (!unic_id) {
@@ -63,6 +27,8 @@
     return 0;
   }
 }
+
+var hostkey = 'http://mx.showypro.com'.replace('http://', '').replace('https://', '');
 
 if (!window.rch_nws || !window.rch_nws[hostkey]) {
   if (!window.rch_nws) window.rch_nws = {};
@@ -87,7 +53,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
     if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
     else {
       var net = new Lampa.Reguest();
-      net.silent(serverBase.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
+      net.silent('http://mx.showypro.com'.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
         check(true);
       }, function() {
         check(false);
@@ -99,9 +65,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
 };
 
 window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
-  window.rch_nws[hostkey].typeInvoke(serverBase, function() {
-    var st = getServerToken();
-    var tokenVal = (st && st.indexOf('=') >= 0) ? st.split('=').slice(1).join('=') : (st || '');
+  window.rch_nws[hostkey].typeInvoke('http://mx.showypro.com', function() {
 
     client.invoke("RchRegistry", JSON.stringify({
       version: 151,
@@ -112,7 +76,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	  account_email: Lampa.Storage.get('account_email', ''),
 	  unic_id: Lampa.Storage.get('lampac_unic_id', ''),
 	  profile_id: Lampa.Storage.get('lampac_profile_id', ''),
-	  token: tokenVal
+	  token: ''
     }));
 
     if (client._shouldReconnect && window.rch_nws[hostkey].rchRegistry) {
@@ -131,7 +95,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	  
 	  function sendResult(uri, html) {
 	    $.ajax({
-	      url: serverBase + '/rch/' + uri + '?id=' + rchId,
+	      url: 'http://mx.showypro.com/rch/' + uri + '?id=' + rchId,
 	      type: 'POST',
 	      data: html,
 	      async: true,
@@ -212,7 +176,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
   });
 };
-  window.rch_nws[hostkey].typeInvoke(serverBase, function() {});
+  window.rch_nws[hostkey].typeInvoke('http://mx.showypro.com', function() {});
 
   function rchInvoke(json, call) {
     if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect){
@@ -235,7 +199,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function rchRun(json, call) {
     if (typeof NativeWsClient == 'undefined') {
-      Lampa.Utils.putScript([serverBase + "/js/nws-client-es5.js?v18112025"], function() {}, false, function() {
+      Lampa.Utils.putScript(["http://mx.showypro.com/js/nws-client-es5.js?v18112025"], function() {}, false, function() {
         rchInvoke(json, call);
       }, true);
     } else {
@@ -243,60 +207,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     }
   }
 
-  function getServerToken() {
-    var raw = Lampa.Storage.get('lamponline_server_tokens', '{}');
-    var tokens = raw;
-    if (typeof raw === 'string') {
-      try { tokens = JSON.parse(raw); } catch (e) { tokens = {}; }
-    }
-    var servers = Lampa.Storage.get('lamponline_servers', []);
-    if (typeof servers === 'string') {
-      try { servers = JSON.parse(servers); } catch (e) { servers = []; }
-    }
-    var activeIndex = parseInt(Lampa.Storage.get('lamponline_active_server', 0)) || 0;
-    if (activeIndex >= servers.length) activeIndex = 0;
-    var activeServerUrl = servers[activeIndex] || '';
-    var keys = [activeServerUrl, serverBase, serverBase + '/', 'https://' + hostkey, 'http://' + hostkey, hostkey];
-    for (var i = 0; i < keys.length; i++) {
-      if (keys[i] && tokens[keys[i]]) return tokens[keys[i]];
-    }
-    var single = Lampa.Storage.get('lampac_token', '');
-    if (single) return single.indexOf('=') >= 0 ? single : 'token=' + encodeURIComponent(single);
-    return '';
-  }
-
-  function getRequestHeaders() {
-    var h = {'X-Kit-AesGcm': [Lampa.Storage.get('aesgcmkey',''), Lampa.Storage.get('bwaesgcmkey','')].filter(Boolean).join(', ')};
-    var st = getServerToken();
-    if (st) {
-      var v = (st.indexOf('=') >= 0) ? st.split('=').slice(1).join('=') : st;
-      if (v) h['Authorization'] = 'Bearer ' + v;
-    }
-    return h;
-  }
-
-  function account(url) {
-    url = url + '';
-    if (url.indexOf('uid=') == -1) {
-      var visitorId = Lampa.Storage.get('lampac_unic_id', '') || 'guest';
-      url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(visitorId));
-    }
-    if (url.indexOf('account_email=') == -1) {
-      var email = Lampa.Storage.get('account_email');
-      if (email) url = Lampa.Utils.addUrlComponent(url, 'account_email=' + encodeURIComponent(email));
-    }
-    var serverToken = getServerToken();
-    if (serverToken) {
-      var tokenParts = serverToken.split('=');
-      var tokenKey = tokenParts[0];
-      if (tokenKey && url.indexOf(tokenKey + '=') == -1) {
-        url = Lampa.Utils.addUrlComponent(url, serverToken);
-      }
-    }
-    if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
-      var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
-      if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
-    }
+function account(url) {
     return url;
   }
   
@@ -332,13 +243,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       voice: []
     };
 	
-    if (!Lampa.Arrays.isArray(balansers_with_search) || balansers_with_search.length === 0) {
+    if (balansers_with_search == undefined) {
       network.timeout(10000);
-      network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
-        balansers_with_search = Lampa.Arrays.isArray(json) ? json : [];
+      network.silent(account('http://mx.showypro.com/lite/withsearch'), function(json) {
+        balansers_with_search = json;
       }, function() {
-        balansers_with_search = [];
-      });
+		  balansers_with_search = [];
+	  });
     }
 	
     function balanserName(j) {
@@ -450,14 +361,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 			  _this.empty();
 		  }, false, {
             dataType: 'text',
-			headers: getRequestHeaders()
+			
 		  });
 	  } 
       this.externalids().then(function() {
         return _this.createSource();
       }).then(function(json) {
-        if (Lampa.Arrays.isArray(balansers_with_search) && !balansers_with_search.find(function(b) {
-            return balanser && balanser.slice(0, b.length) == b;
+        if (!balansers_with_search.find(function(b) {
+            return balanser.slice(0, b.length) == b;
           })) {
           filter.render().find('.filter--search').addClass('hide');
         }
@@ -491,7 +402,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }, function() {
             resolve();
           }, false, {
-			headers: getRequestHeaders()
+			
 		  });
         } else resolve();
       });
@@ -630,7 +541,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               life_wait_timer = setTimeout(fin, 1000);
             }
           }, false, {
-			headers: getRequestHeaders()
+			
 		  });
         };
         fin();
@@ -655,7 +566,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             _this4.startSource(json).then(resolve)["catch"](reject);
           }
         }, reject, false, {
-			headers: getRequestHeaders()
+			
 		  });
       });
     };
@@ -682,7 +593,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (number_of_requests < 10) {
         network["native"](account(url), this.parse.bind(this), this.doesNotAnswer.bind(this), false, {
           dataType: 'text',
-		  headers: getRequestHeaders()
+		  
         });
         clearTimeout(number_of_requests_timer);
         number_of_requests_timer = setTimeout(function() {
@@ -725,7 +636,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
     this.getFileUrl = function(file, call, waiting_rch) {
 	  var _this = this;
-      if (Lampa.Storage.field('player') !== 'inner' && file.stream && Lampa.Platform.is('apple')) {
+	  
+      if(Lampa.Storage.field('player') !== 'inner' && file.stream && Lampa.Platform.is('apple')){
 		  var newfile = Lampa.Arrays.clone(file);
 		  newfile.method = 'play';
 		  newfile.url = file.stream;
@@ -748,11 +660,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 				else {
 					_this.rch(json,function(){
 						Lampa.Loading.stop();
+						
 						_this.getFileUrl(file, call, true);
 					});
 				}
 			}
-			else {
+			else{
 				Lampa.Loading.stop();
 				call(json, json);
 			}
@@ -760,7 +673,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           Lampa.Loading.stop();
           call(false, {});
         }, false, {
-			headers: getRequestHeaders()
+			
 		  });
       }
     };
@@ -823,29 +736,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 			  }
               _this5.orUrlReserve(first);
               _this5.setDefaultQuality(first);
-              if (Lampa.Platform.is('android') && first.url) {
-                first.headers = first.headers || {};
-                if (!first.headers['User-Agent']) {
-                  first.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-                }
-                if (!first.headers['Referer']) {
-                  var u = first.url.toLowerCase();
-                  if (u.indexOf('rezka') !== -1) first.headers['Referer'] = 'https://rezka.ag/';
-                  else if (u.indexOf('kinopub') !== -1 || u.indexOf('cdntogo') !== -1) first.headers['Referer'] = 'https://kinopub.net/';
-                  else {
-                    try {
-                      var streamOrigin = first.url.match(/^https?:\/\/[^\/]+/);
-                      if (streamOrigin) first.headers['Referer'] = streamOrigin[0] + '/';
-                    } catch (e) {}
-                  }
-                }
-                if (!first.headers['Origin']) {
-                  try {
-                    var origin = first.url.match(/^https?:\/\/[^\/]+/);
-                    if (origin) first.headers['Origin'] = origin[0];
-                  } catch (e) {}
-                }
-              }
               if (item.season) {
                 videos.forEach(function(elem) {
                   var cell = _this5.toPlayElement(elem);
@@ -853,40 +743,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                   else {
                     if (elem.method == 'call') {
                       if (Lampa.Storage.field('player') !== 'inner') {
-                        cell.url = elem.stream || '';
-						if (elem.stream) delete cell.quality;
+                        cell.url = elem.stream;
+						delete cell.quality;
                       } else {
                         cell.url = function(call) {
                           _this5.getFileUrl(elem, function(stream, stream_json) {
-                            if (stream && stream.url) {
+                            if (stream.url) {
                               cell.url = stream.url;
-                              cell.headers = stream_json && (stream_json.headers || stream_json.header) || {};
-                              cell.quality = stream_json && stream_json.quality || elem.qualitys;
-							  cell.segments = stream_json && stream_json.segments || elem.segments;
-                              cell.subtitles = stream && stream.subtitles;
+                              cell.quality = stream_json.quality || elem.qualitys;
+							  cell.segments = stream_json.segments || elem.segments;
+                              cell.subtitles = stream.subtitles;
                               _this5.orUrlReserve(cell);
                               _this5.setDefaultQuality(cell);
-                              if (Lampa.Platform.is('android') && cell.url) {
-                                cell.headers = cell.headers || {};
-                                if (!cell.headers['User-Agent']) cell.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-                                if (!cell.headers['Referer']) {
-                                  var ul = cell.url.toLowerCase();
-                                  if (ul.indexOf('rezka') !== -1) cell.headers['Referer'] = 'https://rezka.ag/';
-                                  else if (ul.indexOf('kinopub') !== -1 || ul.indexOf('cdntogo') !== -1) cell.headers['Referer'] = 'https://kinopub.net/';
-                                  else {
-                                    try {
-                                      var o = cell.url.match(/^https?:\/\/[^\/]+/);
-                                      if (o) cell.headers['Referer'] = o[0] + '/';
-                                    } catch (e) {}
-                                  }
-                                }
-                                if (!cell.headers['Origin']) {
-                                  try {
-                                    var co = cell.url.match(/^https?:\/\/[^\/]+/);
-                                    if (co) cell.headers['Origin'] = co[0];
-                                  } catch (e) {}
-                                }
-                              }
                               elem.mark();
                             } else {
                               cell.url = '';
@@ -921,7 +789,7 @@ else if (element.url) {
   if (false) {
     if (Platform.is('browser') && location.host.indexOf("127.0.0.1") !== -1) {
       Noty.show('Видео открыто в playerInner', {time: 3000});
-      $.get(serverBase + '/player-inner/' + element.url);
+      $.get('http://mx.showypro.com/player-inner/' + element.url);
       return;
     }
 
@@ -966,7 +834,7 @@ else if (element.url) {
 		network.silent(account(link), function(subs){
 			Lampa.Player.subtitles(subs)
 		}, function() {},false, {
-			headers: getRequestHeaders()
+			
 		  })
 	}
     this.parse = function(str) {
@@ -1803,7 +1671,7 @@ else if (element.url) {
               }, function() {
                 status.error();
               }, false, {
-			headers: getRequestHeaders()
+			
 		  })
             })
           } else {
@@ -1819,7 +1687,7 @@ else if (element.url) {
               }, function() {
                 oncomplite([]);
               }, false, {
-			headers: getRequestHeaders()
+			
 		  });
             });
           } else {
@@ -1828,7 +1696,7 @@ else if (element.url) {
         }, function() {
           oncomplite([]);
         }, false, {
-			headers: getRequestHeaders()
+			
 		  });
       },
       onCancel: function() {
@@ -1850,7 +1718,7 @@ else if (element.url) {
         Lampa.Activity.push({
           url: params.element.url,
           title: 'Lampac - ' + params.element.title,
-          component: 'lampa_vip',
+          component: 'lampac',
           movie: params.element,
           page: 1,
           search: params.element.title,
@@ -1865,17 +1733,22 @@ else if (element.url) {
   }
 
   function startPlugin() {
-    window.lampa_vip_plugin = true;
+    window.lampac_plugin = true;
     var manifst = {
       type: 'video',
-      version: '',
-      name: _d(_n.join('')),
-      description: '',
-      component: 'lampa_vip',
-      
+      version: '1.6.7',
+      name: 'Lampac',
+      description: 'Плагин для просмотра онлайн сериалов и фильмов',
+      component: 'lampac',
+      onContextMenu: function onContextMenu(object) {
+        return {
+          name: Lampa.Lang.translate('lampac_watch'),
+          description: ''
+        };
+      },
       onContextLauch: function onContextLauch(object) {
         resetTemplates();
-        Lampa.Component.add('lampa_vip', component);
+        Lampa.Component.add('lampac', component);
 		
 		var id = Lampa.Utils.hash(object.number_of_seasons ? object.original_name : object.original_title);
 		var all = Lampa.Storage.get('clarification_search','{}');
@@ -1883,7 +1756,7 @@ else if (element.url) {
         Lampa.Activity.push({
           url: '',
           title: Lampa.Lang.translate('title_online'),
-          component: 'lampa_vip',
+          component: 'lampac',
           search: all[id] ? all[id] : object.title,
           search_one: object.title,
           search_two: object.original_title,
@@ -1893,8 +1766,8 @@ else if (element.url) {
         });
       }
     };
-	
-	
+	addSourceSearch('Spider', 'spider');
+	addSourceSearch('Anime', 'spider/anime');
     Lampa.Manifest.plugins = manifst;
     Lampa.Lang.add({
       lampac_watch: { //
@@ -1976,7 +1849,7 @@ else if (element.url) {
         zh: '更改平衡器'
       },
       lampac_balanser_dont_work: { //
-        ru: 'Поиск не дал результатов',
+        ru: 'Поиск на ({balanser}) не дал результатов',
         uk: 'Пошук на ({balanser}) не дав результатів',
         en: 'Search on ({balanser}) did not return any results',
         zh: '搜索 ({balanser}) 未返回任何结果'
@@ -1988,7 +1861,7 @@ else if (element.url) {
         zh: '平衡器将在<span class="timeout">10</span>秒内自动切换。'
       },
       lampac_does_not_answer_text: {
-        ru: 'Поиск не дал результатов',
+        ru: 'Поиск на ({balanser}) не дал результатов',
         uk: 'Пошук на ({balanser}) не дав результатів',
         en: 'Search on ({balanser}) did not return any results',
         zh: '搜索 ({balanser}) 未返回任何结果'
@@ -2005,8 +1878,8 @@ else if (element.url) {
       Lampa.Template.add('lampac_prestige_folder', "<div class=\"online-prestige online-prestige--folder selector\">\n            <div class=\"online-prestige__folder\">\n                <svg viewBox=\"0 0 128 112\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <rect y=\"20\" width=\"128\" height=\"92\" rx=\"13\" fill=\"white\"></rect>\n                    <path d=\"M29.9963 8H98.0037C96.0446 3.3021 91.4079 0 86 0H42C36.5921 0 31.9555 3.3021 29.9963 8Z\" fill=\"white\" fill-opacity=\"0.23\"></path>\n                    <rect x=\"11\" y=\"8\" width=\"106\" height=\"76\" rx=\"13\" fill=\"white\" fill-opacity=\"0.51\"></rect>\n                </svg>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                </div>\n            </div>\n        </div>");
       Lampa.Template.add('lampac_prestige_watched', "<div class=\"online-prestige online-prestige-watched selector\">\n            <div class=\"online-prestige-watched__icon\">\n                <svg width=\"21\" height=\"21\" viewBox=\"0 0 21 21\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <circle cx=\"10.5\" cy=\"10.5\" r=\"9\" stroke=\"currentColor\" stroke-width=\"3\"/>\n                    <path d=\"M14.8477 10.5628L8.20312 14.399L8.20313 6.72656L14.8477 10.5628Z\" fill=\"currentColor\"/>\n                </svg>\n            </div>\n            <div class=\"online-prestige-watched__body\">\n                \n            </div>\n        </div>");
     }
-    var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"".concat(manifst.name, " ").concat(manifst.version, "\">\n         <svg viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M27 7H5a2 2 0 00-2 2v14a2 2 0 002 2h22a2 2 0 002-2V9a2 2 0 00-2-2z\"/><path d=\"M7 13l3 6.5 3-6.5M16.5 13v6.5M20.5 17.275h1.48c.651 0 1.277-.275 1.721-.75a2.338 2.338 0 00.215-2.932 1.394 1.394 0 00-1.14-.593H20.5v4.275zm0 0V19.5\"/></svg>\n        <span>#{title_online}</span>\n    </div>"); // нужна заглушка, а то при страте лампы говорит пусто
-    Lampa.Component.add('lampa_vip', component); //то же самое
+    var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"".concat(manifst.name, " v").concat(manifst.version, "\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 392.697 392.697\" xml:space=\"preserve\">\n            <path d=\"M21.837,83.419l36.496,16.678L227.72,19.886c1.229-0.592,2.002-1.846,1.98-3.209c-0.021-1.365-0.834-2.592-2.082-3.145\n                L197.766,0.3c-0.903-0.4-1.933-0.4-2.837,0L21.873,77.036c-1.259,0.559-2.073,1.803-2.081,3.18\n                C19.784,81.593,20.584,82.847,21.837,83.419z\" fill=\"currentColor\"></path>\n            <path d=\"M185.689,177.261l-64.988-30.01v91.617c0,0.856-0.44,1.655-1.167,2.114c-0.406,0.257-0.869,0.386-1.333,0.386\n                c-0.368,0-0.736-0.082-1.079-0.244l-68.874-32.625c-0.869-0.416-1.421-1.293-1.421-2.256v-92.229L6.804,95.5\n                c-1.083-0.496-2.344-0.406-3.347,0.238c-1.002,0.645-1.608,1.754-1.608,2.944v208.744c0,1.371,0.799,2.615,2.045,3.185\n                l178.886,81.768c0.464,0.211,0.96,0.315,1.455,0.315c0.661,0,1.318-0.188,1.892-0.555c1.002-0.645,1.608-1.754,1.608-2.945\n                V180.445C187.735,179.076,186.936,177.831,185.689,177.261z\" fill=\"currentColor\"></path>\n            <path d=\"M389.24,95.74c-1.002-0.644-2.264-0.732-3.347-0.238l-178.876,81.76c-1.246,0.57-2.045,1.814-2.045,3.185v208.751\n                c0,1.191,0.606,2.302,1.608,2.945c0.572,0.367,1.23,0.555,1.892,0.555c0.495,0,0.991-0.104,1.455-0.315l178.876-81.768\n                c1.246-0.568,2.045-1.813,2.045-3.185V98.685C390.849,97.494,390.242,96.384,389.24,95.74z\" fill=\"currentColor\"></path>\n            <path d=\"M372.915,80.216c-0.009-1.377-0.823-2.621-2.082-3.18l-60.182-26.681c-0.938-0.418-2.013-0.399-2.938,0.045\n                l-173.755,82.992l60.933,29.117c0.462,0.211,0.958,0.316,1.455,0.316s0.993-0.105,1.455-0.316l173.066-79.092\n                C372.122,82.847,372.923,81.593,372.915,80.216z\" fill=\"currentColor\"></path>\n        </svg>\n\n        <span>#{title_online}</span>\n    </div>"); // нужна заглушка, а то при страте лампы говорит пусто
+    Lampa.Component.add('lampac', component); //то же самое
     resetTemplates();
 
     function addButton(e) {
@@ -2015,7 +1888,7 @@ else if (element.url) {
 	  // //console.log(btn.clone().removeClass('focus').prop('outerHTML'))
       btn.on('hover:enter', function() {
         resetTemplates();
-        Lampa.Component.add('lampa_vip', component);
+        Lampa.Component.add('lampac', component);
 		
 		var id = Lampa.Utils.hash(e.movie.number_of_seasons ? e.movie.original_name : e.movie.original_title);
 		var all = Lampa.Storage.get('clarification_search','{}');
@@ -2023,7 +1896,7 @@ else if (element.url) {
         Lampa.Activity.push({
           url: '',
           title: Lampa.Lang.translate('title_online'),
-          component: 'lampa_vip',
+          component: 'lampac',
           search: all[id] ? all[id] : e.movie.title,
           search_one: e.movie.title,
           search_two: e.movie.original_title,
@@ -2032,7 +1905,7 @@ else if (element.url) {
 		  clarification: all[id] ? true : false
         });
       });
-      e.render.before(btn);
+      e.render.after(btn);
     }
     Lampa.Listener.follow('full', function(e) {
       if (e.type == 'complite') {
@@ -2051,13 +1924,13 @@ else if (element.url) {
       }
     } catch (e) {}
     if (Lampa.Manifest.app_digital >= 177) {
-      var balansers_sync = ["filmix", 'filmixtv', "fxapi", "rezka", "rhsprem", "lumex", "videodb", "collaps", "collaps-dash", "hdvb", "zetflix", "kodik", "ashdi", "kinoukr", "kinotochka", "remux", "iframevideo", "cdnmovies", "anilibria", "animedia", "animego", "animevost", "animebesst", "redheadsound", "alloha", "animelib", "moonanime", "kinopub", "flixcdn", "vdbmovies", "fancdn", "cdnvideohub", "vokino", "rc/filmix", "rc/fxapi", "rc/rhs", "vcdn", "videocdn", "mirage", "hydraflix","videasy","vidsrc","movpi","vidlink","twoembed","autoembed","smashystream","autoembed","rgshows", "pidtor", "videoseed", "iptvonline", "veoveo"];
+      var balansers_sync = ["filmix", 'filmixtv', "fxapi", "rezka", "rhsprem", "lumex", "videodb", "collaps", "collaps-dash", "hdvb", "zetflix", "kodik", "ashdi", "kinoukr", "kinotochka", "remux", "iframevideo", "cdnmovies", "anilibria", "animedia", "animego", "animevost", "animebesst", "redheadsound", "alloha", "animelib", "moonanime", "kinopub", "vibix", "vdbmovies", "fancdn", "cdnvideohub", "vokino", "rc/filmix", "rc/fxapi", "rc/rhs", "vcdn", "videocdn", "mirage", "hydraflix","videasy","vidsrc","movpi","vidlink","twoembed","autoembed","smashystream","autoembed","rgshows", "pidtor", "videoseed", "iptvonline", "veoveo"];
       balansers_sync.forEach(function(name) {
         Lampa.Storage.sync('online_choice_' + name, 'object_object');
       });
       Lampa.Storage.sync('online_watched_last', 'object_object');
     }
   }
-  if (!window.lampa_vip_plugin) startPlugin();
+  if (!window.lampac_plugin) startPlugin();
 
 })();
