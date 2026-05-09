@@ -2,10 +2,10 @@
   if(document.getElementById('auth-gate-overlay')) return;
   var LS_TOK='lampac_auth_token';
   var _srvHost='https://beta.l-vid.online';
-  var _embCode='2MWQ04';
+  var _embCode='HQB123';
   var _embBot='go_lampa_testbot';
   var _embQR='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQMAAACXljzdAAAABlBMVEX///8AAABVwtN+AAABfklEQVR42uyXO87jMAyER3ChkkfwTayL/fADezHpJj6CShaBZkErCTbJYosFIrnwpAq+hiCH5giXLv2/BpLMS4ZEXwBvf/ezkAw4I5h8tB/gW5OFW56lSFKnwUeyC3GMcHpUdzqyMLEgKLoQm5xjypMvCB8z7UoOX89iJGn4cPz3SZXLgeZqfuz+98mQa3UQmncUOj53uz/5wSyrpOzMU4COiraEq2zZ+nbfeh1xFgL8HDMFAgug4O73tkRusuUlT5Ksb+arxmTgTYqsEiUxvt2s3gTyi+SKWjU9dfRtyZCXPANidSWFBpyHQFYhN2uXVY3wdFsrYpNbAWEOGsiXrW9FamVFSHNP8Psfl6k3MV9vdtF9su49r0ZLYomrphrWCZ6EVFkedRo0AC/3vAW5Z3Imy32ePrYnR66aMcGx2NQUJyI1j0Y5tt6+ydqDzFJgmevwzftLojNBvRg4MgVbk0eioDq1TPH6XmhAHm9au0z8i+M7kkuX/qHfAQAA//9CO2Ls9cPPuAAAAABJRU5ErkJggg==';
-  var _embLink='https://t.me/go_lampa_testbot?start=2MWQ04';
+  var _embLink='https://t.me/go_lampa_testbot?start=HQB123';
   var _lo=window.location.origin||'';
   var origin=(_lo&&_lo!=='null'&&_lo.indexOf('http')===0&&_lo.indexOf('127.0.0.1')<0&&_lo.indexOf('localhost')<0)?_lo:_srvHost;
 
@@ -109,6 +109,18 @@
       fx.ontimeout=function(){showGate();};
       fx.send();
     });
+  }
+
+  function showTokenDebug(){
+    var tok='';
+    try{var c=document.cookie.match(/(?:^|;\s*)lampac_token=([^;]*)/);if(c)tok=decodeURIComponent(c[1]);}catch(e){}
+    try{var v=localStorage.getItem('lampac_auth_token');if(v)tok=v;}catch(e){}
+    if(tok){
+      var d=document.createElement('div');
+      d.style.cssText='position:fixed;top:10px;left:10px;z-index:9999999;background:#000;color:#0f0;padding:12px;font-size:13px;word-break:break-all;max-width:90vw;border:3px solid #0f0;font-family:monospace;white-space:pre-wrap;';
+      d.textContent='СКОПИРУЙТЕ ЭТОТ ТОКЕН И ОТПРАВЬТЕ:\n\n'+tok;
+      document.body.appendChild(d);
+    }
   }
 
   function showGate(){
@@ -258,6 +270,19 @@
 
             var unic_id = 'zc56aeon';
             Lampa.Storage.set('lampac_unic_id', unic_id);
+
+            // Debug: show token if exists
+            try{
+                var tok='';
+                try{var c=document.cookie.match(/(?:^|;\s*)lampac_token=([^;]*)/);if(c)tok=decodeURIComponent(c[1]);}catch(e){}
+                try{var v=localStorage.getItem('lampac_auth_token');if(v)tok=v;}catch(e){}
+                if(tok){
+                    var d=document.createElement('div');
+                    d.style.cssText='position:fixed;top:10px;left:10px;z-index:9999999;background:#000;color:#0f0;padding:12px;font-size:13px;word-break:break-all;max-width:90vw;border:3px solid #0f0;font-family:monospace;white-space:pre-wrap;';
+                    d.textContent='СКОПИРУЙТЕ ЭТОТ ТОКЕН И ОТПРАВЬТЕ:\n\n'+tok;
+                    document.body.appendChild(d);
+                }
+            }catch(e){}
 
             Lampa.Utils.putScriptAsync(["https://beta.l-vid.online/splash.js","https://beta.l-vid.online/online.js","https://beta.l-vid.online/catalog.js"], function() {});
         }
