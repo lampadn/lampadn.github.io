@@ -144,7 +144,7 @@
     // Handle back/escape keys
     function onKey(ev){if(document.getElementById('auth-gate-overlay')&&(ev.key==='Escape'||ev.key==='Backspace'||ev.keyCode===27||ev.keyCode===8||ev.keyCode===10009)){ev.preventDefault();ev.stopPropagation();cleanupGate();}}
     document.addEventListener('keydown',onKey,true);
-    function cleanupGate(){ov.remove();document.removeEventListener('keydown',onKey,true);document.removeEventListener('keydown',blockBg,true);document.removeEventListener('keyup',blockBg,true);}
+    function cleanupGate(){ov.remove();document.removeEventListener('keydown',onKey,true);document.removeEventListener('keydown',blockBg,true);document.removeEventListener('keyup',blockBg,true);window.location.reload();}
     if(document.body) document.body.appendChild(ov);
     else document.addEventListener('DOMContentLoaded',function(){document.body.appendChild(ov);});
 
