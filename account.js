@@ -91,8 +91,8 @@
 
         await this.sendDataToServer(token);
 
-        if (this.isSyncSuccessful) {
-        } else {
+        if (!this.isSyncSuccessful) {
+
         }
 
         this.needsSync = false;
@@ -133,11 +133,11 @@
 
     getSyncedData() {
       return {
-        torrents_view: Lampa.Storage.get("torrents_view", "[]"),
-        plugins: Lampa.Storage.get("plugins", "[]"),
-        favorite: Lampa.Storage.get("favorite", "{}"),
-        file_view: Lampa.Storage.get("file_view", "{}"),
-        search_history: Lampa.Storage.get("search_history", "[]"),
+        torrents_view: Lampa.Storage.get("torrents_view"),
+        plugins: Lampa.Storage.get("plugins"),
+        favorite: Lampa.Storage.get("favorite"),
+        file_view: Lampa.Storage.get("file_view"),
+        search_history: Lampa.Storage.get("search_history"),
       };
     },
 
@@ -148,6 +148,7 @@
       );
 
       if (response.status !== 200) {
+        console.log(
           "Ошибка загрузки данных:",
           response.status,
           response.statusText,
@@ -517,6 +518,7 @@
             if (request.status === 200) {
               Lampa.Noty.show("Данные синхронизации удалены");
             } else {
+              console.error(
                 "Ошибка удаления:",
                 request.status,
                 request.statusText,
@@ -529,6 +531,7 @@
           };
 
           request.onerror = () => {
+            console.error(
               "Ошибка удаления:",
               request.status,
               request.statusText,
@@ -602,9 +605,7 @@
       const syncEnabled = Lampa.Storage.get("acc_sync", false);
 
       if (!token || !syncEnabled) {
-          "Вы не зашли в аккаунт или синхронизация отключена",
-        );
-
+        console.log("Вы не зашли в аккаунт или синхронизация отключена");
         return;
       }
 
@@ -619,6 +620,7 @@
         }
 
         if (request.status !== 200) {
+          console.error(
             "Ошибка проверки токена:",
             request.statusText,
           );
