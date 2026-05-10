@@ -129,7 +129,6 @@
 
       this.isSyncSuccessful = false;
     },
-    },
 
     getSyncedData() {
       return {
