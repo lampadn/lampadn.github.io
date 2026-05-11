@@ -454,7 +454,7 @@
     if (Lampa.Storage.get('rus_movie_main') !== false) {
       Object.keys(Lampa.Api.sources).forEach(function(sourceName) {
         var source = Lampa.Api.sources[sourceName];
-        if (!source || typeof source.main !== 'function') return;
+        if (!source || typeof source.main !== 'function' || typeof source.get !== 'function') return;
         
         var newSource = new RusMainSource(source);
         for (var key in newSource) {
