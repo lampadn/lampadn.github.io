@@ -450,17 +450,21 @@
     }
 
     if (Lampa.Storage.get('rus_movie_main') !== false) {
-      var currentSource = Lampa.Storage.get('source') || 'tmdb';
-      var sourceToPatch = Lampa.Api.sources[currentSource];
-      
-      if (sourceToPatch && typeof sourceToPatch.main === 'function' && typeof sourceToPatch.get === 'function') {
-        var newSource = new RusMainSource(sourceToPatch);
-        for (var key in newSource) {
-          if (newSource.hasOwnProperty(key)) {
-            sourceToPatch[key] = newSource[key];
+      Object.keys(Lampa.Api.sources).forEach(function(sourceName) {
+        var source = Lampa.Api.sources[sourceName];
+        if (!source || typeof source.main !== 'function') return;
+        
+        var originalMain = source.main;
+        source.main = function() {
+          var newSource = new RusMainSource(source);
+          for (var key in newSource) {
+            if (newSource.hasOwnProperty(key)) {
+              source[key] = newSource[key];
+            }
           }
-        }
-      }
+          return originalMain.apply(this, arguments);
+        };
+      });
       activateRusMain();
     }
 
