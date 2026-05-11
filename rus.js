@@ -435,34 +435,30 @@
     }
 
     function activateRusMain() {
-      if (Lampa.Storage.get('source') === 'tmdb') {
-        var source = Lampa.Storage.get('source');
-        var checkInterval = setInterval(function() {
-          var active = Lampa.Activity.active();
-          var settingsBody = $('#app > div.settings > div.settings__content.layer--height > div.settings__body > div');
-          if (active && active.component === 'main' && !(settingsBody.length > 0)) {
-            clearInterval(checkInterval);
-            Lampa.Activity.replace({
-              source: source,
-              title: Lampa.Lang.translate('title_main') + ' - ' + Lampa.Storage.field('source').toUpperCase()
-            });
-          }
-        }, 200);
-      }
+      var source = Lampa.Storage.get('source');
+      var checkInterval = setInterval(function() {
+        var active = Lampa.Activity.active();
+        var settingsBody = $('#app > div.settings > div.settings__content.layer--height > div.settings__body > div');
+        if (active && active.component === 'main' && !(settingsBody.length > 0)) {
+          clearInterval(checkInterval);
+          Lampa.Activity.replace({
+            source: source,
+            title: Lampa.Lang.translate('title_main') + ' - ' + Lampa.Storage.field('source').toUpperCase()
+          });
+        }
+      }, 200);
     }
 
     if (Lampa.Storage.get('rus_movie_main') !== false) {
-      Object.keys(Lampa.Api.sources).forEach(function(sourceName) {
-        var source = Lampa.Api.sources[sourceName];
-        if (!source || typeof source.main !== 'function' || typeof source.get !== 'function') return;
-        
-        var newSource = new RusMainSource(source);
+      var tmdbSource = Lampa.Api.sources.tmdb;
+      if (tmdbSource && typeof tmdbSource.main === 'function' && typeof tmdbSource.get === 'function') {
+        var newSource = new RusMainSource(tmdbSource);
         for (var key in newSource) {
           if (newSource.hasOwnProperty(key)) {
-            source[key] = newSource[key];
+            tmdbSource[key] = newSource[key];
           }
         }
-      });
+      }
       activateRusMain();
     }
 
