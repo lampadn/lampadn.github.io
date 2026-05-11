@@ -435,15 +435,11 @@
     }
 
     function activateRusMain() {
-      console.log('activateRusMain called');
-      var source = Lampa.Storage.get('source');
-      console.log('source:', source);
+      var source = Lampa.Storage.get('source') || 'tmdb';
       var checkInterval = setInterval(function() {
         var active = Lampa.Activity.active();
-        console.log('active:', active);
         var settingsBody = $('#app > div.settings > div.settings__content.layer--height > div.settings__body > div');
         if (active && active.component === 'main' && !(settingsBody.length > 0)) {
-          console.log('Replacing activity');
           clearInterval(checkInterval);
           Lampa.Activity.replace({
             source: source,
@@ -454,15 +450,14 @@
     }
 
     if (Lampa.Storage.get('rus_movie_main') !== false) {
-      console.log('rus_movie_main enabled');
-      var tmdbSource = Lampa.Api.sources.tmdb;
-      console.log('tmdbSource:', tmdbSource);
-      if (tmdbSource && typeof tmdbSource.main === 'function' && typeof tmdbSource.get === 'function') {
-        console.log('Patching TMDB source');
-        var newSource = new RusMainSource(tmdbSource);
+      var currentSource = Lampa.Storage.get('source') || 'tmdb';
+      var sourceToPatch = Lampa.Api.sources[currentSource];
+      
+      if (sourceToPatch && typeof sourceToPatch.main === 'function' && typeof sourceToPatch.get === 'function') {
+        var newSource = new RusMainSource(sourceToPatch);
         for (var key in newSource) {
           if (newSource.hasOwnProperty(key)) {
-            tmdbSource[key] = newSource[key];
+            sourceToPatch[key] = newSource[key];
           }
         }
       }
