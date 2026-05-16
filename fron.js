@@ -559,11 +559,11 @@
                         name: e.name,
                         show: void 0 === e.show || e.show
                     }
-                })), f.rezka || (f.rezka = {
+                })), f.rezka = {
                     url: secondBase + "/lite/rezka",
                     name: "Rezka",
                     show: !0
-                }), !(b = Lampa.Arrays.getKeys(f)).length) return Promise.reject();
+                }, !(b = Lampa.Arrays.getKeys(f)).length) return Promise.reject();
             var a = Lampa.Storage.cache(Config.StorageKeys.OnlineLastBalanser, 3e3, {});
             return n = a[e.movie.id] ? a[e.movie.id] : Lampa.Storage.get(Config.StorageKeys.OnlineBalanser, b[0]), f[n] || (n = b[0]), f[n].show || e.lampac_custom_select || (n = b[0]), i = f[n].url, Lampa.Storage.set(Config.StorageKeys.ActiveBalanser, n), Promise.resolve(t)
         }, this.lifeSource = function() {
@@ -601,11 +601,11 @@
                                     name: e.name,
                                     show: void 0 === e.show || e.show
                                 }
-                            })), f.rezka || (f.rezka = {
+                            })), f.rezka = {
                                 url: secondBase + "/lite/rezka",
                                 name: "Rezka",
                                 show: !0
-                            }), b = Lampa.Arrays.getKeys(f), h.set("sort", b.map((function(e) {
+                            }, b = Lampa.Arrays.getKeys(f), h.set("sort", b.map((function(e) {
                                 return {
                                     title: f[e].name,
                                     source: e,
