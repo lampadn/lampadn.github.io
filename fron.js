@@ -291,8 +291,17 @@
     var Network = Lampa.Reguest;
 
     function component(e) {
-        var t, i, n, a, o, r, s, l, c, m, p = new Network,
-            d = new Lampa.Scroll({
+        var t, i, n, a, o, r, s, l, c, m, p = new Network;
+        !function() {
+            var e = p.silent.bind(p),
+                t = p.native.bind(p);
+            p.silent = function(i, n, a, o, r) {
+                return i && i.indexOf && i.indexOf("lom.my.to") >= 0 && (r = r || {}, r.headers = r.headers || {}, r.headers.Authorization = "Basic OmxvbQ=="), e(i, n, a, o, r)
+            }, p.native = function(i, n, a, o, r) {
+                return i && i.indexOf && i.indexOf("lom.my.to") >= 0 && (r = r || {}, r.headers = r.headers || {}, r.headers.Authorization = "Basic OmxvbQ=="), t(i, n, a, o, r)
+            }
+        }();
+        var d = new Lampa.Scroll({
                 mask: !0,
                 over: !0
             }),
@@ -1269,7 +1278,17 @@
     }
 
     function addSourceSearch(e, t, customBase) {
-        var i = new Lampa.Reguest,
+        var i = new Lampa.Reguest;
+        !function() {
+            var e = i.silent.bind(i),
+                t = i.native.bind(i);
+            i.silent = function(n, a, o, r, s) {
+                return n && n.indexOf && n.indexOf("lom.my.to") >= 0 && (s = s || {}, s.headers = s.headers || {}, s.headers.Authorization = "Basic OmxvbQ=="), e(n, a, o, r, s)
+            }, i.native = function(n, a, o, r, s) {
+                return n && n.indexOf && n.indexOf("lom.my.to") >= 0 && (s = s || {}, s.headers = s.headers || {}, s.headers.Authorization = "Basic OmxvbQ=="), t(n, a, o, r, s)
+            }
+        }();
+        var
             baseUrl = customBase || Defined.localhost,
             n = {
                 title: e,
