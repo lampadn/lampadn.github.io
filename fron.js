@@ -68,7 +68,7 @@
         return void 0 !== balansers_with_search ? Promise.resolve(Lampa.Arrays.isArray(balansers_with_search) ? balansers_with_search : []) : balansers_with_search_promise || (balansers_with_search_promise = new Promise((function(e) {
             var t = new Lampa.Reguest;
             t.timeout(1e4),             t.silent(account(Defined.localhost + "lite/withsearch"), (function(t) {
-                balansers_with_search = Lampa.Arrays.isArray(t) ? t : [], balansers_with_search.indexOf("rezka") < 0 && balansers_with_search.push("rezka"), e(balansers_with_search)
+                balansers_with_search = Lampa.Arrays.isArray(t) ? t : [], balansers_with_search.indexOf("rezka") < 0 && balansers_with_search.push("rezka"), balansers_with_search.indexOf("kinotochka") < 0 && balansers_with_search.push("kinotochka"), e(balansers_with_search)
             }), (function(t) {
                 console.error(t), e(balansers_with_search = [])
             }))
@@ -561,10 +561,14 @@
                     }
                 })), f.rezka = {
                     url: secondBase + "/lite/rezka",
-                    name: "Rezka-720p",
+                    name: "Rezka - 720p",
                     show: !0
-                }, (b = Lampa.Arrays.getKeys(f)), b = ["rezka"].concat(b.filter((function(e) {
-                    return "rezka" !== e
+                }, f.kinotochka = {
+                    url: secondBase + "/lite/kinotochka",
+                    name: "Kinotochka - 720p",
+                    show: !0
+                }, (b = Lampa.Arrays.getKeys(f)), b = ["rezka", "kinotochka"].concat(b.filter((function(e) {
+                    return "rezka" !== e && "kinotochka" !== e
                 }))), !b.length) return Promise.reject();
             var a = Lampa.Storage.cache(Config.StorageKeys.OnlineLastBalanser, 3e3, {});
             return n = a[e.movie.id] ? a[e.movie.id] : Lampa.Storage.get(Config.StorageKeys.OnlineBalanser, b[0]), f[n] || (n = b[0]), f[n].show || e.lampac_custom_select || (n = b[0]), i = f[n].url, Lampa.Storage.set(Config.StorageKeys.ActiveBalanser, n), Promise.resolve(t)
@@ -605,10 +609,14 @@
                                 }
                             })), f.rezka = {
                                 url: secondBase + "/lite/rezka",
-                                name: "Rezka-720p",
+                                name: "Rezka - 720p",
                                 show: !0
-                            }, (b = Lampa.Arrays.getKeys(f)), b = ["rezka"].concat(b.filter((function(e) {
-                                return "rezka" !== e
+                            }, f.kinotochka = {
+                                url: secondBase + "/lite/kinotochka",
+                                name: "Kinotochka - 720p",
+                                show: !0
+                            }, (b = Lampa.Arrays.getKeys(f)), b = ["rezka", "kinotochka"].concat(b.filter((function(e) {
+                                return "rezka" !== e && "kinotochka" !== e
                             }))), h.set("sort", b.map((function(e) {
                                 return {
                                     title: f[e].name,
@@ -707,7 +715,14 @@
         }, this.orUrlReserve = function(e) {
             T.orUrlReserve(e)
         }, this.setDefaultQuality = function(e) {
-            T.setDefaultQuality(e)
+            if ("rezka" === n && e.quality) {
+                var q = {}, k, has720 = !1;
+                for (k in e.quality) parseInt(k) == 720 && (q[k] = e.quality[k], has720 = !0);
+                if (has720) {
+                    var keys = Lampa.Arrays.getKeys(q);
+                    e.quality = q, e.url = q[keys[0]], T.orUrlReserve(e)
+                } else T.setDefaultQuality(e)
+            } else T.setDefaultQuality(e)
         }, this.display = function(e) {
             var t = this;
             this.draw(e, {
@@ -1336,7 +1351,7 @@
                 })
             }
         };
-        addSourceSearch("Онлайн", "spider"), addSourceSearch("Rezka", "rezka", secondBase + "/"), function(t) {
+        addSourceSearch("Онлайн", "spider"), addSourceSearch("Rezka", "rezka", secondBase + "/"), addSourceSearch("Kinotochka", "kinotochka", secondBase + "/"), function(t) {
             var n = Lampa.Manifest.plugins;
             n ? Lampa.Arrays.isArray(n) ? n.push(t) : Lampa.Manifest.plugins = [n, t] : Lampa.Manifest.plugins = t
         }(e), Lampa.Lang.add({
