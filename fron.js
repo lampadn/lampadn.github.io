@@ -649,8 +649,8 @@
                             var i = e.getLastChoiceBalanser();
                             _ > 15 || t.ready ? (r = !0, h.render().find(".lampac-balanser-loader").remove(), c(t, !0)) : !o && f[i] && f[i].show ? (c(t, !0), l()) : l()
                         }
-                    })).catch((function(e) {
-                        y || (++_ > 15 ? (r = !0, i(e)) : l())
+                    })).catch((function() {
+                        y || (++_ > 15 ? (r = !0, t([])) : l())
                     }))
                 }
                 m()
@@ -661,7 +661,11 @@
             return x.timeout(15e3), x.silentPromise(i).then((function(i) {
                 if (!y) return i.accsdb ? Promise.reject(i) : i.life ? (t.memkey = i.memkey, i.title && (e.movie.name && (e.movie.name = i.title), e.movie.title && (e.movie.title = i.title)), h.render().find(".filter--sort").append('<span class="lampac-balanser-loader"></span>'), t.lifeSource().then((function(e) {
                     if (!y) return t.startSource(e)
+                })).catch((function() {
+                    if (!y) return t.startSource([])
                 }))) : t.startSource(i)
+            })).catch((function() {
+                if (!y) return t.startSource([])
             }))
         }, this.create = function() {
             return this.render()
