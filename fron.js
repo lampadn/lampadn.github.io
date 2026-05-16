@@ -270,7 +270,11 @@
     }
 
     function buildUrl(e, t) {
-        if (e += "", t && t.length && (e = e + (e.indexOf("?") >= 0 ? "&" : "?") + t.join("&")), -1 == e.indexOf("uid=") && (e = Lampa.Utils.addUrlComponent(e, "uid=" + encodeURIComponent(MY_AUTH.lampac_unic_id))), -1 == e.indexOf("device_id=") && (e = Lampa.Utils.addUrlComponent(e, "device_id=" + encodeURIComponent(MY_AUTH.lampa_uid))), -1 == e.indexOf("token=")) {
+        if (e += "", t && t.length && (e = e + (e.indexOf("?") >= 0 ? "&" : "?") + t.join("&")), -1 == e.indexOf("uid=")) {
+            var uid = e.indexOf("lom.my.to") >= 0 ? "lom" : MY_AUTH.lampac_unic_id;
+            e = Lampa.Utils.addUrlComponent(e, "uid=" + encodeURIComponent(uid))
+        }
+        if (-1 == e.indexOf("device_id=") && (e = Lampa.Utils.addUrlComponent(e, "device_id=" + encodeURIComponent(MY_AUTH.lampa_uid))), -1 == e.indexOf("token=")) {
             var i = Config.Auth.Token;
             i && (e = Lampa.Utils.addUrlComponent(e, "token=" + i))
         }
@@ -291,17 +295,8 @@
     var Network = Lampa.Reguest;
 
     function component(e) {
-        var t, i, n, a, o, r, s, l, c, m, p = new Network;
-        !function() {
-            var e = p.silent.bind(p),
-                t = p.native.bind(p);
-            p.silent = function(i, n, a, o, r) {
-                return i && i.indexOf && i.indexOf("lom.my.to") >= 0 && (r = r || {}, r.headers = r.headers || {}, r.headers.Authorization = "Basic OmxvbQ=="), e(i, n, a, o, r)
-            }, p.native = function(i, n, a, o, r) {
-                return i && i.indexOf && i.indexOf("lom.my.to") >= 0 && (r = r || {}, r.headers = r.headers || {}, r.headers.Authorization = "Basic OmxvbQ=="), t(i, n, a, o, r)
-            }
-        }();
-        var d = new Lampa.Scroll({
+        var t, i, n, a, o, r, s, l, c, m, p = new Network,
+            d = new Lampa.Scroll({
                 mask: !0,
                 over: !0
             }),
@@ -1278,17 +1273,7 @@
     }
 
     function addSourceSearch(e, t, customBase) {
-        var i = new Lampa.Reguest;
-        !function() {
-            var e = i.silent.bind(i),
-                t = i.native.bind(i);
-            i.silent = function(n, a, o, r, s) {
-                return n && n.indexOf && n.indexOf("lom.my.to") >= 0 && (s = s || {}, s.headers = s.headers || {}, s.headers.Authorization = "Basic OmxvbQ=="), e(n, a, o, r, s)
-            }, i.native = function(n, a, o, r, s) {
-                return n && n.indexOf && n.indexOf("lom.my.to") >= 0 && (s = s || {}, s.headers = s.headers || {}, s.headers.Authorization = "Basic OmxvbQ=="), t(n, a, o, r, s)
-            }
-        }();
-        var
+        var i = new Lampa.Reguest,
             baseUrl = customBase || Defined.localhost,
             n = {
                 title: e,
