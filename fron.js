@@ -49,6 +49,7 @@
         },
         PLUGIN_COMPONENT = "lamponline_o",
         rawBase = String(Config.Server.baseUrl).trim().replace(/\/+$/, ""),
+        secondBase = "http://185.21.8.224",
         serverBase = /^https?:\/\//i.test(rawBase) ? rawBase : "http://" + rawBase.replace(/^\/+/, ""),
         serverLocalhost = serverBase + "/",
         serverHostKey = serverBase.replace(/^https?:\/\//i, ""),
@@ -66,8 +67,8 @@
     function ensureBalansersWithSearch() {
         return void 0 !== balansers_with_search ? Promise.resolve(Lampa.Arrays.isArray(balansers_with_search) ? balansers_with_search : []) : balansers_with_search_promise || (balansers_with_search_promise = new Promise((function(e) {
             var t = new Lampa.Reguest;
-            t.timeout(1e4), t.silent(account(Defined.localhost + "lite/withsearch"), (function(t) {
-                balansers_with_search = Lampa.Arrays.isArray(t) ? t : [], e(balansers_with_search)
+            t.timeout(1e4),             t.silent(account(Defined.localhost + "lite/withsearch"), (function(t) {
+                balansers_with_search = Lampa.Arrays.isArray(t) ? t : [], balansers_with_search.indexOf("rezka") < 0 && balansers_with_search.push("rezka"), e(balansers_with_search)
             }), (function(t) {
                 console.error(t), e(balansers_with_search = [])
             }))
@@ -550,7 +551,7 @@
             return x.buildMovieUrl(e)
         }, this.getLastChoiceBalanser = function() {
             return C.getLastChoiceBalanser()
-        }, this.startSource = function(t) {
+        },         this.startSource = function(t) {
             if (t.forEach((function(e) {
                     var t = A(e);
                     f[t] = {
@@ -558,7 +559,11 @@
                         name: e.name,
                         show: void 0 === e.show || e.show
                     }
-                })), !(b = Lampa.Arrays.getKeys(f)).length) return Promise.reject();
+                })), f.rezka || (f.rezka = {
+                    url: secondBase + "/lite/rezka",
+                    name: "Rezka",
+                    show: !0
+                }), !(b = Lampa.Arrays.getKeys(f)).length) return Promise.reject();
             var a = Lampa.Storage.cache(Config.StorageKeys.OnlineLastBalanser, 3e3, {});
             return n = a[e.movie.id] ? a[e.movie.id] : Lampa.Storage.get(Config.StorageKeys.OnlineBalanser, b[0]), f[n] || (n = b[0]), f[n].show || e.lampac_custom_select || (n = b[0]), i = f[n].url, Lampa.Storage.set(Config.StorageKeys.ActiveBalanser, n), Promise.resolve(t)
         }, this.lifeSource = function() {
@@ -589,14 +594,18 @@
                 function m() {
                     x.timeout(3e3), x.silentPromise(a).then((function(t) {
                         if (!y) {
-                            _++, b = [], f = {}, t.online.forEach((function(e) {
+                            _++, b = [], f = {},                             t.online.forEach((function(e) {
                                 var t = A(e);
                                 f[t] = {
                                     url: e.url,
                                     name: e.name,
                                     show: void 0 === e.show || e.show
                                 }
-                            })), b = Lampa.Arrays.getKeys(f), h.set("sort", b.map((function(e) {
+                            })), f.rezka || (f.rezka = {
+                                url: secondBase + "/lite/rezka",
+                                name: "Rezka",
+                                show: !0
+                            }), b = Lampa.Arrays.getKeys(f), h.set("sort", b.map((function(e) {
                                 return {
                                     title: f[e].name,
                                     source: e,
@@ -1223,8 +1232,9 @@
         }
     }
 
-    function addSourceSearch(e, t) {
+    function addSourceSearch(e, t, customBase) {
         var i = new Lampa.Reguest,
+            baseUrl = customBase || Defined.localhost,
             n = {
                 title: e,
                 search: function(e, n) {
@@ -1255,9 +1265,9 @@
                             }))
                         } else n([])
                     }
-                    i.silent(account(Defined.localhost + "lite/" + t + "?title=" + e.query), (function(o) {
+                    i.silent(account(baseUrl + "lite/" + t + "?title=" + e.query), (function(o) {
                         o.rch ? rchRun(o, (function() {
-                            i.silent(account(Defined.localhost + "lite/" + t + "?title=" + e.query), (function(e) {
+                            i.silent(account(baseUrl + "lite/" + t + "?title=" + e.query), (function(e) {
                                 a(e)
                             }), (function() {
                                 n([])
@@ -1322,7 +1332,7 @@
                 })
             }
         };
-        addSourceSearch("Онлайн", "spider"), function(t) {
+        addSourceSearch("Онлайн", "spider"), addSourceSearch("Rezka", "rezka", secondBase + "/"), function(t) {
             var n = Lampa.Manifest.plugins;
             n ? Lampa.Arrays.isArray(n) ? n.push(t) : Lampa.Manifest.plugins = [n, t] : Lampa.Manifest.plugins = t
         }(e), Lampa.Lang.add({
