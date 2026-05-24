@@ -698,7 +698,7 @@
         if (!render) return false;
         var rateLine = $(render).find('.full-start-new__rate-line');
         if (!rateLine.length || rateLine.find('.rate--lampa').length > 0) return false;
-        var html = '<div class="full-start-new__rate full-start__rate rate--lampa"><div class="rate-value">0.0</div><div class="rate-icon"></div><div class="source--name">LAMPA</div></div>';
+        var html = '<div class="full-start-new__rate full-start__rate rate--lampa"><div class="rate-value">0.0</div><div class="rate-icon"></div><div class="source--name" style="margin-left:-0.2em">LAMPA</div></div>';
         var $anchor = rateLine.find('.full-start-new__rate.rate--tmdb, .full-start-new__rate.rate--kp, .full-start-new__rate.rate--imdb, .full-start__rate.rate--tmdb, .full-start__rate.rate--kp, .full-start__rate.rate--imdb').last();
         if (!$anchor.length) $anchor = rateLine.find('.rate--tmdb, .rate--kp, .rate--imdb').last().closest('.full-start-new__rate, .full-start__rate');
         if (!$anchor.length) $anchor = rateLine.find('.full-start-new__rate:not(.rate--lampa), .full-start__rate:not(.rate--lampa)').last();
@@ -1431,7 +1431,7 @@
                         if (cached && cached.rating > 0) {
                             $(render).find('.rate--lampa .rate-value').text(formatRating(cached.rating));
                             if (cached.medianReaction) {
-                                $(render).find('.rate--lampa .rate-icon').html('<img style="width:1.4em;height:1.4em;margin:0 0.2em;object-fit:contain;" data-reaction-type="' + cached.medianReaction + '" src="' + getReactionImageSrc(cached.medianReaction) + '">');
+                                $(render).find('.rate--lampa .rate-icon').html('<img style="width:1em;height:1em;margin:0 0.15em;object-fit:contain;" data-reaction-type="' + cached.medianReaction + '" src="' + getReactionImageSrc(cached.medianReaction) + '">');
                                 if (isTriggerOn('animated_reactions', false)) $(render).find('.rate--lampa').addClass('rate--lampa--animated');
                             }
                             colorizeFullCardRatings(render);
@@ -1443,7 +1443,7 @@
                                 if (result.rating !== null && result.rating > 0) {
                                     $(render).find('.rate--lampa .rate-value').text(formatRating(result.rating));
                                     if (result.medianReaction) {
-                                        $(render).find('.rate--lampa .rate-icon').html('<img style="width:1.4em;height:1.4em;margin:0 0.2em;object-fit:contain;" data-reaction-type="' + result.medianReaction + '" src="' + getReactionImageSrc(result.medianReaction) + '">');
+                                        $(render).find('.rate--lampa .rate-icon').html('<img style="width:1em;height:1em;margin:0 0.15em;object-fit:contain;" data-reaction-type="' + result.medianReaction + '" src="' + getReactionImageSrc(result.medianReaction) + '">');
                                         if (isTriggerOn('animated_reactions', false)) $(render).find('.rate--lampa').addClass('rate--lampa--animated');
                                     }
                                 } else { $(render).find('.rate--lampa').hide(); }
