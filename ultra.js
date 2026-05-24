@@ -346,8 +346,8 @@
             }
 
             // --- ДОБАВЛЕНИЕ ПРОКСИ ДЛЯ LAMPAUA (ЕСЛИ ЗАПРОС ИДЕТ НА ОСНОВНОЙ ДОМЕН) ---
-            if (url.indexOf('lampaua.mooo.com') !== -1 && url.indexOf('apn2.akter-black.com') === -1) {
-                url = 'https://apn2.akter-black.com/' + url;
+            if (url.indexOf('lampaua.mooo.com') !== -1 && url.indexOf('apn.akter-black.com') === -1) {
+                url = 'https://apn.akter-black.com/' + url;
             }
         }
         else if (connection_source === 'beta') {
@@ -638,7 +638,7 @@
         this.requestParams = function(url) {
             // ДЛЯ HD POISK НАПРАВЛЯЕМ ЗАПРОС API ЧЕРЕЗ НАШ СЕРВЕР
             if (connection_source === 'hdpoisk') {
-                var myVpsIp = '108.165.164.64';
+                var myVpsIp = '34.40.76.104';
                 return 'http://' + myVpsIp + ':3000/api?kp=' + (object.movie.kinopoisk_id || object.movie.id);
             }
 
