@@ -595,8 +595,7 @@
     var _scrollRatingMaxCardsPerRun = 80;
     var _ratingUpdateTimer = 0;
     var _ratingUpdateRafScheduled = false;
-    var _ratingObserver = null;
-    var _ratingHeartbeatTimer = 0;
+    var _mainObserver = null;
     function isCardNearViewport(card, windowHeight) { var rect = card.getBoundingClientRect(); return !(rect.bottom < -200 || rect.top > windowHeight + 200); }
     function updateVisibleCards(limit) {
         if (document.hidden) return;
@@ -644,28 +643,46 @@
         if (_ratingUpdateTimer) clearTimeout(_ratingUpdateTimer);
         _ratingUpdateTimer = setTimeout(function () { _ratingUpdateTimer = 0; if (_ratingUpdateRafScheduled) return; _ratingUpdateRafScheduled = true; requestAnimationFrame(function () { _ratingUpdateRafScheduled = false; updateVisibleCards(_scrollRatingMaxCardsPerRun); }); }, delay || 0);
     }
-    function startRatingsObserver() {
-        if (_ratingObserver || typeof MutationObserver === 'undefined' || !document.body) return;
-        _ratingObserver = new MutationObserver(function (mutations) {
+    function startMainObserver() {
+        if (_mainObserver) return;
+        _mainObserver = new MutationObserver(function (mutations) {
+            var needRatings = false;
+            var needCards = false;
+            var needSelectbox = false;
             for (var i = 0; i < mutations.length; i++) {
-                var mutation = mutations[i];
-                if (!mutation.addedNodes || !mutation.addedNodes.length) continue;
-                for (var j = 0; j < mutation.addedNodes.length; j++) {
-                    var node = mutation.addedNodes[j];
-                    if (!node || node.nodeType !== 1) continue;
-                    if ((node.matches && node.matches('.card')) || (node.querySelector && node.querySelector('.card'))) {
-                        scheduleVisibleRatingsUpdate(0);
-                        return;
+                var m = mutations[i];
+                if (m.addedNodes && m.addedNodes.length) {
+                    for (var j = 0; j < m.addedNodes.length; j++) {
+                        var node = m.addedNodes[j];
+                        if (!node || node.nodeType !== 1) continue;
+                        if ((node.matches && node.matches('.card')) || (node.querySelector && node.querySelector('.card'))) { needRatings = true; needCards = true; }
+                        if (node.querySelector && (node.querySelector('.selectbox-item__icon') || node.querySelector('.selectbox-item__icon img'))) needSelectbox = true;
                     }
                 }
+                if (m.type === 'attributes' && m.attributeName === 'class' && m.target && m.target.classList && m.target.classList.contains('card')) needCards = true;
             }
+            if (needRatings) scheduleVisibleRatingsUpdate(50);
+            if (needCards) {
+                var allCards = document.querySelectorAll('.card');
+                for (var k = 0; k < allCards.length; k++) {
+                    if (!allCards[k].hasAttribute('data-type-label-checked')) {
+                        addTypeLabel(allCards[k]);
+                        if (!isQualityShowOn()) { $(allCards[k]).find('.card__quality').remove(); allCards[k].removeAttribute('data-quality-added'); }
+                    }
+                }
+                if (isQualityShowOn()) {
+                    var newCards = [];
+                    for (var k = 0; k < allCards.length; k++) {
+                        if (!allCards[k].hasAttribute('data-quality-added')) newCards.push(allCards[k]);
+                    }
+                    if (newCards.length) processQualityForCards(newCards);
+                }
+            }
+            if (needSelectbox && document.querySelector('.selectbox-item__icon img')) applyReactionsToSelectbox();
         });
-        _ratingObserver.observe(document.body, { childList: true, subtree: true });
+        _mainObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
     }
-    function startRatingsHeartbeat() {
-        if (_ratingHeartbeatTimer) clearInterval(_ratingHeartbeatTimer);
-        _ratingHeartbeatTimer = setInterval(function () { if (!document.hidden) scheduleVisibleRatingsUpdate(300); }, 3000);
-    }
+
 
     function colorizeFullCardRatings(render) {
         if (!isColoredRatingsPosterOn()) return;
@@ -696,7 +713,6 @@
     }
     function applyRatingSettingsRefresh() {
         applyRatingScale();
-        applyGlassTheme();
         var allCards = document.querySelectorAll('.card');
         for (var i = 0; i < allCards.length; i++) removeAllRatingElements(allCards[i]);
         if (typeof window.refreshAllRatings === 'function') window.refreshAllRatings();
@@ -1207,24 +1223,20 @@
         if (old) old.remove();
         var css = '';
         if (isGlassThemeOn()) {
-            var a = getOverlayAlpha();
-            var a2 = Math.max(0, a - 0.1);
             css +=
-                '.card__vote:not(.card__vote-separate-wrap){background:linear-gradient(to top,rgba(80,80,80,' + (a * 0.35).toFixed(2) + '),rgba(30,30,35,' + (a2 * 0.25).toFixed(2) + '))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.card__vote:not(.card__vote-separate-wrap){background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
                 '.card__vote-separate-wrap{background:none!important;border:none!important;box-shadow:none!important}' +
-                '.card__vote-separate-wrap .card__vote{background:linear-gradient(to top,rgba(80,80,80,' + (a * 0.35).toFixed(2) + '),rgba(30,30,35,' + (a2 * 0.25).toFixed(2) + '))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.card__quality{background:linear-gradient(to top,rgba(80,80,80,' + (a * 0.35).toFixed(2) + '),rgba(30,30,35,' + (a2 * 0.25).toFixed(2) + '))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.content-label{background:linear-gradient(to top,rgba(80,80,80,' + (a * 0.35).toFixed(2) + '),rgba(30,30,35,' + (a2 * 0.25).toFixed(2) + '))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.content-label.serial-label{background:linear-gradient(to top,rgba(52,152,219,' + (a * 0.35).toFixed(2) + '),rgba(30,80,140,' + (a2 * 0.25).toFixed(2) + '))!important}' +
-                '.content-label.movie-label{background:linear-gradient(to top,rgba(46,204,113,' + (a * 0.35).toFixed(2) + '),rgba(30,120,70,' + (a2 * 0.25).toFixed(2) + '))!important}';
+                '.card__vote-separate-wrap .card__vote{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.card__quality{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.content-label{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.content-label.serial-label{background:linear-gradient(to top,rgba(52,152,219,0.35),rgba(30,80,140,0.25))!important}' +
+                '.content-label.movie-label{background:linear-gradient(to top,rgba(46,204,113,0.35),rgba(30,120,70,0.25))!important}';
         }
         if (isGlassButtonsOn()) {
-            var a = getOverlayAlpha();
-            var a2 = Math.max(0, a - 0.1);
             css +=
-                '.full-start-new__reactions .reaction{background:linear-gradient(to top,rgba(80,80,80,' + (a * 0.35).toFixed(2) + '),rgba(30,30,35,' + (a2 * 0.25).toFixed(2) + '))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.full-start-new__buttons .full-start__button{background:linear-gradient(to top,rgba(80,80,80,' + (a * 0.35).toFixed(2) + '),rgba(30,30,35,' + (a2 * 0.25).toFixed(2) + '))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.full-start-new__buttons .full-start__button.focus,.full-start-new__buttons .full-start__button:hover,.full-start-new__buttons .full-start__button.active{background:linear-gradient(to top,rgba(100,100,100,' + (a * 0.45).toFixed(2) + '),rgba(40,40,45,' + (a2 * 0.35).toFixed(2) + '))!important;border-color:rgba(255,255,255,0.25)!important;box-shadow:inset 0 0 8px rgba(0,0,0,0.6)!important}';
+                '.full-start-new__reactions .reaction{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.full-start-new__buttons .full-start__button{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.full-start-new__buttons .full-start__button.focus,.full-start-new__buttons .full-start__button:hover,.full-start-new__buttons .full-start__button.active{background:linear-gradient(to top,rgba(100,100,100,0.45),rgba(40,40,45,0.35))!important;border-color:rgba(255,255,255,0.25)!important;box-shadow:inset 0 0 8px rgba(0,0,0,0.6)!important}';
         }
         if (!css) return;
         var st = document.createElement('style');
@@ -1261,12 +1273,6 @@
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
-            param: { name: 'quality_source', type: 'select', values: { 'jacred': 'JacRed (парсер)', 'alloha': 'Alloha (API)', 'both': 'Сначала JacRed, потом Alloha' }, default: 'both' },
-            field: { name: 'Источник качества', description: 'Откуда получать информацию о качестве видео' },
-            onChange: function () { Lampa.Settings.update(); refreshAllQualityLabels(); }
-        });
-        Lampa.SettingsApi.addParam({
-            component: 'card_overlay',
             param: { name: 'glass_theme', type: 'trigger', default: false },
             field: { name: 'Стеклянная тема (рейтинги, качество, лейблы)', description: 'Применить стеклянный стиль к накладкам на карточках' },
             onChange: function () { applyGlassTheme(); }
@@ -1276,6 +1282,12 @@
             param: { name: 'glass_buttons', type: 'trigger', default: false },
             field: { name: 'Стеклянные кнопки и реакции', description: 'Применить стеклянный стиль к кнопкам и реакциям на странице фильма' },
             onChange: function () { applyGlassTheme(); }
+        });
+        Lampa.SettingsApi.addParam({
+            component: 'card_overlay',
+            param: { name: 'quality_source', type: 'select', values: { 'jacred': 'JacRed (парсер)', 'alloha': 'Alloha (API)', 'both': 'Сначала JacRed, потом Alloha' }, default: 'both' },
+            field: { name: 'Источник качества', description: 'Откуда получать информацию о качестве видео' },
+            onChange: function () { Lampa.Settings.update(); refreshAllQualityLabels(); }
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
@@ -1453,8 +1465,7 @@
         applyRatingScale();
         addSettings();
         setupCardListener();
-        startRatingsObserver();
-        startRatingsHeartbeat();
+        startMainObserver();
         scheduleVisibleRatingsUpdate(0);
         setTimeout(function () { scheduleVisibleRatingsUpdate(120); }, 120);
         setTimeout(function () { scheduleVisibleRatingsUpdate(350); }, 350);
@@ -1542,34 +1553,6 @@
         applyGlassTheme();
 
         if (isColoredElementsOn()) { colorizeSeriesStatus(); colorizeAgeRating(); }
-
-        setInterval(function () {
-            if (!document.hidden && isTypeLabelsShowOn()) processAllTypeLabels();
-        }, 5000);
-
-        var _mainObserverTimer = 0;
-        new MutationObserver(function (muts) {
-            if (_mainObserverTimer) return;
-            _mainObserverTimer = setTimeout(function () {
-                _mainObserverTimer = 0;
-                var hasCards = false;
-                for (var i = 0; i < muts.length; i++) {
-                    var m = muts[i];
-                    if (m.addedNodes) {
-                        var cards = [];
-                        $(m.addedNodes).find('.card').each(function () {
-                            cards.push(this);
-                            addTypeLabel(this);
-                            if (!isQualityShowOn()) { $(this).find('.card__quality').remove(); this.removeAttribute('data-quality-added'); }
-                        });
-                        if (isQualityShowOn() && cards.length) processQualityForCards(cards);
-                        if (cards.length) hasCards = true;
-                    }
-                    if (m.type === 'attributes' && ['class', 'data-card', 'data-type'].indexOf(m.attributeName) !== -1 && $(m.target).hasClass('card')) addTypeLabel(m.target);
-                }
-                if (document.querySelector('.selectbox-item__icon img')) applyReactionsToSelectbox();
-            }, 50);
-        }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-card', 'data-type'] });
 
         processAllTypeLabels();
 
