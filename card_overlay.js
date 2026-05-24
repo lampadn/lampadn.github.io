@@ -1238,16 +1238,15 @@
         });
 
         function moveAfterInterface() {
-            var $folders = $('.settings-folder');
-            var $interface = $folders.filter(function () { return $(this).data('component') === 'interface' || $(this).attr('data-component') === 'interface'; });
-            if (!$interface.length) $interface = $folders.filter(function () { var t = $(this).find('.settings-folder-title, .title').text().trim(); return t === 'Интерфейс'; });
-            if (!$interface.length) $interface = $folders.filter(function () { return $(this).text().indexOf('Интерфейс') === 0; });
-            var $mod = $folders.filter(function () { return $(this).data('component') === 'card_overlay' || $(this).attr('data-component') === 'card_overlay'; });
-            if (!$mod.length) $mod = $folders.filter(function () { var t = $(this).find('.settings-folder-title, .title').text().trim(); return t === 'Интерфейс Мод'; });
+            var $interface = $('.settings-folder[data-component="interface"]');
+            if (!$interface.length) $interface = $('.settings-folder').filter(function () { return $(this).find('.settings-folder__name').text().trim() === 'Интерфейс'; });
+            var $mod = $('.settings-folder[data-component="card_overlay"]');
+            if (!$mod.length) $mod = $('.settings-folder').filter(function () { return $(this).find('.settings-folder__name').text().trim() === 'Интерфейс Мод'; });
             if ($interface.length && $mod.length && $mod.prev()[0] !== $interface[0]) $mod.insertAfter($interface);
         }
-        var moveTries = 0, moveTimer = setInterval(function () { moveAfterInterface(); if (++moveTries >= 30) clearInterval(moveTimer); }, 300);
-        Lampa.Listener.follow('settings', function (e) { if (e.type === 'open') setTimeout(moveAfterInterface, 100); });
+        var moveTries = 0, moveTimer = setInterval(function () { moveAfterInterface(); if (++moveTries >= 20) clearInterval(moveTimer); }, 300);
+        Lampa.Listener.follow('app', function (e) { if (e.type === 'ready') { setTimeout(moveAfterInterface, 200); setTimeout(moveAfterInterface, 600); } });
+        Lampa.Listener.follow('full', function (e) { if (e.type === 'complite') setTimeout(moveAfterInterface, 100); });
         setTimeout(moveAfterInterface, 500);
         setTimeout(moveAfterInterface, 1500);
     }
