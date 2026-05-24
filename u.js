@@ -1,6 +1,6 @@
 (function() {
     // --- НАСТРОЙКИ СЕРВЕРОВ (ИЗ SKAZ.JS) ---
-    var connection_source = Lampa.Storage.get('ultra_last_server', 'skaz');
+    var connection_source = 'skaz'; // ПАТЧ: по умолчанию skaz
 
     // ПАТЧ: численная оценка качества (4K/UHD считаются как 2160)
     function qualityScore(k) {
@@ -29,20 +29,154 @@
         }, keys[0]);
     }
 
-    // AB2024
-    var AB_TOKENS = ['мар.31', 'TotalᴬᵂUK0PRIMETEAM', 'сентябрь', 'июнь99'];
-    var current_ab_token_index = 0;
+    var SERVER_CONFIG = {
+        ab2024: {
+            label: 'AB2024',
+            tokens: ['мар.31', 'TotalᴬᵠUK0PRIMETEAM', 'сентябрь', 'июнь99'],
+            currentIndex: 0,
+            uid: '4ezu837o',
+            getHost: function() { return 'https://ab2024.ru/'; },
+            getSubtitle: function() { return 'https://ab2024.ru'; },
+            auth: function(url, cfg) {
+                if (url.indexOf('uid=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + cfg.uid);
+                var token = cfg.tokens[cfg.currentIndex];
+                if (url.indexOf('ab_token=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'ab_token=' + encodeURIComponent(token));
+                else
+                    url = url.replace(/ab_token=([^&]+)/, 'ab_token=' + encodeURIComponent(token));
+                return url;
+            }
+        },
+        showy: {
+            label: 'Showy',
+            mirrors: [
+                'http://185.121.235.124:11176/',
+                'http://showypro.com/',
+                'http://smotretk.com/'
+            ],
+            currentIndex: 0,
+            uid: 'i8nqb9vw',
+            showyToken: 'f8377057-90eb-4d76-93c9-7605952a096l',
+            getHost: function() { return this.mirrors[this.currentIndex]; },
+            getSubtitle: function() { return this.mirrors[this.currentIndex]; },
+            auth: function(url, cfg) {
+                if (url.indexOf('uid=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + cfg.uid);
+                if (url.indexOf('showy_token=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'showy_token=' + cfg.showyToken);
+                return url;
+            }
+        },
+        skaz: {
+            label: 'Skaz',
+            accounts: [
+                { email: 'naza---rov6@gmail.com', uid: 'rnemtvj3' },
+                { email: 'centt04@gmail.com', uid: 'fxz' },
+                { email: 'unionvoin@mail.ru', uid: 'freid5q' },
+                { email: 'solnce--v--kepke@yandex.ru', uid: 'fort31hg' },
+                { email: 'afenkinsergej@gmail.com', uid: '1102' },
+                { email: 'corkinigor@gmail.com', uid: '1101' }
+            ],
+            currentIndex: 0,
+            getHost: function() { return randomUrl; },
+            getSubtitle: function() { return randomUrl; },
+            registryEmail: 'nazarov6@gmail.com',
+            registryUid: 'rnemtvj3',
+            auth: function(url, cfg) {
+                var acc = cfg.accounts[cfg.currentIndex];
+                if (url.indexOf('account_email=') == -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'account_email=' + acc.email);
+                if (url.indexOf('uid=') == -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + acc.uid);
+                return url;
+            }
+        },
+        okeantv: {
+            label: 'OkeanTV',
+            host: 'http://148.135.207.174:12359/',
+            uid: 'guest',
+            getHost: function() { return this.host; },
+            getSubtitle: function() { return 'cdn.okeantv.fun'; },
+            auth: function(url, cfg) {
+                if (url.indexOf('uid=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + cfg.uid);
+                return url;
+            }
+        },
+        hdpoisk: {
+            label: 'HDPoisk',
+            token: '720fbdfd04f4cb54579a9875fd9289',
+            host: 'https://hdpoisk.ru/',
+            vpsIp: '108.165.164.64',
+            extractorIp: '62.60.152.164',
+            getHost: function() { return this.host; },
+            getSubtitle: function() { return 'hdpoisk.ru'; },
+            auth: function(url) { return url; }
+        },
+        lampaua: {
+            label: 'LampaUA',
+            uids: ['guest'],
+            currentIndex: 0,
+            host: 'https://apn2.akter-black.com/http://lampaua.mooo.com/',
+            proxy: 'https://apn2.akter-black.com/',
+            getHost: function() { return this.host; },
+            getSubtitle: function() { return 'lampaua.mooo.com'; },
+            auth: function(url, cfg) {
+                var uid = cfg.uids[cfg.currentIndex];
+                if (url.indexOf('uid=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + uid);
+                else
+                    url = url.replace(/uid=([^&]+)/, 'uid=' + uid);
+                if (url.indexOf('lampaua.mooo.com') !== -1 && url.indexOf(cfg.proxy) === -1)
+                    url = cfg.proxy + url;
+                return url;
+            }
+        },
+        beta: {
+            label: 'Beta L-Vid',
+            uids: ['eis3ey9m', 'p8825724-9005-428a-9d86-a466c13ddff3', 'y9725724-9005-428a-9d86-a466c13ddcc4'],
+            currentIndex: 0,
+            host: 'http://beta.l-vid.online:888/',
+            getHost: function() { return this.host; },
+            getSubtitle: function() { return 'beta.l-vid.online'; },
+            auth: function(url, cfg) {
+                var uid = cfg.uids[cfg.currentIndex];
+                if (url.indexOf('uid=') === -1)
+                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + uid);
+                else
+                    url = url.replace(/uid=([^&]+)/, 'uid=' + uid);
+                return url;
+            }
+        }
+    };
 
-    // Skaz Accounts Rotation
-    var SKAZ_ACCOUNTS = [
-        { email: 'naza---rov6@gmail.com', uid: 'rnemtvj3' },
-        { email: 'centt04@gmail.com', uid: 'fxz' },
-        { email: 'unionvoin@mail.ru', uid: 'freid5q' },
-        { email: 'solnce--v--kepke@yandex.ru', uid: 'fort31hg' },
-        { email: 'afenkinsergej@gmail.com', uid: '1102' },
-        { email: 'corkinigor@gmail.com', uid: '1101' },
-    ];
-    var current_skaz_account_index = 0;
+    function rotateAccount(source) {
+        var cfg = SERVER_CONFIG[source];
+        if (!cfg) return false;
+        var list = cfg.accounts || cfg.uids || cfg.tokens || cfg.mirrors;
+        if (!list) return false;
+        if (cfg.currentIndex < list.length - 1) {
+            cfg.currentIndex++;
+            return true;
+        }
+        return false;
+    }
+
+    function getServerFilterItems() {
+        var items = [];
+        var keys = Object.keys(SERVER_CONFIG);
+        for (var i = 0; i < keys.length; i++) {
+            var cfg = SERVER_CONFIG[keys[i]];
+            items.push({
+                title: cfg.label,
+                selected: connection_source === keys[i],
+                index: i,
+                source: keys[i]
+            });
+        }
+        return items;
+    }
 
     // Skaz (Инициализация зеркал)
     var cf = Lampa.Storage.get('skazonline_servers');
@@ -66,9 +200,9 @@
 
     // Helper для получения текущего хоста
     function getHost() {
-        if (connection_source === 'ab2024') return 'https://ab2024.ru/';
-        if (connection_source === 'okeantv') return 'http://148.135.207.174:12359/';
-        return randomUrl; // Skaz
+        var cfg = SERVER_CONFIG[connection_source];
+        if (cfg && cfg.getHost) return cfg.getHost();
+        return randomUrl;
     }
 
     var Defined = {
@@ -80,7 +214,7 @@
     var balansers_with_search;
 
     // Хардкод UID для Skaz
-    var unic_id = 'rnemtvj3';
+    var unic_id = SERVER_CONFIG.skaz.accounts[0].uid;
 
     function getAndroidVersion() {
         if (Lampa.Platform.is('android')) {
@@ -140,8 +274,8 @@
                 rchtype: Lampa.Platform.is('android') ? 'apk' : Lampa.Platform.is('tizen') ? 'cors' : (window.rch_nws[hostkey].type || 'web'),
                 apkVersion: window.rch_nws[hostkey].apkVersion,
                 player: Lampa.Storage.field('player'),
-                account_email: 'nazarov6@gmail.com',
-                unic_id: 'rnemtvj3',
+                account_email: SERVER_CONFIG.skaz.registryEmail,
+                unic_id: SERVER_CONFIG.skaz.registryUid,
                 profile_id: Lampa.Storage.get('lampac_profile_id', ''),
                 token: ''
             });
@@ -243,6 +377,8 @@
             });
         });
     };
+    /* ПАТЧ: отключён вызов skaz.tv при инициализации (домен заблокирован у провайдера) */
+    /* window.rch_nws[hostkey].typeInvoke('http://online' + dd + '3.skaz.tv', function() {}); */
 
     function rchInvoke(json, call) {
         if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect) {
@@ -275,46 +411,17 @@
 
     function account(url) {
         url = url + '';
-        
-        // --- АВТОРИЗАЦИЯ НА ОСНОВЕ ВЫБРАННОГО СЕРВЕРА ---
-        if (connection_source === 'ab2024') {
-            // Логика AB2024
-            if (url.indexOf('uid=') === -1) {
-                url = Lampa.Utils.addUrlComponent(url, 'uid=4ezu837o');
+        var cfg = SERVER_CONFIG[connection_source];
+        if (cfg && cfg.auth) url = cfg.auth(url, cfg);
+        if (connection_source !== 'hdpoisk') {
+            if (url.indexOf('token=') == -1) {
+                var token = '';
+                if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
             }
-            var token = AB_TOKENS[current_ab_token_index];
-            if (url.indexOf('ab_token=') === -1) {
-                url = Lampa.Utils.addUrlComponent(url, 'ab_token=' + encodeURIComponent(token));
-            } else {
-                url = url.replace(/ab_token=([^&]+)/, 'ab_token=' + encodeURIComponent(token));
+            if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
+                var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
+                if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
             }
-        } 
-        else if (connection_source === 'okeantv') {
-            // Логика OkeanTV
-            if (url.indexOf('uid=') === -1) {
-                url = Lampa.Utils.addUrlComponent(url, 'uid=guest');
-            }
-        }
-        else {
-            // Логика Skaz с ротацией
-            var skaz_acc = SKAZ_ACCOUNTS[current_skaz_account_index];
-
-            if (url.indexOf('account_email=') == -1) {
-                url = Lampa.Utils.addUrlComponent(url, 'account_email=' + skaz_acc.email);
-            }
-            if (url.indexOf('uid=') == -1) {
-                url = Lampa.Utils.addUrlComponent(url, 'uid=' + skaz_acc.uid);
-            }
-        }
-
-        // Общие параметры
-        if (url.indexOf('token=') == -1) {
-            var token = '';
-            if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
-        }
-        if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
-            var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
-            if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
         }
         return url;
     }
@@ -355,12 +462,16 @@
         Defined.localhost = getHost();
 
         if (balansers_with_search == undefined) {
-            network.timeout(10000);
-            network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
-                balansers_with_search = json;
-            }, function() {
-                balansers_with_search = [];
-            });
+            if (connection_source !== 'hdpoisk') {
+                network.timeout(10000);
+                network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
+                    balansers_with_search = json;
+                }, function() {
+                    balansers_with_search = [];
+                });
+            } else {
+                 balansers_with_search = [];
+            }
         }
 
         function balanserName(j) {
@@ -396,9 +507,6 @@
 
         this.initialize = function() {
             var _this = this;
-            // Сброс ротации аккаунтов при каждом новом открытии
-            current_skaz_account_index = 0;
-            current_ab_token_index = 0;
             this.loading(true);
             filter.onSearch = function(value) {
 
@@ -421,13 +529,7 @@
                 if (type == 'filter') {
                     // --- ОБРАБОТКА ВЫБОРА СЕРВЕРА ---
                     if (a.stype == 'connection') {
-                        if (b.index === 0) connection_source = 'ab2024';
-                        else if (b.index === 1) connection_source = 'skaz';
-                        else if (b.index === 2) connection_source = 'okeantv';
-                        else connection_source = 'skaz';
-                        
-                        // Сохраняем выбор пользователя
-                        Lampa.Storage.set('ultra_last_server', connection_source);
+                        connection_source = b.source || 'skaz';
                         
                         // Сброс и перезагрузка
                         Defined.localhost = getHost();
@@ -510,8 +612,6 @@
                 _this.search();
             })["catch"](function(e) {
                 _this.noConnectToServer(e);
-                // Инициализируем фильтр вручную, чтобы кнопка "Сменить сервер" была доступна
-                _this.filter({ source: [] }, _this.getChoice());
             });
         };
         this.rch = function(json, noreset) {
@@ -530,6 +630,16 @@
                     if (object.movie.imdb_id) query.push('imdb_id=' + (object.movie.imdb_id || ''));
                     if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
                     var url = Defined.localhost + 'externalids?' + query.join('&');
+                    
+                    if (connection_source === 'hdpoisk') {
+                         resolve();
+                         return;
+                    }
+                    
+                    var headers = {};
+                    if(connection_source !== 'hdpoisk') {
+                         headers['X-Kit-AesGcm'] = Lampa.Storage.get('aesgcmkey', '');
+                    }
 
                     network.timeout(10000);
                     network.silent(account(url), function(json) {
@@ -540,9 +650,7 @@
                     }, function() {
                         resolve();
                     }, false, {
-                        headers: {
-                            'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
-                        }
+                        headers: headers
                     });
                 } else resolve();
             });
@@ -562,6 +670,11 @@
             Lampa.Activity.replace();
         };
         this.requestParams = function(url) {
+            // ДЛЯ HD POISK НАПРАВЛЯЕМ ЗАПРОС API ЧЕРЕЗ НАШ СЕРВЕР
+            if (connection_source === 'hdpoisk') {
+                return 'http://' + SERVER_CONFIG.hdpoisk.vpsIp + ':3000/api?kp=' + (object.movie.kinopoisk_id || object.movie.id);
+            }
+
             var query = [];
             var card_source = object.movie.source || 'tmdb'; 
             query.push('id=' + encodeURIComponent(object.movie.id));
@@ -591,21 +704,7 @@
         };
         this.startSource = function(json) {
             return new Promise(function(resolve, reject) {
-                // Универсально извлекаем список источников из любого формата ответа
-                var list = [];
-                if (Array.isArray(json)) {
-                    list = json;
-                } else if (json && typeof json === 'object') {
-                    // Ищем первый массив объектов в ответе
-                    for (var key in json) {
-                        if (Array.isArray(json[key]) && json[key].length > 0 && typeof json[key][0] === 'object') {
-                            list = json[key];
-                            break;
-                        }
-                    }
-                }
-                console.log('Ultra: startSource extracted', list.length, 'items from', json);
-                list.forEach(function(j) {
+                json.forEach(function(j) {
                     var name = balanserName(j);
                     sources[name] = {
                         url: j.url,
@@ -659,16 +758,14 @@
                         life_wait_times++;
                         filter_sources = [];
                         sources = {};
-                        if (json.online && Array.isArray(json.online)) {
-                            json.online.forEach(function(j) {
-                                var name = balanserName(j);
-                                sources[name] = {
-                                    url: j.url,
-                                    name: j.name,
-                                    show: typeof j.show == 'undefined' ? true : j.show
-                                };
-                            });
-                        }
+                        json.online.forEach(function(j) {
+                            var name = balanserName(j);
+                            sources[name] = {
+                                url: j.url,
+                                name: j.name,
+                                show: typeof j.show == 'undefined' ? true : j.show
+                            };
+                        });
                         filter_sources = Lampa.Arrays.getKeys(sources);
                         filter.set('sort', filter_sources.map(function(e) {
                             return {
@@ -681,28 +778,21 @@
                         filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
                         gou(json);
                         var lastb = _this3.getLastChoiceBalanser();
-                        if (life_wait_times > 5 || json.ready) {
+                        if (life_wait_times > 15 || json.ready) {
                             filter.render().find('.lampac-balanser-loader').remove();
                             gou(json, true);
                         } else if (!red && sources[lastb] && sources[lastb].show) {
                             gou(json, true);
-                            life_wait_timer = setTimeout(fin, 500);
+                            life_wait_timer = setTimeout(fin, 1000);
                         } else {
-                            life_wait_timer = setTimeout(fin, 500);
+                            life_wait_timer = setTimeout(fin, 1000);
                         }
                     }, function() {
                         life_wait_times++;
-                        if (life_wait_times > 5) {
+                        if (life_wait_times > 15) {
                             reject();
                         } else {
-                            life_wait_timer = setTimeout(fin, 500);
-                        }
-                    }, function() {
-                        life_wait_times++;
-                        if (life_wait_times > 5) {
-                            reject();
-                        } else {
-                            life_wait_timer = setTimeout(fin, 500);
+                            life_wait_timer = setTimeout(fin, 1000);
                         }
                     }, false, {
                         headers: {
@@ -716,46 +806,29 @@
         // ВОЗВРАЩАЕМ ЗАПРОС LITE/EVENTS
         this.createSource = function() {
             var _this4 = this;
+            if (connection_source === 'hdpoisk') {
+                return new Promise(function(resolve, reject){
+                     _this4.startSource([{name: 'HDPoisk', url: 'hdpoisk_api', show: true}]).then(resolve);
+                });
+            }
 
             return new Promise(function(resolve, reject) {
-                // life=true нужен только для Skaz, остальные серверы используют просто lite/events
-                var eventsUrl = connection_source === 'skaz' ? 'lite/events?life=true' : 'lite/events';
-                var url = _this4.requestParams(Defined.localhost + eventsUrl);
-                network.timeout(8000);
+                var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
+                network.timeout(15000);
                 network.silent(account(url), function(json) {
-                    console.log('Ultra: lite/events response', json);
                     if (json.accsdb) return reject(json);
-                    // lifeSource нужен только для Skaz, остальные серверы возвращают готовый список сразу
-                    if (json.life && connection_source === 'skaz') {
+                    if (json.life) {
                         _this4.memkey = json.memkey;
                         if (json.title) {
                             if (object.movie.name) object.movie.name = json.title;
                             if (object.movie.title) object.movie.title = json.title;
                         }
                         filter.render().find('.filter--sort').append('<span class="lampac-balanser-loader" style="width: 1.2em; height: 1.2em; margin-top: 0; background: url(./img/loader.svg) no-repeat 50% 50%; background-size: contain; margin-left: 0.5em"></span>');
-                        _this4.lifeSource().then(_this4.startSource).then(resolve)["catch"](function(e){
-                            // Fallback на OkeanTV если lifeSource не ответил
-                            Lampa.Noty.show('Skaz не отвечает. Переключаюсь на OkeanTV...');
-                            connection_source = 'okeantv';
-                            Lampa.Storage.set('ultra_last_server', 'okeantv');
-                            Defined.localhost = getHost();
-                            _this4.createSource().then(resolve)["catch"](reject);
-                        });
+                        _this4.lifeSource().then(_this4.startSource).then(resolve)["catch"](reject);
                     } else {
                         _this4.startSource(json).then(resolve)["catch"](reject);
                     }
-                }, function(e) {
-                    // Fallback на OkeanTV если lite/events упал
-                    if (connection_source === 'skaz') {
-                        Lampa.Noty.show('Skaz недоступен. Переключаюсь на OkeanTV...');
-                        connection_source = 'okeantv';
-                        Lampa.Storage.set('ultra_last_server', 'okeantv');
-                        Defined.localhost = getHost();
-                        _this4.createSource().then(resolve)["catch"](reject);
-                    } else {
-                        reject(e);
-                    }
-                }, false, {
+                }, reject, false, {
                     headers: {
                         'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                     }
@@ -785,29 +858,18 @@
 
             function runRequest() {
                 number_of_requests++;
-                if (number_of_requests < 25) {
-                    var headers = {
-                        'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
-                    };
+                if (number_of_requests < 10) {
+                    var headers = {};
+                    if (connection_source !== 'hdpoisk') {
+                         headers['X-Kit-AesGcm'] = Lampa.Storage.get('aesgcmkey', '');
+                    }
 
                     network["native"](account(url), _this.parse.bind(_this), function(e) {
-                        // Обработка ошибки с ротацией для Skaz
-                        if (connection_source === 'skaz' && current_skaz_account_index < SKAZ_ACCOUNTS.length - 1) {
-                            console.log('Skaz: Auth failed, rotating to next account', current_skaz_account_index + 1);
-                            current_skaz_account_index++;
-                            // Рекурсивный вызов, который снова инициирует wakeUp для нового аккаунта
+                        if (rotateAccount(connection_source)) {
+                            console.log(connection_source + ': rotating to next account');
                             _this.request(url);
                         } else {
-                            // Все аккаунты Skaz исчерпаны или другая ошибка — fallback на OkeanTV
-                            if (connection_source === 'skaz') {
-                                Lampa.Noty.show('Все аккаунты Skaz недоступны. Переключаюсь на OkeanTV...');
-                                connection_source = 'okeantv';
-                                Lampa.Storage.set('ultra_last_server', 'okeantv');
-                                Defined.localhost = getHost();
-                                _this.search();
-                            } else {
-                                _this.doesNotAnswer.bind(_this)(e);
-                            }
+                            _this.doesNotAnswer.bind(_this)(e);
                         }
                     }, false, {
                         dataType: 'text',
@@ -826,13 +888,11 @@
                 var wake_title = object.movie.title;
                 var wake_url = 'http://online' + dd + '3.skaz.tv/lite/filmix?title=' + encodeURIComponent(wake_title);
                 // account(wake_url) добавит текущий uid/email из ротации
-                network.timeout(5000);
                 network.silent(account(wake_url), function() {
                     runRequest();
                 }, function() {
                     // Если пробуждающий запрос не прошел, сразу пробуем следующий аккаунт или выполняем запрос
-                    if (current_skaz_account_index < SKAZ_ACCOUNTS.length - 1) {
-                        current_skaz_account_index++;
+                    if (rotateAccount('skaz')) {
                         _this.request(url);
                     } else {
                         runRequest();
@@ -878,6 +938,36 @@
         this.getFileUrl = function(file, call, waiting_rch) {
             var _this = this;
 
+            // --- ЛОГИКА ДЛЯ HD POISK (ОБРАЩЕНИЕ К НАШЕМУ ПРОКСИ) ---
+            if (connection_source === 'hdpoisk') {
+                Lampa.Loading.start(function() {
+                    Lampa.Loading.stop();
+                    Lampa.Controller.toggle('content');
+                    network.clear();
+                });
+                
+                // ЗАМЕНИ НА IP ТВОЕГО VPS! Порт 3000 мы задали в server.js
+                var extractorUrl = 'http://' + SERVER_CONFIG.hdpoisk.extractorIp + ':3000/extract?url=' + encodeURIComponent(file.url);
+
+                network.silent(extractorUrl, function(json) {
+                    Lampa.Loading.stop();
+                    if (json && json.url) {
+                        call({ url: json.url }, {});
+                    } else {
+                        Lampa.Noty.show('Сервер не смог извлечь видео');
+                        call(false, {});
+                    }
+                }, function(a, c) {
+                    Lampa.Loading.stop();
+                    Lampa.Noty.show('Ошибка соединения с прокси-сервером');
+                    call(false, {});
+                }, false, {
+                    dataType: 'json'
+                });
+                
+                return;
+            }
+            // ---------------------------------------- 
             if (Lampa.Storage.field('player') !== 'inner' && file.stream && Lampa.Platform.is('apple')) {
                 var newfile = Lampa.Arrays.clone(file);
                 newfile.method = 'play';
@@ -894,6 +984,7 @@
                 var headers = {
                     'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                 };
+                if(connection_source === 'hdpoisk') headers = {};
 
                 network["native"](account(file.url), function(json) {
                     if (json.rch) {
@@ -1074,7 +1165,61 @@
             if (Lampa.Arrays.isObject(str) && str.rch) json = str;
             if (json.rch) return this.rch(json);
 
-            // (hdpoisk parser removed)
+            // --- ПАРСЕР ДЛЯ HD POISK ---
+            if (connection_source === 'hdpoisk') {
+                this.activity.loader(false);
+                if (json.data) {
+                    var items = [];
+                    if (json.data.seasons) {
+                        for (var s in json.data.seasons) {
+                            var season = json.data.seasons[s];
+                            if (season.episodes) {
+                                for (var e in season.episodes) {
+                                    var episode = season.episodes[e];
+                                    var item = {
+                                        season: parseInt(season.season),
+                                        episode: parseInt(episode.episode),
+                                        title: 'S' + season.season + 'E' + episode.episode,
+                                        text: 'S' + season.season + 'E' + episode.episode,
+                                        url: episode.iframe,
+                                        method: 'call',
+                                        voice_name: 'Original',
+                                        quality: {}
+                                    };
+                                    items.push(item);
+                                }
+                            }
+                        }
+                    } 
+                    else if (json.data.iframe) {
+                        var item = {
+                            title: json.data.name || object.movie.title,
+                            text: object.movie.title,
+                            url: json.data.iframe,
+                            method: 'call',
+                            quality: {}
+                        };
+                        items.push(item);
+                    }
+
+                    if (items.length) {
+                        items.sort(function(a, b) {
+                            if (a.season > b.season) return 1;
+                            if (a.season < b.season) return -1;
+                            if (a.episode > b.episode) return 1;
+                            if (a.episode < b.episode) return -1;
+                            return 0;
+                        });
+                        this.display(items);
+                    } else {
+                        this.empty();
+                    }
+                } else {
+                    this.empty();
+                }
+                return;
+            }
+            // -----------------------------
 
             try {
                 var items = this.parseJsonDate(str, '.videos__item');
@@ -1280,19 +1425,13 @@
             var select = [];
             
             // --- ДОБАВЛЕНИЕ ВЫБОРА СЕРВЕРА ---
-            var current_sub = '';
-            if (connection_source === 'ab2024') current_sub = 'https://ab2024.ru';
-            else if (connection_source === 'okeantv') current_sub = 'cdn.okeantv.fun';
-            else current_sub = randomUrl;
+            var currentCfg = SERVER_CONFIG[connection_source];
+            var current_sub = currentCfg && currentCfg.getSubtitle ? currentCfg.getSubtitle() : randomUrl;
 
             select.push({
                 title: 'Сервер',
                 subtitle: current_sub,
-                items: [
-                    { title: 'AB2024', selected: connection_source === 'ab2024', index: 0 },
-                    { title: 'Skaz', selected: connection_source === 'skaz', index: 1 },
-                    { title: 'cdn.okeantv.fun', selected: connection_source === 'okeantv', index: 2 }
-                ],
+                items: getServerFilterItems(),
                 stype: 'connection'
             });
 
@@ -1792,54 +1931,13 @@
             this.loading(false);
         };
         this.noConnectToServer = function(er) {
-            var _this = this;
             var html = Lampa.Template.get('lampac_does_not_answer', {});
+            html.find('.online-empty__buttons').remove();
             html.find('.online-empty__title').text(Lampa.Lang.translate('title_error'));
-            var balanserName = (sources[balanser] && sources[balanser].name) || balanser || 'Сервер';
-            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', balanserName));
-            // Кнопка "Назад"
-            html.find('.cancel').on('hover:enter', function() {
-                Lampa.Activity.back();
-            });
-            // Кнопка "Сменить сервер" — открываем Select с серверами
-            html.find('.change').on('hover:enter', function() {
-                var servers = [
-                    { title: 'AB2024', source: 'ab2024' },
-                    { title: 'Skaz', source: 'skaz' },
-                    { title: 'cdn.okeantv.fun', source: 'okeantv' }
-                ];
-                var items = servers.map(function(s) {
-                    return {
-                        title: s.title,
-                        selected: connection_source === s.source,
-                        source: s.source
-                    };
-                });
-                Lampa.Select.show({
-                    title: 'Выберите сервер',
-                    items: items,
-                    onSelect: function(a) {
-                        connection_source = a.source;
-                        Lampa.Storage.set('ultra_last_server', a.source);
-                        Defined.localhost = getHost();
-                        // Перезагружаем плагин с новым сервером
-                        _this.reset();
-                        _this.createSource().then(function(){
-                            _this.search();
-                        })["catch"](function(e) {
-                            _this.noConnectToServer(e);
-                        });
-                    },
-                    onBack: function() {
-                        Lampa.Controller.toggle('content');
-                    }
-                });
-            });
+            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', balanser[balanser].name));
             scroll.clear();
             scroll.append(html);
             this.loading(false);
-            // Включаем контроллер, чтобы кнопки работали
-            Lampa.Controller.enable('content');
         };
         this.doesNotAnswer = function(er) {
             var _this9 = this;
@@ -1964,7 +2062,7 @@
                                             if (item.img.charAt(0) === '/')
                                                 item.img = Defined.localhost + item.img.substring(1);
                                             if (item.img.indexOf('/proxyimg') !== -1)
-                                                item.img = account(elem.img);
+                                                item.img = account(item.img);
                                         }
 
                                         return item;
