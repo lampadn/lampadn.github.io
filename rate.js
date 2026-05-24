@@ -695,7 +695,7 @@
             var color = getRatingColor(cachedLampa.rating);
             var html = '<span style="color:' + color + '">' + formatRating(cachedLampa.rating) + '</span>';
             if (cachedLampa.medianReaction) {
-                html += ' <img style="width:16px;height:16px;margin-left:4px;object-fit:contain;vertical-align:middle;flex-shrink:0;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
+                html += '<img style="max-height:18px;max-width:18px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
             }
             ratingElement.className = voteClass('rate--lampa');
             ratingElement.innerHTML = html;
@@ -709,7 +709,7 @@
                 var color = getRatingColor(result.rating);
                 var html = '<span style="color:' + color + '">' + formatRating(result.rating) + '</span>';
                 if (result.medianReaction) {
-                    html += ' <img style="width:16px;height:16px;margin-left:4px;object-fit:contain;vertical-align:middle;flex-shrink:0;" src="' + getReactionImageSrc(result.medianReaction) + '">';
+                    html += '<img style="max-height:18px;max-width:18px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
                 }
                 ratingElement.className = voteClass('rate--lampa');
                 ratingElement.innerHTML = html;
@@ -770,6 +770,7 @@
                 ratingElement.dataset.source = 'all';
                 ratingElement.dataset.movieId = idStr;
                 ratingElement.style.display = '';
+                ratingElement.classList.remove('card__vote--hidden');
                 updateCardRatingLine(ratingElement, data);
                 if (canUseKinopoiskApi() && !ratingElement.dataset.kpRequested) {
                     ratingElement.dataset.kpRequested = String(Date.now());
@@ -797,6 +798,7 @@
         ratingElement.dataset.source = source;
         ratingElement.dataset.movieId = idStr;
         ratingElement.style.display = '';
+        ratingElement.classList.remove('card__vote--hidden');
 
         function applyTmdbToElement(el) {
             var tmdb = getTMDBRating(data);
@@ -926,7 +928,7 @@
                             var color = getRatingColor(cachedLampa.rating);
                             var html = '<span style="color:' + color + '">' + formatRating(cachedLampa.rating) + '</span>';
                             if (cachedLampa.medianReaction) {
-                                html += ' <img style="width:16px;height:16px;margin-left:4px;object-fit:contain;vertical-align:middle;flex-shrink:0;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
+                html += '<img style="max-height:18px;max-width:18px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
                             }
                             singleEl.innerHTML = html;
                         }
