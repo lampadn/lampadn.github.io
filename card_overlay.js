@@ -979,14 +979,14 @@
         var map = { completed: { bg: 'rgba(46,204,113,0.8)', text: 'white' }, canceled: { bg: 'rgba(231,76,60,0.8)', text: 'white' }, ongoing: { bg: 'rgba(243,156,18,0.8)', text: 'black' }, production: { bg: 'rgba(52,152,219,0.8)', text: 'white' }, planned: { bg: 'rgba(155,89,182,0.8)', text: 'white' }, pilot: { bg: 'rgba(230,126,34,0.8)', text: 'white' }, released: { bg: 'rgba(26,188,156,0.8)', text: 'white' }, rumored: { bg: 'rgba(149,165,166,0.8)', text: 'white' }, post: { bg: 'rgba(0,188,212,0.8)', text: 'white' } };
         function apply(el) {
             var t = $(el).text().trim().toLowerCase(); var cfg = null;
-            if (t.includes('заверш') || t.includes('ended')) cfg = map.completed;
-            else if (t.includes('отмен') || t.includes('canceled')) cfg = map.canceled;
-            else if (t.includes('выход') || t.includes('ongoing')) cfg = map.ongoing;
-            else if (t.includes('производств') || t.includes('production')) cfg = map.production;
-            else if (t.includes('заплан') || t.includes('planned')) cfg = map.planned;
-            else if (t.includes('пилот') || t.includes('pilot')) cfg = map.pilot;
-            else if (t.includes('выпущ') || t.includes('released')) cfg = map.released;
-            else if (t.includes('слух') || t.includes('rumored')) cfg = map.rumored;
+            if (t.includes('завершён') || t.includes('завершен') || t.includes('ended')) cfg = map.completed;
+            else if (t.includes('отменён') || t.includes('отменен') || t.includes('canceled')) cfg = map.canceled;
+            else if (t.includes('выходит') || t.includes('в эфире') || t.includes('ongoing')) cfg = map.ongoing;
+            else if (t.includes('в производстве') || t.includes('production')) cfg = map.production;
+            else if (t.includes('запланирован') || t.includes('planned')) cfg = map.planned;
+            else if (t.includes('пилотный') || t.includes('pilot')) cfg = map.pilot;
+            else if (t.includes('выпущен') || t.includes('вышел') || t.includes('released')) cfg = map.released;
+            else if (t.includes('слухи') || t.includes('rumored')) cfg = map.rumored;
             else if (t.includes('скоро') || t.includes('post')) cfg = map.post;
             if (cfg) $(el).css({ backgroundColor: cfg.bg, color: cfg.text, borderRadius: '0.3em', display: 'inline-block' });
         }
@@ -1368,7 +1368,7 @@
     }
 
     Lampa.Manifest.plugins = {
-        name: 'Накладки на карточках',
+        name: 'Интерфейс',
         version: '1.0.0',
         description: 'Рейтинги, качество, лейблы типа на карточках + темы'
     };
