@@ -1,6 +1,6 @@
 (function() {
     // --- НАСТРОЙКИ СЕРВЕРОВ (ИЗ SKAZ.JS) ---
-    var connection_source = 'okeantv'; // ПАТЧ: по умолчанию cdn.okeantv.fun (работает в 4К)
+    var connection_source = 'skaz'; // ПАТЧ: по умолчанию skaz
 
     // ПАТЧ: численная оценка качества (4K/UHD считаются как 2160)
     function qualityScore(k) {
@@ -93,8 +93,8 @@
         if (connection_source === 'showy') return MIRRORS_SHOWY[current_showy_index];
         if (connection_source === 'okeantv') return 'http://148.135.207.174:12359/';
         if (connection_source === 'hdpoisk') return 'https://hdpoisk.ru/';
-        if (connection_source === 'lampaua') return 'http://lampaua.mooo.com/';
-        if (connection_source === 'beta') return 'http://beta.l-vid.online';
+        if (connection_source === 'lampaua') return 'https://apn2.akter-black.com/http://lampaua.mooo.com/';
+        if (connection_source === 'beta') return 'http://beta.l-vid.online:888/';
         return randomUrl; // Skaz
     }
 
@@ -346,8 +346,8 @@
             }
 
             // --- ДОБАВЛЕНИЕ ПРОКСИ ДЛЯ LAMPAUA (ЕСЛИ ЗАПРОС ИДЕТ НА ОСНОВНОЙ ДОМЕН) ---
-            if (url.indexOf('lampaua.mooo.com') !== -1 && url.indexOf('apn.akter-black.com') === -1) {
-                url = 'https://apn.akter-black.com/' + url;
+            if (url.indexOf('lampaua.mooo.com') !== -1 && url.indexOf('apn2.akter-black.com') === -1) {
+                url = 'https://apn2.akter-black.com/' + url;
             }
         }
         else if (connection_source === 'beta') {
@@ -489,12 +489,8 @@
                     // --- ОБРАБОТКА ВЫБОРА СЕРВЕРА ---
                     if (a.stype == 'connection') {
                         if (b.index === 0) connection_source = 'ab2024';
-                        else if (b.index === 1) connection_source = 'showy';
-                        else if (b.index === 2) connection_source = 'skaz';
-                        else if (b.index === 3) connection_source = 'okeantv';
-                        else if (b.index === 4) connection_source = 'hdpoisk';
-                        else if (b.index === 5) connection_source = 'lampaua';
-                        else if (b.index === 6) connection_source = 'beta';
+                        else if (b.index === 1) connection_source = 'skaz';
+                        else if (b.index === 2) connection_source = 'okeantv';
                         else connection_source = 'skaz';
                         
                         // Сброс и перезагрузка
@@ -638,7 +634,7 @@
         this.requestParams = function(url) {
             // ДЛЯ HD POISK НАПРАВЛЯЕМ ЗАПРОС API ЧЕРЕЗ НАШ СЕРВЕР
             if (connection_source === 'hdpoisk') {
-                var myVpsIp = '34.40.76.104';
+                var myVpsIp = '108.165.164.64';
                 return 'http://' + myVpsIp + ':3000/api?kp=' + (object.movie.kinopoisk_id || object.movie.id);
             }
 
@@ -1415,11 +1411,7 @@
             // --- ДОБАВЛЕНИЕ ВЫБОРА СЕРВЕРА ---
             var current_sub = '';
             if (connection_source === 'ab2024') current_sub = 'https://ab2024.ru';
-            else if (connection_source === 'showy') current_sub = MIRRORS_SHOWY[0];
             else if (connection_source === 'okeantv') current_sub = 'cdn.okeantv.fun';
-            else if (connection_source === 'hdpoisk') current_sub = 'https://hdpoisk.ru/';
-            else if (connection_source === 'lampaua') current_sub = 'http://lampaua.mooo.com/';
-            else if (connection_source === 'beta') current_sub = 'http://beta.l-vid.online:888/';
             else current_sub = randomUrl;
 
             select.push({
@@ -1427,12 +1419,8 @@
                 subtitle: current_sub,
                 items: [
                     { title: 'AB2024', selected: connection_source === 'ab2024', index: 0 },
-                    { title: 'Showy', selected: connection_source === 'showy', index: 1 },
-                    { title: 'Skaz', selected: connection_source === 'skaz', index: 2 },
-                    { title: 'cdn.okeantv.fun', selected: connection_source === 'okeantv', index: 3 },
-                    { title: 'HD Poisk', selected: connection_source === 'hdpoisk', index: 4 },
-                    { title: 'LampaUA', selected: connection_source === 'lampaua', index: 5 },
-                    { title: 'Beta L-Vid', selected: connection_source === 'beta', index: 6 }
+                    { title: 'Skaz', selected: connection_source === 'skaz', index: 1 },
+                    { title: 'cdn.okeantv.fun', selected: connection_source === 'okeantv', index: 2 }
                 ],
                 stype: 'connection'
             });
