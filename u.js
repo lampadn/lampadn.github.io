@@ -103,15 +103,6 @@
                     url = Lampa.Utils.addUrlComponent(url, 'uid=' + cfg.uid);
                 return url;
             }
-        },
-        hdpoisk: {
-            label: 'HDPoisk',
-            token: '720fbdfd04f4cb54579a9875fd9289',
-            host: 'https://hdpoisk.ru/',
-            vpsIp: '108.165.164.64',
-            getHost: function() { return this.host; },
-            getSubtitle: function() { return 'hdpoisk.ru'; },
-            auth: function(url) { return url; }
         }
     };
 
@@ -341,8 +332,6 @@
             });
         });
     };
-    /* ПАТЧ: отключён вызов skaz.tv при инициализации (домен заблокирован у провайдера) */
-    /* window.rch_nws[hostkey].typeInvoke('http://online' + dd + '3.skaz.tv', function() {}); */
 
     function rchInvoke(json, call) {
         if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect) {
@@ -377,15 +366,13 @@
         url = url + '';
         var cfg = SERVER_CONFIG[connection_source];
         if (cfg && cfg.auth) url = cfg.auth(url, cfg);
-        if (connection_source !== 'hdpoisk') {
-            if (url.indexOf('token=') == -1) {
-                var token = '';
-                if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
-            }
-            if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
-                var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
-                if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
-            }
+        if (url.indexOf('token=') == -1) {
+            var token = '';
+            if (token != '') url = Lampa.Utils.addUrlComponent(url, 'token=');
+        }
+        if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
+            var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
+            if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
         }
         return url;
     }
@@ -426,16 +413,12 @@
         Defined.localhost = getHost();
 
         if (balansers_with_search == undefined) {
-            if (connection_source !== 'hdpoisk') {
-                network.timeout(10000);
-                network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
-                    balansers_with_search = json;
-                }, function() {
-                    balansers_with_search = [];
-                });
-            } else {
-                 balansers_with_search = [];
-            }
+            network.timeout(10000);
+            network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
+                balansers_with_search = json;
+            }, function() {
+                balansers_with_search = [];
+            });
         }
 
         function balanserName(j) {
@@ -595,15 +578,9 @@
                     if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
                     var url = Defined.localhost + 'externalids?' + query.join('&');
                     
-                    if (connection_source === 'hdpoisk') {
-                         resolve();
-                         return;
-                    }
-                    
-                    var headers = {};
-                    if(connection_source !== 'hdpoisk') {
-                         headers['X-Kit-AesGcm'] = Lampa.Storage.get('aesgcmkey', '');
-                    }
+                    var headers = {
+                        'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
+                    };
 
                     network.timeout(10000);
                     network.silent(account(url), function(json) {
@@ -634,11 +611,6 @@
             Lampa.Activity.replace();
         };
         this.requestParams = function(url) {
-            // ДЛЯ HD POISK НАПРАВЛЯЕМ ЗАПРОС API ЧЕРЕЗ НАШ СЕРВЕР
-            if (connection_source === 'hdpoisk') {
-                return 'http://' + SERVER_CONFIG.hdpoisk.vpsIp + ':3000/api?kp=' + (object.movie.kinopoisk_id || object.movie.id);
-            }
-
             var query = [];
             var card_source = object.movie.source || 'tmdb'; 
             query.push('id=' + encodeURIComponent(object.movie.id));
@@ -770,11 +742,6 @@
         // ВОЗВРАЩАЕМ ЗАПРОС LITE/EVENTS
         this.createSource = function() {
             var _this4 = this;
-            if (connection_source === 'hdpoisk') {
-                return new Promise(function(resolve, reject){
-                     _this4.startSource([{name: 'HDPoisk', url: 'hdpoisk_api', show: true}]).then(resolve);
-                });
-            }
 
             return new Promise(function(resolve, reject) {
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
@@ -823,10 +790,9 @@
             function runRequest() {
                 number_of_requests++;
                 if (number_of_requests < 10) {
-                    var headers = {};
-                    if (connection_source !== 'hdpoisk') {
-                         headers['X-Kit-AesGcm'] = Lampa.Storage.get('aesgcmkey', '');
-                    }
+                    var headers = {
+                        'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
+                    };
 
                     network["native"](account(url), _this.parse.bind(_this), function(e) {
                         if (rotateAccount(connection_source)) {
@@ -902,36 +868,6 @@
         this.getFileUrl = function(file, call, waiting_rch) {
             var _this = this;
 
-            // --- ЛОГИКА ДЛЯ HD POISK (ОБРАЩЕНИЕ К НАШЕМУ ПРОКСИ) ---
-            if (connection_source === 'hdpoisk') {
-                Lampa.Loading.start(function() {
-                    Lampa.Loading.stop();
-                    Lampa.Controller.toggle('content');
-                    network.clear();
-                });
-                
-                // ЗАМЕНИ НА IP ТВОЕГО VPS! Порт 3000 мы задали в server.js
-                var extractorUrl = 'http://' + SERVER_CONFIG.hdpoisk.vpsIp + ':3000/extract?url=' + encodeURIComponent(file.url);
-
-                network.silent(extractorUrl, function(json) {
-                    Lampa.Loading.stop();
-                    if (json && json.url) {
-                        call({ url: json.url }, {});
-                    } else {
-                        Lampa.Noty.show('Сервер не смог извлечь видео');
-                        call(false, {});
-                    }
-                }, function(a, c) {
-                    Lampa.Loading.stop();
-                    Lampa.Noty.show('Ошибка соединения с прокси-сервером');
-                    call(false, {});
-                }, false, {
-                    dataType: 'json'
-                });
-                
-                return;
-            }
-            // ---------------------------------------- 
             if (Lampa.Storage.field('player') !== 'inner' && file.stream && Lampa.Platform.is('apple')) {
                 var newfile = Lampa.Arrays.clone(file);
                 newfile.method = 'play';
@@ -948,7 +884,6 @@
                 var headers = {
                     'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                 };
-                if(connection_source === 'hdpoisk') headers = {};
 
                 network["native"](account(file.url), function(json) {
                     if (json.rch) {
@@ -1128,62 +1063,6 @@
             var json = Lampa.Arrays.decodeJson(str, {});
             if (Lampa.Arrays.isObject(str) && str.rch) json = str;
             if (json.rch) return this.rch(json);
-
-            // --- ПАРСЕР ДЛЯ HD POISK ---
-            if (connection_source === 'hdpoisk') {
-                this.activity.loader(false);
-                if (json.data) {
-                    var items = [];
-                    if (json.data.seasons) {
-                        for (var s in json.data.seasons) {
-                            var season = json.data.seasons[s];
-                            if (season.episodes) {
-                                for (var e in season.episodes) {
-                                    var episode = season.episodes[e];
-                                    var item = {
-                                        season: parseInt(season.season),
-                                        episode: parseInt(episode.episode),
-                                        title: 'S' + season.season + 'E' + episode.episode,
-                                        text: 'S' + season.season + 'E' + episode.episode,
-                                        url: episode.iframe,
-                                        method: 'call',
-                                        voice_name: 'Original',
-                                        quality: {}
-                                    };
-                                    items.push(item);
-                                }
-                            }
-                        }
-                    } 
-                    else if (json.data.iframe) {
-                        var item = {
-                            title: json.data.name || object.movie.title,
-                            text: object.movie.title,
-                            url: json.data.iframe,
-                            method: 'call',
-                            quality: {}
-                        };
-                        items.push(item);
-                    }
-
-                    if (items.length) {
-                        items.sort(function(a, b) {
-                            if (a.season > b.season) return 1;
-                            if (a.season < b.season) return -1;
-                            if (a.episode > b.episode) return 1;
-                            if (a.episode < b.episode) return -1;
-                            return 0;
-                        });
-                        this.display(items);
-                    } else {
-                        this.empty();
-                    }
-                } else {
-                    this.empty();
-                }
-                return;
-            }
-            // -----------------------------
 
             try {
                 var items = this.parseJsonDate(str, '.videos__item');
