@@ -510,6 +510,8 @@
                 _this.search();
             })["catch"](function(e) {
                 _this.noConnectToServer(e);
+                // Инициализируем фильтр вручную, чтобы кнопка "Сменить сервер" была доступна
+                _this.filter({ source: [] }, _this.getChoice());
             });
         };
         this.rch = function(json, noreset) {
