@@ -706,7 +706,8 @@
                 network.timeout(8000);
                 network.silent(account(url), function(json) {
                     if (json.accsdb) return reject(json);
-                    if (json.life) {
+                    // lifeSource нужен только для Skaz, остальные серверы возвращают готовый список сразу
+                    if (json.life && connection_source === 'skaz') {
                         _this4.memkey = json.memkey;
                         if (json.title) {
                             if (object.movie.name) object.movie.name = json.title;
@@ -715,15 +716,11 @@
                         filter.render().find('.filter--sort').append('<span class="lampac-balanser-loader" style="width: 1.2em; height: 1.2em; margin-top: 0; background: url(./img/loader.svg) no-repeat 50% 50%; background-size: contain; margin-left: 0.5em"></span>');
                         _this4.lifeSource().then(_this4.startSource).then(resolve)["catch"](function(e){
                             // Fallback на OkeanTV если lifeSource не ответил
-                            if (connection_source === 'skaz') {
-                                Lampa.Noty.show('Skaz не отвечает. Переключаюсь на OkeanTV...');
-                                connection_source = 'okeantv';
-                                Lampa.Storage.set('ultra_last_server', 'okeantv');
-                                Defined.localhost = getHost();
-                                _this4.createSource().then(resolve)["catch"](reject);
-                            } else {
-                                reject(e);
-                            }
+                            Lampa.Noty.show('Skaz не отвечает. Переключаюсь на OkeanTV...');
+                            connection_source = 'okeantv';
+                            Lampa.Storage.set('ultra_last_server', 'okeantv');
+                            Defined.localhost = getHost();
+                            _this4.createSource().then(resolve)["catch"](reject);
                         });
                     } else {
                         _this4.startSource(json).then(resolve)["catch"](reject);
