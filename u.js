@@ -71,7 +71,7 @@
         skaz: {
             label: 'Skaz',
             accounts: [
-                { email: 'naza---rov6@gmail.com', uid: 'rnemtvj3' },
+             //   { email: 'naza---rov6@gmail.com', uid: 'rnemtvj3' },
                 { email: 'centt04@gmail.com', uid: 'fxz' },
                 { email: 'unionvoin@mail.ru', uid: 'freid5q' },
                 { email: 'solnce--v--kepke@yandex.ru', uid: 'fort31hg' },
