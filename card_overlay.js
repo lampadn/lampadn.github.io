@@ -701,7 +701,7 @@
         if (!render) return false;
         var rateLine = $(render).find('.full-start-new__rate-line');
         if (!rateLine.length || rateLine.find('.rate--lampa').length > 0) return false;
-        var html = '<div class="full-start-new__rate full-start__rate rate--lampa"><div class="rate-value">0.0</div><div class="rate-icon"></div><div class="source--name" style="margin-left:-0.2em">LAMPA</div></div>';
+        var html = '<div class="full-start-new__rate full-start__rate rate--lampa"><div class="rate-value">0.0</div><div class="rate-icon"><svg style="width:1em;height:1em;fill:#e040fb" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm2 14h-4v-1h4v1zm0-2h-4v-1h4v1zM9 20h6v1c0 .55-.45 1-1 1h-4c-.55 0-1-.45-1-1v-1z"/></svg></div><div class="source--name" style="margin-left:-0.2em">LAMPA</div></div>';
         var $anchor = rateLine.find('.full-start-new__rate.rate--tmdb, .full-start-new__rate.rate--kp, .full-start-new__rate.rate--imdb, .full-start__rate.rate--tmdb, .full-start__rate.rate--kp, .full-start__rate.rate--imdb').last();
         if (!$anchor.length) $anchor = rateLine.find('.rate--tmdb, .rate--kp, .rate--imdb').last().closest('.full-start-new__rate, .full-start__rate');
         if (!$anchor.length) $anchor = rateLine.find('.full-start-new__rate:not(.rate--lampa), .full-start__rate:not(.rate--lampa)').last();
@@ -1240,12 +1240,16 @@
         function moveAfterInterface() {
             var $folders = $('.settings-folder');
             var $interface = $folders.filter(function () { return $(this).data('component') === 'interface' || $(this).attr('data-component') === 'interface'; });
-            if (!$interface.length) $interface = $('.settings-folder-title, .settings-folder').filter(function () { return $(this).text().trim() === 'Интерфейс'; }).closest('.settings-folder');
+            if (!$interface.length) $interface = $folders.filter(function () { var t = $(this).find('.settings-folder-title, .title').text().trim(); return t === 'Интерфейс'; });
+            if (!$interface.length) $interface = $folders.filter(function () { return $(this).text().indexOf('Интерфейс') === 0; });
             var $mod = $folders.filter(function () { return $(this).data('component') === 'card_overlay' || $(this).attr('data-component') === 'card_overlay'; });
+            if (!$mod.length) $mod = $folders.filter(function () { var t = $(this).find('.settings-folder-title, .title').text().trim(); return t === 'Интерфейс Мод'; });
             if ($interface.length && $mod.length && $mod.prev()[0] !== $interface[0]) $mod.insertAfter($interface);
         }
-        var moveTries = 0, moveTimer = setInterval(function () { moveAfterInterface(); if (++moveTries >= 60) clearInterval(moveTimer); }, 200);
-        Lampa.Listener.follow('settings', function (e) { if (e.type === 'open') setTimeout(moveAfterInterface, 50); });
+        var moveTries = 0, moveTimer = setInterval(function () { moveAfterInterface(); if (++moveTries >= 30) clearInterval(moveTimer); }, 300);
+        Lampa.Listener.follow('settings', function (e) { if (e.type === 'open') setTimeout(moveAfterInterface, 100); });
+        setTimeout(moveAfterInterface, 500);
+        setTimeout(moveAfterInterface, 1500);
     }
 
     function setupCardListener() {
@@ -1359,8 +1363,8 @@
             '.card__vote > span:first-child,.card__vote-line .card__rate-item > div,.card__vote-line .card__rate-item > .rate-value{display:inline-block!important;min-width:3ch!important;text-align:left!important}' +
             '.card__vote--top,.card__vote-line.card__vote--top,.card__vote-separate-wrap.card__vote--top{transform-origin:top right!important;transform:scale(var(--rating-scale,1))!important}' +
             '.card__vote--bottom,.card__vote-line.card__vote--bottom,.card__vote-separate-wrap.card__vote--bottom{transform-origin:bottom right!important;transform:scale(var(--rating-scale,1))!important}' +
-            '.card__vote--top{top:0!important;right:0!important;bottom:auto!important;border-radius:0 0.75em!important}' +
-            '.card__vote--bottom{top:auto!important;right:0!important;bottom:0!important;border-radius:0.75em 0!important}' +
+            '.card__vote--top{top:0!important;right:0!important;bottom:auto!important;border-radius:0 0.75em 0.75em 0!important}' +
+            '.card__vote--bottom{top:auto!important;right:0!important;bottom:0!important;border-radius:0.75em 0 0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote:last-child{border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
