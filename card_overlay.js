@@ -396,7 +396,6 @@
         var idStr = data.id.toString();
         if (el.dataset.movieId !== idStr) return;
         el.classList.add('card__vote--separate');
-        function refreshBR() { var c = el.closest('.card'); if (c) updateSeparateBorderRadius(c); }
         if (rateSource === 'tmdb') {
             var rating = getTMDBRating(data);
             if (rating !== '0.0') {
@@ -405,7 +404,7 @@
                 el.style.display = ''; el.classList.remove('card__vote--hidden');
                 el.style.background = getRatingBackgroundColor(rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
             } else { el.classList.add('card__vote--hidden'); }
-            refreshBR(); return;
+            return;
         }
         if (rateSource === 'imdb' || rateSource === 'kp') {
             getKinopoiskRating(data, function (res) {
@@ -417,7 +416,6 @@
                     el.style.display = ''; el.classList.remove('card__vote--hidden');
                     el.style.background = getRatingBackgroundColor(val) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
                 } else { el.classList.add('card__vote--hidden'); }
-                refreshBR();
             }); return;
         }
         if (rateSource === 'lampa') {
@@ -434,7 +432,6 @@
                         if (iconEl) iconEl.style.backgroundImage = 'url(' + getReactionImageSrc(result.medianReaction) + ')';
                     }
                 } else { el.classList.add('card__vote--hidden'); }
-                refreshBR();
             });
         }
     }
@@ -461,22 +458,6 @@
         var idStr = data.id.toString();
         var elements = card.querySelectorAll('.card__vote-separate-wrap [data-rate-source]');
         for (var i = 0; i < elements.length; i++) { elements[i].dataset.movieId = idStr; fillSingleRatingElement(elements[i], data, elements[i].dataset.rateSource); }
-        updateSeparateBorderRadius(card);
-    }
-    function updateSeparateBorderRadius(card) {
-        var wrap = card.querySelector('.card__vote-separate-wrap');
-        if (!wrap) return;
-        var items = wrap.querySelectorAll('.card__vote');
-        for (var i = 0; i < items.length; i++) {
-            items[i].classList.remove('card__vote--first-visible', 'card__vote--last-visible', 'card__vote--only-visible');
-        }
-        var visible = [];
-        for (var i = 0; i < items.length; i++) {
-            if (!items[i].classList.contains('card__vote--hidden')) visible.push(items[i]);
-        }
-        if (visible.length === 0) return;
-        if (visible.length === 1) { visible[0].classList.add('card__vote--only-visible'); }
-        else { visible[0].classList.add('card__vote--first-visible'); visible[visible.length - 1].classList.add('card__vote--last-visible'); }
     }
     function showTmdbFallback(ratingElement, data) {
         var tmdb = getTMDBRating(data);
@@ -1383,13 +1364,9 @@
             '.card__vote--top{top:0!important;right:0!important;bottom:auto!important;border-radius:0 0.75em!important}' +
             '.card__vote--bottom{top:auto!important;right:0!important;bottom:0!important;border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
-            '.card__vote-separate-wrap.card__vote--bottom .card__vote--last-visible{border-radius:0.75em 0!important}' +
-            '.card__vote-separate-wrap.card__vote--bottom .card__vote--first-visible{border-radius:0 0.75em!important}' +
-            '.card__vote-separate-wrap.card__vote--bottom .card__vote--only-visible{border-radius:0.75em 0 0 0!important}' +
+            '.card__vote-separate-wrap.card__vote--bottom .card__vote:last-child{border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
-            '.card__vote-separate-wrap.card__vote--top .card__vote--first-visible{border-radius:0 0.75em!important}' +
-            '.card__vote-separate-wrap.card__vote--top .card__vote--last-visible{border-radius:0.75em 0 0 0!important}' +
-            '.card__vote-separate-wrap.card__vote--top .card__vote--only-visible{border-radius:0 0.75em 0.75em 0!important}' +
+            '.card__vote-separate-wrap.card__vote--top .card__vote:first-child{border-radius:0 0.75em!important}' +
             '.card__vote-line .card__rate-item{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;white-space:nowrap}' +
             '.card__vote-line .card__rate-item:last-child{margin-bottom:0}' +
             '.card__vote .source--name{font-size:0!important;display:block!important;color:transparent!important;width:12px!important;height:12px!important;overflow:hidden!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;margin-left:auto!important;padding:0!important;border:none!important;flex-shrink:0!important}' +
