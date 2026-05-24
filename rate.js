@@ -461,7 +461,7 @@
         ratingElement.className = voteClass();
         var posCSS = getRatingPositionCSS(verticalOffsetEm);
         var bgAlpha = getRatingBackgroundAlpha();
-        ratingElement.style.cssText = 'font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;align-items:center;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.3em 0.2em 0.45em;';
+        ratingElement.style.cssText = 'font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;align-items:center;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.2em 0.2em 0.5em;';
         var parent = getRatingParent(card);
         parent.appendChild(ratingElement);
         return ratingElement;
@@ -471,7 +471,7 @@
         var el = document.createElement('div');
         el.className = voteClass();
         var bgAlpha = getRatingBackgroundAlpha();
-        el.style.cssText = 'font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;display:flex;align-items:center;background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.3em 0.2em 0.45em;';
+        el.style.cssText = 'font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;display:flex;align-items:center;background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.2em 0.2em 0.5em;';
         return el;
     }
 
@@ -480,7 +480,7 @@
         line.className = voteClass('card__vote-line');
         var posCSS = getRatingPositionCSS();
         var bgAlpha = getRatingBackgroundAlpha();
-        line.style.cssText = 'font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.3em 0.2em 0.45em;';
+        line.style.cssText = 'font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.2em 0.2em 0.5em;';
         line.innerHTML = '<div class="card__rate-item rate--tmdb" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--imdb" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--kp" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--lampa" style="display:none"><span class="rate-value">0.0</span><span class="source--name rate-icon-reaction"></span></div>';
         var parent = getRatingParent(card);
         parent.appendChild(line);
@@ -599,10 +599,11 @@
                 el.className = voteClass('rate--tmdb card__vote--separate');
                 el.innerHTML = '<span style="color:' + color + '">' + formatRating(rating) + '</span> <span class="source--name"></span>';
                 el.style.display = '';
+                el.classList.remove('card__vote--hidden');
                 var bg = getRatingBackgroundColor(rating);
                 el.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
             } else {
-                el.style.display = 'none';
+                el.classList.add('card__vote--hidden');
             }
             return;
         }
@@ -616,10 +617,11 @@
                     el.className = voteClass('rate--' + rateSource + ' card__vote--separate');
                     el.innerHTML = '<span style="color:' + color + '">' + text + '</span> <span class="source--name"></span>';
                     el.style.display = '';
+                el.classList.remove('card__vote--hidden');
                     var bg = getRatingBackgroundColor(val);
                     el.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
                 } else {
-                    el.style.display = 'none';
+                    el.classList.add('card__vote--hidden');
                 }
             });
             return;
@@ -637,10 +639,11 @@
                     el.className = voteClass('rate--lampa card__vote--separate');
                     el.innerHTML = html;
                     el.style.display = '';
+                el.classList.remove('card__vote--hidden');
                     var bg = getRatingBackgroundColor(result.rating);
                     el.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
                 } else {
-                    el.style.display = 'none';
+                    el.classList.add('card__vote--hidden');
                 }
             });
         }
@@ -660,8 +663,7 @@
         for (var i = 0; i < sources.length; i++) {
             var el = createRatingInnerBlock();
             el.dataset.rateSource = sources[i];
-            el.classList.add('card__vote--separate');
-            el.style.display = 'none';
+            el.classList.add('card__vote--separate', 'card__vote--hidden');
             wrapper.appendChild(el);
         }
         parent.appendChild(wrapper);
@@ -714,7 +716,7 @@
                 var bg = getRatingBackgroundColor(result.rating);
                 ratingElement.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
             } else {
-                ratingElement.style.display = 'none';
+                ratingElement.classList.add('card__vote--hidden');
             }
         });
     }
@@ -1415,10 +1417,11 @@
             '[data-name="rating_modal_open"] .settings-param__value,[data-name="rating_modal_open"] .settings-param__control,[data-name="rating_modal_open"] input[type="checkbox"]{display:none!important}' +
             '.card .card__view{position:relative!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap):not(.card__vote--separate){display:none!important}' +
-            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.3em 0.2em 0.45em!important;white-space:nowrap!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
-            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.3em 0.2em 0.45em!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.2em 0.2em 0.5em!important;white-space:nowrap!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote--hidden{display:none!important;height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;min-width:0!important;min-height:0!important;border:none!important}' +
+            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.2em 0.2em 0.5em!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
             '.card__vote-separate-wrap{background:transparent!important;padding:0!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;overflow:visible!important;transform:scale(var(--rating-scale,1))!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0.15em!important;font-size:1.1em!important}' +
-            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:100%!important;min-width:2.8em!important;max-width:100%!important;padding:0.2em 0.3em 0.2em 0.45em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:100%!important;min-width:2.8em!important;max-width:100%!important;padding:0.2em 0.2em 0.2em 0.5em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
             '.card__vote > span:first-child,.card__vote-line .card__rate-item > div,.card__vote-line .card__rate-item > .rate-value{display:inline-block!important;min-width:3ch!important;text-align:right!important}' +
             '.card__vote--top,.card__vote-line.card__vote--top,.card__vote-separate-wrap.card__vote--top{transform-origin:top right!important;transform:scale(var(--rating-scale,1))!important}' +
             '.card__vote--bottom,.card__vote-line.card__vote--bottom,.card__vote-separate-wrap.card__vote--bottom{transform-origin:bottom right!important;transform:scale(var(--rating-scale,1))!important}' +
