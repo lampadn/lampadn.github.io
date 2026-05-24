@@ -1172,8 +1172,7 @@
                 Lampa.Storage.set('rating_scale', '100'); Lampa.Storage.set('rating_kp_api_key', '');
                 Lampa.Storage.set('quality_show', 'true'); Lampa.Storage.set('quality_colored', 'false');
                 Lampa.Storage.set('type_labels_show', 'true'); Lampa.Storage.set('type_labels_colored', 'false');
-                Lampa.Storage.set('glass_theme', 'false');
-                Lampa.Storage.set('glass_buttons', 'false');
+
                 rowSource.updateVal(SOURCE_LABELS.all); rowDisplayMode.updateVal(DISPLAY_MODE_LABELS.separate);
                 rowPosition.updateVal(POSITION_LABELS.bottom); rowColored.updateVal('Выкл'); rowColoredWin.updateVal('Выкл');
                 rowAnimated.updateVal('Выкл'); rowShowTmdb.updateVal('Вкл'); rowShowImdb.updateVal('Вкл');
@@ -1212,38 +1211,7 @@
         try { if (typeof Lampa.Modal !== 'undefined' && Lampa.Modal.close) Lampa.Modal.close(); } catch (e) {}
     }
 
-    function isGlassThemeOn() {
-        return isTriggerOn('glass_theme', false);
-    }
-    function isGlassButtonsOn() {
-        return isTriggerOn('glass_buttons', false);
-    }
-    function applyGlassTheme() {
-        var old = document.getElementById('card_overlay_glass_theme');
-        if (old) old.remove();
-        var css = '';
-        if (isGlassThemeOn()) {
-            css +=
-                '.card__vote:not(.card__vote-separate-wrap){background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.card__vote-separate-wrap{background:none!important;border:none!important;box-shadow:none!important}' +
-                '.card__vote-separate-wrap .card__vote{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.card__quality{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.content-label{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.content-label.serial-label{background:linear-gradient(to top,rgba(52,152,219,0.35),rgba(30,80,140,0.25))!important}' +
-                '.content-label.movie-label{background:linear-gradient(to top,rgba(46,204,113,0.35),rgba(30,120,70,0.25))!important}';
-        }
-        if (isGlassButtonsOn()) {
-            css +=
-                '.full-start-new__reactions .reaction{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.full-start-new__buttons .full-start__button{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.full-start-new__buttons .full-start__button.focus,.full-start-new__buttons .full-start__button:hover,.full-start-new__buttons .full-start__button.active{background:linear-gradient(to top,rgba(100,100,100,0.45),rgba(40,40,45,0.35))!important;border-color:rgba(255,255,255,0.25)!important;box-shadow:inset 0 0 8px rgba(0,0,0,0.6)!important}';
-        }
-        if (!css) return;
-        var st = document.createElement('style');
-        st.id = 'card_overlay_glass_theme';
-        st.textContent = css;
-        document.head.appendChild(st);
-    }
+
 
     function addSettings() {
         if (!Lampa.SettingsApi) return;
@@ -1270,18 +1238,6 @@
             param: { name: 'label_position', type: 'select', values: { 'top-right': 'Верхний правый', 'top-left': 'Верхний левый', 'bottom-right': 'Нижний правый', 'bottom-left': 'Нижний левый' }, default: 'top-right' },
             field: { name: 'Позиция лейбла о сериях', description: 'Позиция лейбла на постере детальной страницы' },
             onChange: function (v) { seasonInfoSettings.label_position = v; Lampa.Settings.update(); Lampa.Noty.show('Откройте карточку заново'); }
-        });
-        Lampa.SettingsApi.addParam({
-            component: 'card_overlay',
-            param: { name: 'glass_theme', type: 'trigger', default: false },
-            field: { name: 'Стеклянная тема (рейтинги, качество, лейблы)', description: 'Применить стеклянный стиль к накладкам на карточках' },
-            onChange: function () { applyGlassTheme(); }
-        });
-        Lampa.SettingsApi.addParam({
-            component: 'card_overlay',
-            param: { name: 'glass_buttons', type: 'trigger', default: false },
-            field: { name: 'Стеклянные кнопки и реакции', description: 'Применить стеклянный стиль к кнопкам и реакциям на странице фильма' },
-            onChange: function () { applyGlassTheme(); }
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
@@ -1550,7 +1506,6 @@
 
         var currentTheme = Lampa.Storage.get('theme_select', 'default');
         applyTheme(currentTheme);
-        applyGlassTheme();
 
         if (isColoredElementsOn()) { colorizeSeriesStatus(); colorizeAgeRating(); }
 
