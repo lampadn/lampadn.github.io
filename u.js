@@ -589,7 +589,21 @@
         };
         this.startSource = function(json) {
             return new Promise(function(resolve, reject) {
-                json.forEach(function(j) {
+                // Универсально извлекаем список источников из любого формата ответа
+                var list = [];
+                if (Array.isArray(json)) {
+                    list = json;
+                } else if (json && typeof json === 'object') {
+                    // Ищем первый массив объектов в ответе
+                    for (var key in json) {
+                        if (Array.isArray(json[key]) && json[key].length > 0 && typeof json[key][0] === 'object') {
+                            list = json[key];
+                            break;
+                        }
+                    }
+                }
+                console.log('Ultra: startSource extracted', list.length, 'items from', json);
+                list.forEach(function(j) {
                     var name = balanserName(j);
                     sources[name] = {
                         url: j.url,
@@ -705,6 +719,7 @@
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
                 network.timeout(8000);
                 network.silent(account(url), function(json) {
+                    console.log('Ultra: lite/events response', json);
                     if (json.accsdb) return reject(json);
                     // lifeSource нужен только для Skaz, остальные серверы возвращают готовый список сразу
                     if (json.life && connection_source === 'skaz') {
@@ -1774,12 +1789,22 @@
         };
         this.noConnectToServer = function(er) {
             var html = Lampa.Template.get('lampac_does_not_answer', {});
-            html.find('.online-empty__buttons').remove();
             html.find('.online-empty__title').text(Lampa.Lang.translate('title_error'));
-            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', balanser[balanser].name));
+            var balanserName = (sources[balanser] && sources[balanser].name) || balanser || 'Сервер';
+            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', balanserName));
+            // Кнопка смены сервера при полном отсутствии соединения
+            html.find('.cancel').on('hover:enter', function() {
+                Lampa.Activity.back();
+            });
+            html.find('.change').on('hover:enter', function() {
+                // Открываем фильтр для смены сервера
+                filter.render().find('.filter--filter').trigger('hover:enter');
+            });
             scroll.clear();
             scroll.append(html);
             this.loading(false);
+            // Включаем контроллер, чтобы кнопки работали
+            Lampa.Controller.enable('content');
         };
         this.doesNotAnswer = function(er) {
             var _this9 = this;
