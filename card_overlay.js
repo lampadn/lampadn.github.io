@@ -1236,11 +1236,13 @@
 
         function moveAfterInterface() {
             var $folders = $('.settings-folder');
-            var $interface = $folders.filter(function () { return $(this).data('component') === 'interface'; });
-            var $mod = $folders.filter(function () { return $(this).data('component') === 'card_overlay'; });
+            var $interface = $folders.filter(function () { return $(this).data('component') === 'interface' || $(this).attr('data-component') === 'interface'; });
+            if (!$interface.length) $interface = $('.settings-folder-title, .settings-folder').filter(function () { return $(this).text().trim() === 'Интерфейс'; }).closest('.settings-folder');
+            var $mod = $folders.filter(function () { return $(this).data('component') === 'card_overlay' || $(this).attr('data-component') === 'card_overlay'; });
             if ($interface.length && $mod.length && $mod.prev()[0] !== $interface[0]) $mod.insertAfter($interface);
         }
-        var moveTries = 0, moveTimer = setInterval(function () { moveAfterInterface(); if (++moveTries >= 40) clearInterval(moveTimer); }, 300);
+        var moveTries = 0, moveTimer = setInterval(function () { moveAfterInterface(); if (++moveTries >= 60) clearInterval(moveTimer); }, 200);
+        Lampa.Listener.follow('settings', function (e) { if (e.type === 'open') setTimeout(moveAfterInterface, 50); });
     }
 
     function setupCardListener() {
