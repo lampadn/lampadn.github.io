@@ -122,7 +122,7 @@
         }
     }
 
-    var hostkey = 'http://online' + dd + '3.skaz.tv'.replace('http://', '').replace('https://', '');
+    var hostkey = ('http://online' + dd + '3.skaz.tv').replace('http://', '').replace('https://', '');
 
     if (!window.rch_nws || !window.rch_nws[hostkey]) {
         if (!window.rch_nws) window.rch_nws = {};
@@ -147,7 +147,7 @@
             if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
             else {
                 var net = new Lampa.Reguest();
-                net.silent('http://online' + dd + '3.skaz.tv'.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
+                net.silent(('http://online' + dd + '3.skaz.tv').indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
                     check(true);
                 }, function() {
                     check(false);
@@ -872,7 +872,7 @@
             // Логика пробуждения для Skaz
             if (connection_source === 'skaz') {
                 var wake_title = object.movie.title;
-                var wake_url = 'http://online3.skaz.tv/lite/filmix?title=' + encodeURIComponent(wake_title);
+                var wake_url = 'http://online' + dd + '3.skaz.tv/lite/filmix?title=' + encodeURIComponent(wake_title);
                 // account(wake_url) добавит текущий uid/email из ротации
                 network.silent(account(wake_url), function() {
                     runRequest();
@@ -1426,10 +1426,13 @@
                 title: 'Сервер',
                 subtitle: current_sub,
                 items: [
-                    /* ПАТЧ: оставлены только cdn.okeantv.fun (по умолчанию) и Showy.
-                       index сохранён исходный, чтобы маппинг index->source ниже не ломался. */
+                    { title: 'AB2024', selected: connection_source === 'ab2024', index: 0 },
+                    { title: 'Showy', selected: connection_source === 'showy', index: 1 },
+                    { title: 'Skaz', selected: connection_source === 'skaz', index: 2 },
                     { title: 'cdn.okeantv.fun', selected: connection_source === 'okeantv', index: 3 },
-                    { title: 'Showy', selected: connection_source === 'showy', index: 1 }
+                    { title: 'HD Poisk', selected: connection_source === 'hdpoisk', index: 4 },
+                    { title: 'LampaUA', selected: connection_source === 'lampaua', index: 5 },
+                    { title: 'Beta L-Vid', selected: connection_source === 'beta', index: 6 }
                 ],
                 stype: 'connection'
             });
