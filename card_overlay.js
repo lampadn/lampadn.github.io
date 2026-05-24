@@ -2,7 +2,7 @@
     'use strict';
 
     var ANIMATED_REACTIONS_BASE_URL = 'https://amikdn.github.io/img';
-    var SVG_REACTIONS_BASE_URL = 'https://cubnotrip.top/img';
+    var SVG_REACTIONS_BASE_URL = 'https://cubnotrip.top/img/reactions';
     var KP_API_URL = 'https://kinopoiskapiunofficial.tech/';
     var QUALITY_CACHE_KEY = 'qualview_quality_cache';
     var QUALITY_API_DOMAIN = 'jr.maxvol.pro';
@@ -57,21 +57,23 @@
         return 'rgba(80,180,0,' + alpha + ')';
     }
     function getQualityBackground(quality) {
-        if (!isQualityColoredOn()) return 'rgba(0,0,0,' + getOverlayAlpha() + ')';
+        var alpha = getOverlayAlpha();
+        if (!isQualityColoredOn()) return 'rgba(0,0,0,' + alpha + ')';
         switch (quality) {
-            case '4K': return 'rgba(46,204,113,0.75)';
-            case 'FHD': return 'rgba(52,152,219,0.75)';
-            case 'HD': return 'rgba(243,156,18,0.75)';
-            case 'SD': return 'rgba(231,76,60,0.75)';
-            case 'TS': return 'rgba(180,0,0,0.75)';
-            default: return 'rgba(0,0,0,' + getOverlayAlpha() + ')';
+            case '4K': return 'rgba(46,204,113,' + alpha + ')';
+            case 'FHD': return 'rgba(52,152,219,' + alpha + ')';
+            case 'HD': return 'rgba(243,156,18,' + alpha + ')';
+            case 'SD': return 'rgba(231,76,60,' + alpha + ')';
+            case 'TS': return 'rgba(180,0,0,' + alpha + ')';
+            default: return 'rgba(0,0,0,' + alpha + ')';
         }
     }
     function getTypeLabelBackground(isTV) {
+        var alpha = getOverlayAlpha();
         if (isTypeLabelsColoredOn()) {
-            return isTV ? 'rgba(52,152,219,0.85)' : 'rgba(46,204,113,0.85)';
+            return isTV ? 'rgba(52,152,219,' + alpha + ')' : 'rgba(46,204,113,' + alpha + ')';
         }
-        return 'rgba(0,0,0,' + getOverlayAlpha() + ')';
+        return 'rgba(0,0,0,' + alpha + ')';
     }
     function formatRating(value) {
         var n = parseFloat(value);
@@ -825,7 +827,7 @@
             var existing = allCards[i].querySelectorAll('.card__quality');
             for (var j = 0; j < existing.length; j++) existing[j].remove();
         }
-        processQualityForCards(allCards);
+        if (isQualityShowOn()) processQualityForCards(allCards);
     }
 
     // ===== TYPE LABELS =====
@@ -1066,7 +1068,7 @@
                 list.append(row); return { row: row, updateVal: function (text) { valEl.text(text); } };
             }
 
-            list.append($('<div style="padding:0.3em 0.4em 0.1em;opacity:0.6;font-size:0.85em;text-align:center">— Рейтинги —</div>'));
+            list.append($('<div style="padding:0.3em 0.4em 0.2em;opacity:0.6;font-size:0.85em;text-align:center">— Рейтинги —</div>'));
             var rowSource = addCycleRow('Источник рейтинга', 'rating_source', SOURCE_LABELS, 'all');
             var rowDisplayMode = addCycleRow('Режим отображения', 'rating_display_mode', DISPLAY_MODE_LABELS, 'separate');
             var rowPosition = addCycleRow('Позиция на постере', 'rating_position', POSITION_LABELS, 'bottom');
@@ -1080,15 +1082,15 @@
             var rowOpacity = addNumberRowWithButtons('Прозрачность окон (0=нет, 100=макс)', 'rating_window_opacity', 40, 0, 100, 10, '%');
             var rowScale = addNumberRowWithButtons('Масштаб окон', 'rating_scale', 100, 60, 150, 5, '%');
 
-            list.append($('<div style="padding:0.5em 0.4em 0.1em;opacity:0.6;font-size:0.85em;text-align:center;border-top:1px solid rgba(255,255,255,0.1);margin-top:0.3em">— Качество —</div>'));
+            list.append($('<div style="padding:0.5em 0.4em 0.2em;opacity:0.6;font-size:0.85em;text-align:center;border-top:1px solid rgba(255,255,255,0.1);margin-top:0.3em">— Качество —</div>'));
             var rowQualityShow = addTriggerRow('Показывать качество', 'quality_show', true);
             var rowQualityColored = addTriggerRow('Цветные окна качества', 'quality_colored', false);
 
-            list.append($('<div style="padding:0.5em 0.4em 0.1em;opacity:0.6;font-size:0.85em;text-align:center;border-top:1px solid rgba(255,255,255,0.1);margin-top:0.3em">— Лейблы типа —</div>'));
+            list.append($('<div style="padding:0.5em 0.4em 0.2em;opacity:0.6;font-size:0.85em;text-align:center;border-top:1px solid rgba(255,255,255,0.1);margin-top:0.3em">— Лейблы типа —</div>'));
             var rowTypeLabelsShow = addTriggerRow('Показывать «Фильм»/«Сериал»', 'type_labels_show', true);
             var rowTypeLabelsColored = addTriggerRow('Цветные лейблы типа', 'type_labels_colored', false);
 
-            list.append($('<div style="padding:0.5em 0.4em 0.1em;opacity:0.6;font-size:0.85em;text-align:center;border-top:1px solid rgba(255,255,255,0.1);margin-top:0.3em">— API —</div>'));
+            list.append($('<div style="padding:0.5em 0.4em 0.2em;opacity:0.6;font-size:0.85em;text-align:center;border-top:1px solid rgba(255,255,255,0.1);margin-top:0.3em">— API —</div>'));
             function kpApiKeyRowText() { var k = String(Lampa.Storage.get('rating_kp_api_key', '') || Lampa.Storage.get('source_api_key', '') || '').trim(); if (!k) return 'не задан'; if (k.length <= 10) return 'указан: ' + k; return 'указан: ' + k.slice(0, 4) + '...' + k.slice(-4); }
             list.append($('<div class="rate-settings-note rate-settings-note-text"></div>').css({ display: 'block', width: '100%', padding: '0.45em 0.4em 0.1em', opacity: 0.92, lineHeight: 1.35, boxSizing: 'border-box', textAlign: 'center', whiteSpace: 'nowrap' }).text('API-ключ можно получить на сайте'));
             list.append($('<div class="rate-settings-note rate-settings-note-link"></div>').css({ display: 'block', width: '100%', padding: '0 0.4em 0.45em', marginBottom: '0.2em', opacity: 0.98, lineHeight: 1.35, boxSizing: 'border-box', textAlign: 'center' }).html('<a class="rate-settings-site" href="https://kinopoiskapiunofficial.tech/" target="_blank" rel="noopener noreferrer">kinopoiskapiunofficial.tech</a>'));
@@ -1357,7 +1359,11 @@
             muts.forEach(function (m) {
                 if (m.addedNodes) {
                     var cards = [];
-                    $(m.addedNodes).find('.card').each(function () { cards.push(this); addTypeLabel(this); });
+                    $(m.addedNodes).find('.card').each(function () {
+                        cards.push(this);
+                        addTypeLabel(this);
+                        if (!isQualityShowOn()) { $(this).find('.card__quality').remove(); this.removeAttribute('data-quality-added'); }
+                    });
                     if (isQualityShowOn() && cards.length) processQualityForCards(cards);
                 }
                 if (m.type === 'attributes' && ['class', 'data-card', 'data-type'].indexOf(m.attributeName) !== -1 && $(m.target).hasClass('card')) addTypeLabel(m.target);
@@ -1368,7 +1374,7 @@
     }
 
     Lampa.Manifest.plugins = {
-        name: 'Интерфейс',
+        name: 'Накладки на карточках',
         version: '1.0.0',
         description: 'Рейтинги, качество, лейблы типа на карточках + темы'
     };
