@@ -94,7 +94,7 @@
         if (connection_source === 'okeantv') return 'http://148.135.207.174:12359/';
         if (connection_source === 'hdpoisk') return 'https://hdpoisk.ru/';
         if (connection_source === 'lampaua') return 'https://apn2.akter-black.com/http://lampaua.mooo.com/';
-        if (connection_source === 'beta') return 'http://beta.l-vid.online:888/';
+        if (connection_source === 'beta') return 'http://beta.l-vid.online';
         return randomUrl; // Skaz
     }
 
