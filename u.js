@@ -716,7 +716,9 @@
             var _this4 = this;
 
             return new Promise(function(resolve, reject) {
-                var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
+                // life=true нужен только для Skaz, остальные серверы используют просто lite/events
+                var eventsUrl = connection_source === 'skaz' ? 'lite/events?life=true' : 'lite/events';
+                var url = _this4.requestParams(Defined.localhost + eventsUrl);
                 network.timeout(8000);
                 network.silent(account(url), function(json) {
                     console.log('Ultra: lite/events response', json);
@@ -1788,17 +1790,48 @@
             this.loading(false);
         };
         this.noConnectToServer = function(er) {
+            var _this = this;
             var html = Lampa.Template.get('lampac_does_not_answer', {});
             html.find('.online-empty__title').text(Lampa.Lang.translate('title_error'));
             var balanserName = (sources[balanser] && sources[balanser].name) || balanser || 'Сервер';
             html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', balanserName));
-            // Кнопка смены сервера при полном отсутствии соединения
+            // Кнопка "Назад"
             html.find('.cancel').on('hover:enter', function() {
                 Lampa.Activity.back();
             });
+            // Кнопка "Сменить сервер" — открываем Select с серверами
             html.find('.change').on('hover:enter', function() {
-                // Открываем фильтр для смены сервера
-                filter.render().find('.filter--filter').trigger('hover:enter');
+                var servers = [
+                    { title: 'AB2024', source: 'ab2024' },
+                    { title: 'Skaz', source: 'skaz' },
+                    { title: 'cdn.okeantv.fun', source: 'okeantv' }
+                ];
+                var items = servers.map(function(s) {
+                    return {
+                        title: s.title,
+                        selected: connection_source === s.source,
+                        source: s.source
+                    };
+                });
+                Lampa.Select.show({
+                    title: 'Выберите сервер',
+                    items: items,
+                    onSelect: function(a) {
+                        connection_source = a.source;
+                        Lampa.Storage.set('ultra_last_server', a.source);
+                        Defined.localhost = getHost();
+                        // Перезагружаем плагин с новым сервером
+                        _this.reset();
+                        _this.createSource().then(function(){
+                            _this.search();
+                        })["catch"](function(e) {
+                            _this.noConnectToServer(e);
+                        });
+                    },
+                    onBack: function() {
+                        Lampa.Controller.toggle('content');
+                    }
+                });
             });
             scroll.clear();
             scroll.append(html);
