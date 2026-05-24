@@ -461,7 +461,7 @@
         ratingElement.className = voteClass();
         var posCSS = getRatingPositionCSS(verticalOffsetEm);
         var bgAlpha = getRatingBackgroundAlpha();
-        ratingElement.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;align-items:center;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.15em 0.2em 0.55em;';
+        ratingElement.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;align-items:center;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.35em;';
         var parent = getRatingParent(card);
         parent.appendChild(ratingElement);
         return ratingElement;
@@ -471,7 +471,7 @@
         var el = document.createElement('div');
         el.className = voteClass();
         var bgAlpha = getRatingBackgroundAlpha();
-        el.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;display:flex;align-items:center;background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.15em 0.2em 0.55em;';
+        el.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;display:flex;align-items:center;background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.35em;';
         return el;
     }
 
@@ -480,7 +480,7 @@
         line.className = voteClass('card__vote-line');
         var posCSS = getRatingPositionCSS();
         var bgAlpha = getRatingBackgroundAlpha();
-        line.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.15em 0.2em 0.55em;';
+        line.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.35em;';
         line.innerHTML = '<div class="card__rate-item rate--tmdb" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--imdb" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--kp" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--lampa" style="display:none"><span class="rate-value">0.0</span><span class="source--name rate-icon-reaction"></span></div>';
         var parent = getRatingParent(card);
         parent.appendChild(line);
@@ -634,7 +634,7 @@
                     var color = getRatingColor(result.rating);
                     var html = '<span style="color:' + color + '">' + formatRating(result.rating) + '</span>';
                     if (result.medianReaction) {
-                        html += '<img style="max-height:14px;max-width:14px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
+                        html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
                     }
                     el.className = voteClass('rate--lampa card__vote--separate');
                     el.innerHTML = html;
@@ -695,7 +695,7 @@
             var color = getRatingColor(cachedLampa.rating);
             var html = '<span style="color:' + color + '">' + formatRating(cachedLampa.rating) + '</span>';
             if (cachedLampa.medianReaction) {
-                html += '<img style="max-height:14px;max-width:14px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
+                html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
             }
             ratingElement.className = voteClass('rate--lampa');
             ratingElement.innerHTML = html;
@@ -709,7 +709,7 @@
                 var color = getRatingColor(result.rating);
                 var html = '<span style="color:' + color + '">' + formatRating(result.rating) + '</span>';
                 if (result.medianReaction) {
-                    html += '<img style="max-height:14px;max-width:14px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
+                    html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
                 }
                 ratingElement.className = voteClass('rate--lampa');
                 ratingElement.innerHTML = html;
@@ -828,7 +828,7 @@
                 var html = '<span style="color:' + color + '">' + formatRating(cached.rating) + '</span>';
                 if (cached.medianReaction) {
                     var reactionSrc = getReactionImageSrc(cached.medianReaction);
-                    html += '<img style="max-height:14px;max-width:14px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + reactionSrc + '">';
+                    html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + reactionSrc + '">';
                 }
                 ratingElement.innerHTML = html;
                 var bg = getRatingBackgroundColor(cached.rating);
@@ -845,7 +845,7 @@
                             var html = '<span style="color:' + color + '">' + formatRating(result.rating) + '</span>';
                             if (result.medianReaction) {
                                 var reactionSrc = getReactionImageSrc(result.medianReaction);
-                                html += '<img style="max-height:14px;max-width:14px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + reactionSrc + '">';
+                                html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + reactionSrc + '">';
                             }
                             ratingElement.innerHTML = html;
                             var bg = getRatingBackgroundColor(result.rating);
@@ -928,7 +928,7 @@
                             var color = getRatingColor(cachedLampa.rating);
                             var html = '<span style="color:' + color + '">' + formatRating(cachedLampa.rating) + '</span>';
                             if (cachedLampa.medianReaction) {
-                html += '<img style="max-height:14px;max-width:14px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
+                html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
                             }
                             singleEl.innerHTML = html;
                         }
@@ -1419,12 +1419,12 @@
             '[data-name="rating_modal_open"] .settings-param__value,[data-name="rating_modal_open"] .settings-param__control,[data-name="rating_modal_open"] input[type="checkbox"]{display:none!important}' +
             '.card .card__view{position:relative!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap):not(.card__vote--separate){display:none!important}' +
-            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.15em 0.2em 0.55em!important;white-space:nowrap!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.1em 0.2em 0.35em!important;white-space:nowrap!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
             '.card__vote.card__vote--hidden,.card__vote-separate-wrap .card__vote.card__vote--hidden{display:none!important;height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;min-width:0!important;min-height:0!important;border:none!important;width:0!important;position:absolute!important;opacity:0!important;pointer-events:none!important}' +
-            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.15em 0.2em 0.55em!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.1em 0.2em 0.35em!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
             '.card__vote-separate-wrap{background:transparent!important;padding:0!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;overflow:visible!important;transform:scale(var(--rating-scale,1))!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0.15em!important;font-size:1.1em!important}' +
-            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:100%!important;min-width:3.5em!important;max-width:100%!important;padding:0.2em 0.15em 0.2em 0.55em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
-            '.card__vote > span:first-child,.card__vote-line .card__rate-item > div,.card__vote-line .card__rate-item > .rate-value{display:inline-block!important;min-width:3ch!important;text-align:right!important}' +
+            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:100%!important;min-width:3.5em!important;max-width:100%!important;padding:0.2em 0.1em 0.2em 0.35em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote > span:first-child,.card__vote-line .card__rate-item > div,.card__vote-line .card__rate-item > .rate-value{display:inline-block!important;min-width:3ch!important;text-align:left!important}' +
             '.card__vote--top,.card__vote-line.card__vote--top,.card__vote-separate-wrap.card__vote--top{transform-origin:top right!important;transform:scale(var(--rating-scale,1))!important}' +
             '.card__vote--bottom,.card__vote-line.card__vote--bottom,.card__vote-separate-wrap.card__vote--bottom{transform-origin:bottom right!important;transform:scale(var(--rating-scale,1))!important}' +
             '.card__vote--top{top:0!important;right:0!important;bottom:auto!important;border-radius:0 0.75em!important}' +
@@ -1435,7 +1435,7 @@
             '.card__vote-separate-wrap.card__vote--top .card__vote:first-child{border-radius:0 0.75em!important}' +
             '.card__vote-line .card__rate-item{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;white-space:nowrap}' +
             '.card__vote-line .card__rate-item:last-child{margin-bottom:0}' +
-            '.card__vote .source--name{font-size:0!important;display:block!important;color:transparent!important;width:14px!important;height:14px!important;overflow:hidden!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;margin-left:auto!important;padding:0!important;border:none!important;flex-shrink:0!important}' +
+            '.card__vote .source--name{font-size:0!important;display:block!important;color:transparent!important;width:12px!important;height:12px!important;overflow:hidden!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;margin-left:auto!important;padding:0!important;border:none!important;flex-shrink:0!important}' +
             '@media (min-width:481px){.card__vote .source--name{width:18px!important;height:18px!important}}' +
             '@media (min-width:481px){.card__vote,.card__vote-line,.card__vote-separate-wrap,.card__vote-separate-wrap .card__vote{font-size:1.1em!important}}' +
             '.rate--kp .source--name{background-image:url("data:image/svg+xml,%3Csvg width=\'300\' height=\'300\' viewBox=\'0 0 300 300\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cmask id=\'mask0_1_69\' style=\'mask-type:alpha\' maskUnits=\'userSpaceOnUse\' x=\'0\' y=\'0\' width=\'300\' height=\'300\'%3E%3Ccircle cx=\'150\' cy=\'150\' r=\'150\' fill=\'white\'/%3E%3C/mask%3E%3Cg mask=\'url(%23mask0_1_69)\'%3E%3Ccircle cx=\'150\' cy=\'150\' r=\'150\' fill=\'black\'/%3E%3Cpath d=\'M300 45L145.26 127.827L225.9 45H181.2L126.3 121.203V45H89.9999V255H126.3V178.92L181.2 255H225.9L147.354 174.777L300 255V216L160.776 160.146L300 169.5V130.5L161.658 139.494L300 84V45Z\' fill=\'url(%23paint0_radial_1_69)\'/%3E%3C/g%3E%3Cdefs%3E%3CradialGradient id=\'paint0_radial_1_69\' cx=\'0\' cy=\'0\' r=\'1\' gradientUnits=\'userSpaceOnUse\' gradientTransform=\'translate(89.9999 45) rotate(45) scale(296.985)\'%3E%3Cstop offset=\'0.5\' stop-color=\'%23FF5500\'/%3E%3Cstop offset=\'1\' stop-color=\'%23BBFF00\'/%3E%3C/radialGradient%3E%3C/defs%3E%3C/svg%3E")}' +
@@ -1444,9 +1444,9 @@
             '.rate-icon-reaction{background-repeat:no-repeat;background-position:center;background-size:contain}' +
             '.rate--lampa .rate-icon{font-size:0!important}' +
             '.card__vote img[src*=".gif"]{object-fit:contain!important}' +
-            '.card__vote.rate--lampa img{display:block!important;max-height:14px!important;max-width:14px!important;min-width:0!important;min-height:0!important;object-fit:contain!important;margin-left:auto!important;height:auto!important;width:auto!important;flex-shrink:0!important}' +
+            '.card__vote.rate--lampa img{display:block!important;max-height:12px!important;max-width:12px!important;min-width:0!important;min-height:0!important;object-fit:contain!important;margin-left:auto!important;height:auto!important;width:auto!important;flex-shrink:0!important}' +
             '@media (min-width:481px){.card__vote.rate--lampa img{max-height:18px!important;max-width:18px!important}}' +
-            '.rate--lampa.rate--lampa--animated .rate-icon img{max-height:14px;max-width:14px;object-fit:contain;display:block!important;margin-left:auto!important}' +
+            '.rate--lampa.rate--lampa--animated .rate-icon img{max-height:12px;max-width:12px;object-fit:contain;display:block!important;margin-left:auto!important}' +
             '.rate--imdb .source--name{background-image:url("data:image/svg+xml,%3Csvg fill=\'%23ffcc00\' viewBox=\'0 0 32 32\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg id=\'SVGRepo_bgCarrier\' stroke-width=\'0\'%3E%3C/g%3E%3Cg id=\'SVGRepo_tracerCarrier\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3C/g%3E%3Cg id=\'SVGRepo_iconCarrier\'%3E%3Cpath d=\'M 0 7 L 0 25 L 32 25 L 32 7 Z M 2 9 L 30 9 L 30 23 L 2 23 Z M 5 11.6875 L 5 20.3125 L 7 20.3125 L 7 11.6875 Z M 8.09375 11.6875 L 8.09375 20.3125 L 10 20.3125 L 10 15.5 L 10.90625 20.3125 L 12.1875 20.3125 L 13 15.5 L 13 20.3125 L 14.8125 20.3125 L 14.8125 11.6875 L 12 11.6875 L 11.5 15.8125 L 10.8125 11.6875 Z M 15.90625 11.6875 L 15.90625 20.1875 L 18.3125 20.1875 C 19.613281 20.1875 20.101563 19.988281 20.5 19.6875 C 20.898438 19.488281 21.09375 19 21.09375 18.5 L 21.09375 13.3125 C 21.09375 12.710938 20.898438 12.199219 20.5 12 C 20 11.800781 19.8125 11.6875 18.3125 11.6875 Z M 22.09375 11.8125 L 22.09375 20.3125 L 23.90625 20.3125 C 23.90625 20.3125 23.992188 19.710938 24.09375 19.8125 C 24.292969 19.8125 25.101563 20.1875 25.5 20.1875 C 26 20.1875 26.199219 20.195313 26.5 20.09375 C 26.898438 19.894531 27 19.613281 27 19.3125 L 27 14.3125 C 27 13.613281 26.289063 13.09375 25.6875 13.09375 C 25.085938 13.09375 24.511719 13.488281 24.3125 13.6875 L 24.3125 11.8125 Z M 18 13 C 18.398438 13 18.8125 13.007813 18.8125 13.40625 L 18.8125 18.40625 C 18.8125 18.804688 18.300781 18.8125 18 18.8125 Z M 24.59375 14 C 24.695313 14 24.8125 14.105469 24.8125 14.40625 L 24.8125 18.6875 C 24.8125 18.886719 24.792969 19.09375 24.59375 19.09375 C 24.492188 19.09375 24.40625 18.988281 24.40625 18.6875 L 24.40625 14.40625 C 24.40625 14.207031 24.394531 14 24.59375 14 Z\'/%3E%3C/g%3E%3C/svg%3E")}' +
             '@media (max-width:480px) and (orientation:portrait){.full-start-new__rate.rate--lampa,.full-start__rate.rate--lampa{min-width:80px}}'
         );
