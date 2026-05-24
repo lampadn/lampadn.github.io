@@ -303,7 +303,7 @@
     /*** 3) ТИП КОНТЕНТА ***/
     function changeMovieTypeLabels() {
         var style = $(`<style id="movie_type_styles">
-            .content-label { position: absolute!important; top: 1.4em!important; left: -0.8em!important; color: white!important; padding: 0.4em 0.4em!important; border-radius: 0.3em!important; font-size: 0.8em!important; z-index: 10!important; }
+            .content-label { position: absolute!important; left: 0!important; top: 0!important; color: white!important; padding: 0.2em 0.45em!important; border-radius: 0.75em 0!important; font-size: 1.3em!important; z-index: 10!important; line-height: 1!important; display: flex!important; align-items: center!important; justify-content: center!important; }
             .serial-label { background-color: #3498db!important; }
             .movie-label  { background-color: #2ecc71!important; }
             body[data-movie-labels="on"] .card--tv .card__type { display: none!important; }
@@ -384,9 +384,9 @@
                     poster.find('.content-label').remove();
                     
                     var lbl = $('<div class="content-label"></div>').css({
-                        position: 'absolute', top: '1.4em', left: '-0.8em',
-                        color: 'white', padding: '0.4em', borderRadius: '0.3em',
-                        fontSize: '0.8em', zIndex: 10
+                        position: 'absolute', left: '0', top: '0',
+                        color: 'white', padding: '0.2em 0.45em', borderRadius: '0.75em 0',
+                        fontSize: '1.3em', zIndex: 10
                     });
                     if (isTV) {
                         lbl.addClass('serial-label').text('Сериал').css('backgroundColor', '#3498db');
