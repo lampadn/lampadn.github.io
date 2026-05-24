@@ -477,8 +477,11 @@
                     // --- ОБРАБОТКА ВЫБОРА СЕРВЕРА ---
                     if (a.stype == 'connection') {
                         connection_source = b.source || 'skaz';
+                        balanser = '';
+                        source = '';
+                        sources = {};
+                        filter_sources = [];
                         
-                        // Сброс и перезагрузка
                         Defined.localhost = getHost();
                         _this.createSource().then(function(){
                              _this.search();
