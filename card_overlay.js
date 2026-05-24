@@ -1384,9 +1384,12 @@
             '.card__vote--bottom{top:auto!important;right:0!important;bottom:0!important;border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote--last-visible{border-radius:0.75em 0!important}' +
+            '.card__vote-separate-wrap.card__vote--bottom .card__vote--first-visible{border-radius:0 0.75em!important}' +
+            '.card__vote-separate-wrap.card__vote--bottom .card__vote--only-visible{border-radius:0.75em 0 0 0!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote--first-visible{border-radius:0 0.75em!important}' +
-            '.card__vote-separate-wrap .card__vote--only-visible{border-radius:0.75em!important}' +
+            '.card__vote-separate-wrap.card__vote--top .card__vote--last-visible{border-radius:0.75em 0 0 0!important}' +
+            '.card__vote-separate-wrap.card__vote--top .card__vote--only-visible{border-radius:0 0.75em 0.75em 0!important}' +
             '.card__vote-line .card__rate-item{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;white-space:nowrap}' +
             '.card__vote-line .card__rate-item:last-child{margin-bottom:0}' +
             '.card__vote .source--name{font-size:0!important;display:block!important;color:transparent!important;width:12px!important;height:12px!important;overflow:hidden!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;margin-left:auto!important;padding:0!important;border:none!important;flex-shrink:0!important}' +
