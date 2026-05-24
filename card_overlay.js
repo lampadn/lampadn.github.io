@@ -6,6 +6,10 @@
     var KP_API_URL = 'https://kinopoiskapiunofficial.tech/';
     var QUALITY_CACHE_KEY = 'qualview_quality_cache';
     var QUALITY_API_DOMAIN = 'jr.maxvol.pro';
+    var ALLOHA_API_SERVERS = [
+        { url: 'https://api.apbugall.org', token: '8da1c9beda9545174264dc9f63a77d' },
+        { url: 'https://upn.stull.xyz', token: 'd317441359e505c343c2063edc97e7' }
+    ];
     var CACHE_TTL = 24 * 60 * 60 * 1000;
 
     function isTriggerOn(key, def) {
@@ -715,6 +719,33 @@
     function detectLowQuality(title) { if (!title) return false; var l = title.toLowerCase(); return forbiddenPatterns.some(function (p) { return p.test(l); }); }
     function determineType(item) { var ct = item.media_type || item.type; if (ct === 'movie' || ct === 'tv') return ct; return item.name || item.original_name ? 'tv' : 'movie'; }
 
+    function fetchAllohaQuality(normalizedItem, onComplete) {
+        var server = ALLOHA_API_SERVERS[Math.floor(Math.random() * ALLOHA_API_SERVERS.length)];
+        var url = server.url + '?token=' + server.token;
+        if (normalizedItem.kinopoisk_id) {
+            url += '&kp=' + encodeURIComponent(normalizedItem.kinopoisk_id);
+        } else if (normalizedItem.imdb_id) {
+            url += '&imdb=' + encodeURIComponent(normalizedItem.imdb_id);
+        } else if (normalizedItem.id) {
+            url += '&tmdb=' + encodeURIComponent(normalizedItem.id);
+        } else {
+            onComplete(null);
+            return;
+        }
+        new Lampa.Reguest().silent(url, function (responseData) {
+            if (!responseData) { onComplete(null); return; }
+            try {
+                var parsedData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
+                if (parsedData.status !== 'success' || !parsedData.data) { onComplete(null); return; }
+                var data = parsedData.data;
+                if (data.uhd) { onComplete({ quality: '4K' }); return; }
+                if (data.quality && /(^|,\s*)ts(\s*,|$)/i.test(data.quality)) { onComplete({ quality: 'TS' }); return; }
+                if (data.quality) { onComplete({ quality: 'HD' }); return; }
+                onComplete(null);
+            } catch (e) { onComplete(null); }
+        }, function () { onComplete(null); });
+    }
+
     function fetchOptimalRelease(normalizedItem, itemId, onComplete) {
         var HIGHEST_RES = 2160, detectedForbidden = false;
         function containsText(input) { return /[a-zа-яё]/i.test(input || ''); }
@@ -730,12 +761,12 @@
         if (normalizedItem.original_title && (containsText(normalizedItem.original_title) || isNumericOnly(normalizedItem.original_title))) { requestUrl += '&title_original=' + encodeURIComponent(normalizedItem.original_title.trim()); titlePresent = true; }
         if (!titlePresent) { onComplete(null); return; }
         new Lampa.Reguest().silent(requestUrl, function (responseData) {
-            if (!responseData) { onComplete(null); return; }
+            if (!responseData) { fetchAllohaQuality(normalizedItem, onComplete); return; }
             try {
                 var parsedData = typeof responseData === 'string' ? JSON.parse(responseData) : responseData;
                 var releases = parsedData.Results || [];
                 if (!Array.isArray(releases)) releases = [];
-                if (!releases.length) { onComplete(null); return; }
+                if (!releases.length) { fetchAllohaQuality(normalizedItem, onComplete); return; }
                 var optimalRes = -1, optimalRelease = null;
                 var targetYear = parseInt(releaseYear, 10), priorYear = targetYear - 1;
                 for (var index = 0; index < releases.length; index++) {
@@ -753,9 +784,9 @@
                 }
                 if (optimalRelease) onComplete({ quality: convertQuality(optimalRelease.quality), title: optimalRelease.title });
                 else if (detectedForbidden) onComplete({ quality: convertQuality('TS'), title: "NOT SAVED" });
-                else onComplete(null);
-            } catch (error) { onComplete(null); }
-        });
+                else fetchAllohaQuality(normalizedItem, onComplete);
+            } catch (error) { fetchAllohaQuality(normalizedItem, onComplete); }
+        }, function () { fetchAllohaQuality(normalizedItem, onComplete); });
     }
     function retrieveQualityCache(entryKey) {
         var storedCache = Lampa.Storage.get(QUALITY_CACHE_KEY) || {};
@@ -1166,9 +1197,9 @@
         var css = '';
         if (isGlassThemeOn()) {
             css +=
-                '.card__vote{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.card__vote-separate-wrap .card__vote{border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
-                '.card__vote-separate-wrap .card__vote:not(.card__vote--hidden){background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important}' +
+                '.card__vote:not(.card__vote-separate-wrap){background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.card__vote-separate-wrap{background:none!important;border:none!important;box-shadow:none!important}' +
+                '.card__vote-separate-wrap .card__vote{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
                 '.card__quality{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
                 '.content-label{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
                 '.content-label.serial-label{background:linear-gradient(to top,rgba(52,152,219,0.35),rgba(30,80,140,0.25))!important}' +
