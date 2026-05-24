@@ -597,7 +597,7 @@
             if (rating !== '0.0') {
                 var color = getRatingColor(rating);
                 el.className = voteClass('rate--tmdb card__vote--separate');
-                el.innerHTML = '<span style="color:' + color + '">' + formatRating(rating) + '</span> <span class="source--name"></span>';
+                el.innerHTML = '<span style="color:' + color + '">' + formatRating(rating) + '</span><span class="source--name"></span>';
                 el.style.display = '';
                 el.classList.remove('card__vote--hidden');
                 var bg = getRatingBackgroundColor(rating);
@@ -615,7 +615,7 @@
                     var text = formatRating(val);
                     var color = getRatingColor(val);
                     el.className = voteClass('rate--' + rateSource + ' card__vote--separate');
-                    el.innerHTML = '<span style="color:' + color + '">' + text + '</span> <span class="source--name"></span>';
+                    el.innerHTML = '<span style="color:' + color + '">' + text + '</span><span class="source--name"></span>';
                     el.style.display = '';
                 el.classList.remove('card__vote--hidden');
                     var bg = getRatingBackgroundColor(val);
@@ -684,7 +684,7 @@
         if (tmdb !== '0.0') {
             var color = getRatingColor(tmdb);
             ratingElement.className = voteClass('rate--tmdb');
-            ratingElement.innerHTML = '<span style="color:' + color + '">' + formatRating(tmdb) + '</span> <span class="source--name"></span>';
+            ratingElement.innerHTML = '<span style="color:' + color + '">' + formatRating(tmdb) + '</span><span class="source--name"></span>';
             var bg = getRatingBackgroundColor(tmdb);
             ratingElement.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
             return;
@@ -805,7 +805,7 @@
             if (tmdb !== '0.0') {
                 var color = getRatingColor(tmdb);
                 el.className = voteClass('rate--tmdb');
-                el.innerHTML = '<span style="color:' + color + '">' + formatRating(tmdb) + '</span> <span class="source--name"></span>';
+                el.innerHTML = '<span style="color:' + color + '">' + formatRating(tmdb) + '</span><span class="source--name"></span>';
                 var bg = getRatingBackgroundColor(tmdb);
                 el.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
                 return true;
@@ -828,7 +828,7 @@
                 var html = '<span style="color:' + color + '">' + formatRating(cached.rating) + '</span>';
                 if (cached.medianReaction) {
                     var reactionSrc = getReactionImageSrc(cached.medianReaction);
-                    html += ' <img style="width:16px;height:16px;margin-left:4px;object-fit:contain;vertical-align:middle;flex-shrink:0;" src="' + reactionSrc + '">';
+                    html += '<img style="max-height:18px;max-width:18px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + reactionSrc + '">';
                 }
                 ratingElement.innerHTML = html;
                 var bg = getRatingBackgroundColor(cached.rating);
@@ -845,7 +845,7 @@
                             var html = '<span style="color:' + color + '">' + formatRating(result.rating) + '</span>';
                             if (result.medianReaction) {
                                 var reactionSrc = getReactionImageSrc(result.medianReaction);
-                                html += ' <img style="width:16px;height:16px;margin-left:4px;object-fit:contain;vertical-align:middle;flex-shrink:0;" src="' + reactionSrc + '">';
+                                html += '<img style="max-height:18px;max-width:18px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + reactionSrc + '">';
                             }
                             ratingElement.innerHTML = html;
                             var bg = getRatingBackgroundColor(result.rating);
@@ -863,7 +863,7 @@
                         ratingElement.className = voteClass('rate--' + source);
                         var text = formatRating(val);
                         var color = getRatingColor(val);
-                        ratingElement.innerHTML = '<span style="color:' + color + '">' + text + '</span> <span class="source--name"></span>';
+                        ratingElement.innerHTML = '<span style="color:' + color + '">' + text + '</span><span class="source--name"></span>';
                         var bg = getRatingBackgroundColor(val);
                         ratingElement.style.background = bg || ('rgba(0,0,0,' + getRatingBackgroundAlpha() + ')');
                     }
@@ -937,13 +937,13 @@
                         if (cachedTmdb && cachedTmdb.vote_average > 0) {
                             var text = formatRating(cachedTmdb.vote_average);
                             var tmdbColor = getRatingColor(cachedTmdb.vote_average);
-                            singleEl.innerHTML = '<span style="color:' + tmdbColor + '">' + text + '</span> <span class="source--name"></span>';
+                            singleEl.innerHTML = '<span style="color:' + tmdbColor + '">' + text + '</span><span class="source--name"></span>';
                         }
                     } else if (source === 'kp' || source === 'imdb') {
                         var cachedKp = ratingCache.get('kp_rating', data.id);
                         if (cachedKp && (cachedKp.kp > 0 || cachedKp.imdb > 0)) {
                             var rating = source === 'kp' ? cachedKp.kp : cachedKp.imdb;
-                            singleEl.innerHTML = '<span style="color:' + getRatingColor(rating) + '">' + formatRating(rating) + '</span> <span class="source--name"></span>';
+                            singleEl.innerHTML = '<span style="color:' + getRatingColor(rating) + '">' + formatRating(rating) + '</span><span class="source--name"></span>';
                         }
                     }
                 }
@@ -1419,11 +1419,11 @@
             '[data-name="rating_modal_open"] .settings-param__value,[data-name="rating_modal_open"] .settings-param__control,[data-name="rating_modal_open"] input[type="checkbox"]{display:none!important}' +
             '.card .card__view{position:relative!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap):not(.card__vote--separate){display:none!important}' +
-            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.2em 0.2em 0.5em!important;white-space:nowrap!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
-            '.card__vote.card__vote--hidden{display:none!important;height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;min-width:0!important;min-height:0!important;border:none!important;width:0!important}' +
-            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.2em 0.2em 0.5em!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
-            '.card__vote-separate-wrap{background:transparent!important;padding:0!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;overflow:visible!important;transform:scale(var(--rating-scale,1))!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0.15em!important;font-size:1.1em!important}' +
-            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:100%!important;min-width:2.8em!important;max-width:100%!important;padding:0.2em 0.2em 0.2em 0.5em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.2em 0.2em 0.5em!important;white-space:nowrap!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote.card__vote--hidden,.card__vote-separate-wrap .card__vote.card__vote--hidden{display:none!important;height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;min-width:0!important;min-height:0!important;border:none!important;width:0!important;position:absolute!important;opacity:0!important;pointer-events:none!important}' +
+            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.2em 0.2em 0.5em!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote-separate-wrap{background:transparent!important;padding:0!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;overflow:visible!important;transform:scale(var(--rating-scale,1))!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0.15em!important;font-size:1.1em!important}' +
+            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:100%!important;min-width:3.5em!important;max-width:100%!important;padding:0.2em 0.2em 0.2em 0.5em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;height:auto!important;border:none!important;margin:0!important}' +
             '.card__vote > span:first-child,.card__vote-line .card__rate-item > div,.card__vote-line .card__rate-item > .rate-value{display:inline-block!important;min-width:3ch!important;text-align:right!important}' +
             '.card__vote--top,.card__vote-line.card__vote--top,.card__vote-separate-wrap.card__vote--top{transform-origin:top right!important;transform:scale(var(--rating-scale,1))!important}' +
             '.card__vote--bottom,.card__vote-line.card__vote--bottom,.card__vote-separate-wrap.card__vote--bottom{transform-origin:bottom right!important;transform:scale(var(--rating-scale,1))!important}' +
