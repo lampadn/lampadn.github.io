@@ -643,14 +643,16 @@
                         life_wait_times++;
                         filter_sources = [];
                         sources = {};
-                        json.online.forEach(function(j) {
-                            var name = balanserName(j);
-                            sources[name] = {
-                                url: j.url,
-                                name: j.name,
-                                show: typeof j.show == 'undefined' ? true : j.show
-                            };
-                        });
+                        if (json.online && Array.isArray(json.online)) {
+                            json.online.forEach(function(j) {
+                                var name = balanserName(j);
+                                sources[name] = {
+                                    url: j.url,
+                                    name: j.name,
+                                    show: typeof j.show == 'undefined' ? true : j.show
+                                };
+                            });
+                        }
                         filter_sources = Lampa.Arrays.getKeys(sources);
                         filter.set('sort', filter_sources.map(function(e) {
                             return {
@@ -663,21 +665,28 @@
                         filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
                         gou(json);
                         var lastb = _this3.getLastChoiceBalanser();
-                        if (life_wait_times > 15 || json.ready) {
+                        if (life_wait_times > 5 || json.ready) {
                             filter.render().find('.lampac-balanser-loader').remove();
                             gou(json, true);
                         } else if (!red && sources[lastb] && sources[lastb].show) {
                             gou(json, true);
-                            life_wait_timer = setTimeout(fin, 1000);
+                            life_wait_timer = setTimeout(fin, 500);
                         } else {
-                            life_wait_timer = setTimeout(fin, 1000);
+                            life_wait_timer = setTimeout(fin, 500);
                         }
                     }, function() {
                         life_wait_times++;
-                        if (life_wait_times > 15) {
+                        if (life_wait_times > 5) {
                             reject();
                         } else {
-                            life_wait_timer = setTimeout(fin, 1000);
+                            life_wait_timer = setTimeout(fin, 500);
+                        }
+                    }, function() {
+                        life_wait_times++;
+                        if (life_wait_times > 5) {
+                            reject();
+                        } else {
+                            life_wait_timer = setTimeout(fin, 500);
                         }
                     }, false, {
                         headers: {
@@ -694,7 +703,7 @@
 
             return new Promise(function(resolve, reject) {
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
-                network.timeout(15000);
+                network.timeout(8000);
                 network.silent(account(url), function(json) {
                     if (json.accsdb) return reject(json);
                     if (json.life) {
@@ -704,11 +713,33 @@
                             if (object.movie.title) object.movie.title = json.title;
                         }
                         filter.render().find('.filter--sort').append('<span class="lampac-balanser-loader" style="width: 1.2em; height: 1.2em; margin-top: 0; background: url(./img/loader.svg) no-repeat 50% 50%; background-size: contain; margin-left: 0.5em"></span>');
-                        _this4.lifeSource().then(_this4.startSource).then(resolve)["catch"](reject);
+                        _this4.lifeSource().then(_this4.startSource).then(resolve)["catch"](function(e){
+                            // Fallback на OkeanTV если lifeSource не ответил
+                            if (connection_source === 'skaz') {
+                                Lampa.Noty.show('Skaz не отвечает. Переключаюсь на OkeanTV...');
+                                connection_source = 'okeantv';
+                                Lampa.Storage.set('ultra_last_server', 'okeantv');
+                                Defined.localhost = getHost();
+                                _this4.createSource().then(resolve)["catch"](reject);
+                            } else {
+                                reject(e);
+                            }
+                        });
                     } else {
                         _this4.startSource(json).then(resolve)["catch"](reject);
                     }
-                }, reject, false, {
+                }, function(e) {
+                    // Fallback на OkeanTV если lite/events упал
+                    if (connection_source === 'skaz') {
+                        Lampa.Noty.show('Skaz недоступен. Переключаюсь на OkeanTV...');
+                        connection_source = 'okeantv';
+                        Lampa.Storage.set('ultra_last_server', 'okeantv');
+                        Defined.localhost = getHost();
+                        _this4.createSource().then(resolve)["catch"](reject);
+                    } else {
+                        reject(e);
+                    }
+                }, false, {
                     headers: {
                         'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                     }
@@ -738,7 +769,7 @@
 
             function runRequest() {
                 number_of_requests++;
-                if (number_of_requests < 10) {
+                if (number_of_requests < 25) {
                     var headers = {
                         'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                     };
@@ -779,6 +810,7 @@
                 var wake_title = object.movie.title;
                 var wake_url = 'http://online' + dd + '3.skaz.tv/lite/filmix?title=' + encodeURIComponent(wake_title);
                 // account(wake_url) добавит текущий uid/email из ротации
+                network.timeout(5000);
                 network.silent(account(wake_url), function() {
                     runRequest();
                 }, function() {
