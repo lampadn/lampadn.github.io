@@ -1074,7 +1074,8 @@
             var rowPosition = addCycleRow('Позиция на постере', 'rating_position', POSITION_LABELS, 'bottom');
             var rowColored = addTriggerRow('Цветные цифры рейтингов', 'colored_ratings_poster', false);
             var rowColoredWin = addTriggerRow('Цветные окна (цифры белые)', 'rating_colored_windows', false);
-            var rowAnimated = addTriggerRow('Анимированные реакции', 'animated_reactions', false);
+            var rowAnimated = addTriggerRow('Анимированные реакции (на постерах)', 'animated_reactions', false);
+            var rowAnimatedPlayer = addTriggerRow('Анимированные реакции на странице фильма', 'animated_reactions_in_player', true);
             var rowShowTmdb = addTriggerRow('Показывать TMDB', 'rating_show_tmdb', true);
             var rowShowImdb = addTriggerRow('Показывать IMDB', 'rating_show_imdb', true);
             var rowShowKp = addTriggerRow('Показывать КиноПоиск', 'rating_show_kp', true);
@@ -1096,14 +1097,17 @@
             list.append($('<div class="rate-settings-note rate-settings-note-link"></div>').css({ display: 'block', width: '100%', padding: '0 0.4em 0.45em', marginBottom: '0.2em', opacity: 0.98, lineHeight: 1.35, boxSizing: 'border-box', textAlign: 'center' }).html('<a class="rate-settings-site" href="https://kinopoiskapiunofficial.tech/" target="_blank" rel="noopener noreferrer">kinopoiskapiunofficial.tech</a>'));
             var rowKpKey = makeRow('API-ключ КиноПоиск', kpApiKeyRowText(), function (rowEl, valEl) {
                 if (typeof Lampa.Input !== 'undefined' && typeof Lampa.Input.edit === 'function') {
-                    Lampa.Input.edit({ free: true, title: 'API-ключ kinopoiskapiunofficial.tech', nosave: true, value: String(Lampa.Storage.get('rating_kp_api_key', '') || ''), nomic: true }, function (raw) { Lampa.Storage.set('rating_kp_api_key', (raw || '').trim()); valEl.text(kpApiKeyRowText()); applyRatingSettingsRefresh(); });
+                    closeModalSafe();
+                    setTimeout(function () {
+                        Lampa.Input.edit({ free: true, title: 'API-ключ kinopoiskapiunofficial.tech', nosave: true, value: String(Lampa.Storage.get('rating_kp_api_key', '') || ''), nomic: true }, function (raw) { Lampa.Storage.set('rating_kp_api_key', (raw || '').trim()); valEl.text(kpApiKeyRowText()); applyRatingSettingsRefresh(); setTimeout(function () { openRatingSettingsModal(); }, 300); });
+                    }, 300);
                 }
             });
             rowKpKey.updateVal(kpApiKeyRowText());
             list.append(rowKpKey.row);
 
             function resetAllToDefault() {
-                Lampa.Storage.set('rating_source', 'all'); Lampa.Storage.set('animated_reactions', 'false'); setColoredRatingsPoster(false);
+                Lampa.Storage.set('rating_source', 'all'); Lampa.Storage.set('animated_reactions', 'false'); Lampa.Storage.set('animated_reactions_in_player', 'true'); setColoredRatingsPoster(false);
                 Lampa.Storage.set('rating_colored_windows', 'false'); Lampa.Storage.set('rating_position', 'bottom');
                 Lampa.Storage.set('rating_show_tmdb', 'true'); Lampa.Storage.set('rating_show_imdb', 'true');
                 Lampa.Storage.set('rating_show_kp', 'true'); Lampa.Storage.set('rating_show_lampa', 'true');
@@ -1113,7 +1117,7 @@
                 Lampa.Storage.set('type_labels_show', 'true'); Lampa.Storage.set('type_labels_colored', 'false');
                 rowSource.updateVal(SOURCE_LABELS.all); rowDisplayMode.updateVal(DISPLAY_MODE_LABELS.separate);
                 rowPosition.updateVal(POSITION_LABELS.bottom); rowColored.updateVal('Выкл'); rowColoredWin.updateVal('Выкл');
-                rowAnimated.updateVal('Выкл'); rowShowTmdb.updateVal('Вкл'); rowShowImdb.updateVal('Вкл');
+                rowAnimated.updateVal('Выкл'); rowAnimatedPlayer.updateVal('Вкл'); rowShowTmdb.updateVal('Вкл'); rowShowImdb.updateVal('Вкл');
                 rowShowKp.updateVal('Вкл'); rowShowLampa.updateVal('Вкл');
                 rowOpacity.updateVal('40%'); rowScale.updateVal('100%'); rowKpKey.updateVal(kpApiKeyRowText());
                 rowQualityShow.updateVal('Вкл'); rowQualityColored.updateVal('Выкл');
@@ -1145,13 +1149,16 @@
         var keys = ['animated_reactions', 'colored_ratings_poster', 'rating_colored_windows', 'rating_show_tmdb', 'rating_show_imdb', 'rating_show_kp', 'rating_show_lampa', 'quality_show', 'quality_colored', 'type_labels_show', 'type_labels_colored'];
         for (var i = 0; i < keys.length; i++) { var v = Lampa.Storage.get(keys[i], undefined); if (v === '1' || v === 1) Lampa.Storage.set(keys[i], 'true'); else if (v === '0' || v === 0) Lampa.Storage.set(keys[i], 'false'); }
     }
+    function closeModalSafe() {
+        try { if (typeof Lampa.Modal !== 'undefined' && Lampa.Modal.close) Lampa.Modal.close(); } catch (e) {}
+    }
 
     function addSettings() {
         if (!Lampa.SettingsApi) return;
         migrateStorageFormat();
         Lampa.SettingsApi.addComponent({
             component: 'card_overlay',
-            name: 'Накладки на карточках',
+            name: 'Интерфейс Мод',
             icon: '<svg viewBox="1 1 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="2"/><path d="M12 15V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16 15V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 15V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'
         });
         Lampa.SettingsApi.addParam({
@@ -1171,6 +1178,15 @@
             param: { name: 'label_position', type: 'select', values: { 'top-right': 'Верхний правый', 'top-left': 'Верхний левый', 'bottom-right': 'Нижний правый', 'bottom-left': 'Нижний левый' }, default: 'top-right' },
             field: { name: 'Позиция лейбла о сериях', description: 'Позиция лейбла на постере детальной страницы' },
             onChange: function (v) { seasonInfoSettings.label_position = v; Lampa.Settings.update(); Lampa.Noty.show('Откройте карточку заново'); }
+        });
+        Lampa.SettingsApi.addParam({
+            component: 'card_overlay',
+            param: { name: 'animated_reactions_in_player', type: 'trigger', default: true },
+            field: { name: 'Анимированные реакции на странице фильма', description: 'Заменять иконки реакций на анимированные GIF в карточке фильма' },
+            onChange: function () {
+                if (!isAnimatedReactionsInPlayerEnabled()) { restoreOriginalReactions(); applyReactionsToSelectbox(); setTimeout(restoreOriginalReactions, 150); setTimeout(applyReactionsToSelectbox, 150); setTimeout(restoreOriginalReactions, 400); setTimeout(applyReactionsToSelectbox, 400); }
+                setTimeout(applyPlayerReactions, 100);
+            }
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
@@ -1209,6 +1225,84 @@
                 this._build = function () { func.apply(self); Lampa.Listener.send('card', { type: 'build', object: self }); };
             }
         });
+    }
+
+    // ===== ANIMATED REACTIONS IN PLAYER =====
+    var PLAYER_REACTIONS_BASE_URL = 'https://amikdn.github.io/img';
+    var PLAYER_REACTION_IMAGE_PATHS = {
+        shit: PLAYER_REACTIONS_BASE_URL + '/reaction-shit.gif',
+        think: PLAYER_REACTIONS_BASE_URL + '/reaction-think.gif',
+        bore: PLAYER_REACTIONS_BASE_URL + '/reaction-bore.gif',
+        fire: PLAYER_REACTIONS_BASE_URL + '/reaction-fire.gif',
+        nice: PLAYER_REACTIONS_BASE_URL + '/reaction-nice.gif'
+    };
+    var PLAYER_REACTION_CONFIGS = [
+        { selector: '.reaction--shit', url: PLAYER_REACTION_IMAGE_PATHS.shit, type: 'shit' },
+        { selector: '.reaction--think', url: PLAYER_REACTION_IMAGE_PATHS.think, type: 'think' },
+        { selector: '.reaction--bore', url: PLAYER_REACTION_IMAGE_PATHS.bore, type: 'bore' },
+        { selector: '.reaction--fire', url: PLAYER_REACTION_IMAGE_PATHS.fire, type: 'fire' },
+        { selector: '.reaction--nice', url: PLAYER_REACTION_IMAGE_PATHS.nice, type: 'nice' }
+    ];
+    var PLAYER_REACTION_TYPES = ['fire', 'nice', 'think', 'bore', 'shit'];
+
+    function isAnimatedReactionsInPlayerEnabled() {
+        return isTriggerOn('animated_reactions_in_player', true);
+    }
+    function getReactionTypeFromSrc(src) {
+        if (!src) return null;
+        for (var i = 0; i < PLAYER_REACTION_TYPES.length; i++) { if (src.indexOf(PLAYER_REACTION_TYPES[i]) !== -1) return PLAYER_REACTION_TYPES[i]; }
+        return null;
+    }
+    function resetReactionStylesToDefault() {
+        try { $('.reaction__icon').css({ width: '', height: '' }); $('.full-start-new__reactions > div').css('padding', ''); } catch (err) {}
+    }
+    function restoreOriginalReactions() {
+        try {
+            PLAYER_REACTION_CONFIGS.forEach(function (config) {
+                document.querySelectorAll(config.selector + ' img').forEach(function (el) { if (el.dataset.originalSrc) { el.src = el.dataset.originalSrc; delete el.dataset.originalSrc; } });
+            });
+            document.querySelectorAll('.selectbox-item__icon img[data-original-src]').forEach(function (el) { el.src = el.dataset.originalSrc; delete el.dataset.originalSrc; });
+            resetReactionStylesToDefault();
+        } catch (err) {}
+    }
+    function applyReactionsToSelectbox() {
+        try {
+            var useAnimated = isAnimatedReactionsInPlayerEnabled();
+            document.querySelectorAll('.selectbox-item__icon img').forEach(function (img) {
+                var type = getReactionTypeFromSrc(img.src);
+                if (!type || !PLAYER_REACTION_IMAGE_PATHS[type]) return;
+                if (useAnimated) {
+                    if (!img.dataset.originalSrc && img.src.indexOf(PLAYER_REACTIONS_BASE_URL) === -1) img.dataset.originalSrc = img.src;
+                    img.src = PLAYER_REACTION_IMAGE_PATHS[type];
+                } else if (img.dataset.originalSrc) {
+                    img.src = img.dataset.originalSrc;
+                    delete img.dataset.originalSrc;
+                }
+            });
+        } catch (err) {}
+    }
+    function applyPlayerReactions() {
+        try {
+            var active = Lampa.Activity && Lampa.Activity.active ? Lampa.Activity.active() : null;
+            if (!active || active.component !== 'full') return;
+            if (!isAnimatedReactionsInPlayerEnabled()) { restoreOriginalReactions(); applyReactionsToSelectbox(); return; }
+            function preloadReactionImage(reactionIndex) {
+                if (reactionIndex >= PLAYER_REACTION_CONFIGS.length) return;
+                var config = PLAYER_REACTION_CONFIGS[reactionIndex];
+                var activityBlock = document.querySelector('.activity--active');
+                var reactionIconElement = activityBlock ? activityBlock.querySelector(config.selector + ' img') : null;
+                if (!reactionIconElement) { preloadReactionImage(reactionIndex + 1); return; }
+                if (!reactionIconElement.dataset.originalSrc) reactionIconElement.dataset.originalSrc = reactionIconElement.src;
+                var preloadImage = new Image();
+                preloadImage.onload = preloadImage.onerror = function () { reactionIconElement.src = config.url; reactionIconElement.style.opacity = '1'; preloadReactionImage(reactionIndex + 1); };
+                preloadImage.src = config.url;
+                reactionIconElement.style.opacity = '1';
+            }
+            preloadReactionImage(0);
+            $('.reaction__icon').css({ width: '2.5em', height: '2.5em' });
+            if (Lampa.Platform.screen('mobile')) $('.full-start-new__reactions > div').css('padding', '0em');
+            applyReactionsToSelectbox();
+        } catch (err) {}
     }
 
     function initPlugin() {
@@ -1371,10 +1465,27 @@
         }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-card', 'data-type'] });
 
         processAllTypeLabels();
+
+        Lampa.Storage.listener.follow('change', function (e) {
+            if (e.name === 'activity') applyPlayerReactions();
+            if (e.name === 'mine_reactions') setTimeout(applyPlayerReactions, 200);
+            if (e.name === 'animated_reactions_in_player') {
+                if (!isAnimatedReactionsInPlayerEnabled()) { restoreOriginalReactions(); applyReactionsToSelectbox(); setTimeout(restoreOriginalReactions, 150); setTimeout(applyReactionsToSelectbox, 150); setTimeout(restoreOriginalReactions, 400); setTimeout(applyReactionsToSelectbox, 400); }
+                setTimeout(applyPlayerReactions, 100);
+            }
+        });
+
+        Lampa.Listener.follow('full', function (fullScreenEvent) {
+            if (fullScreenEvent.type === 'complite') applyPlayerReactions();
+        });
+
+        new MutationObserver(function () {
+            if (document.querySelector('.selectbox-item__icon img')) applyReactionsToSelectbox();
+        }).observe(document.body, { childList: true, subtree: true });
     }
 
     Lampa.Manifest.plugins = {
-        name: 'Накладки на карточках',
+        name: 'Интерфейс Мод',
         version: '1.0.0',
         description: 'Рейтинги, качество, лейблы типа на карточках + темы'
     };
