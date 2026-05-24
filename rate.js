@@ -427,30 +427,20 @@
         return rating;
     }
 
-    function getRatingOffsetX() {
-        var v = parseFloat(Lampa.Storage.get('rating_offset_x', '0'));
-        return isNaN(v) ? 0 : v;
-    }
-    function getRatingOffsetY() {
-        var v = parseFloat(Lampa.Storage.get('rating_offset_y', '0'));
-        return isNaN(v) ? 0 : v;
-    }
     function getRatingBackgroundAlpha() {
         var v = parseFloat(Lampa.Storage.get('rating_window_opacity', '0'));
         if (isNaN(v)) return 1;
         v = Math.max(0, Math.min(100, v));
         return 1 - (v / 100);
     }
+
     function getRatingPositionCSS(verticalOffsetEm) {
         var pos = Lampa.Storage.get('rating_position', 'bottom');
-        var ox = getRatingOffsetX();
-        var oy = getRatingOffsetY();
         var vo = (verticalOffsetEm == null || isNaN(verticalOffsetEm)) ? 0 : verticalOffsetEm;
-        var rightVal = (0 - ox) + 'em';
         if (pos === 'bottom') {
-            return 'right:' + rightVal + '!important;bottom:' + (0 - oy + vo) + 'em!important;top:auto!important;left:auto!important;';
+            return 'right:0!important;bottom:' + (0 + vo) + 'em!important;top:auto!important;left:auto!important;';
         }
-        return 'right:' + rightVal + '!important;top:' + (0 + oy + vo) + 'em!important;bottom:auto!important;left:auto!important;';
+        return 'right:0!important;top:' + (0 + vo) + 'em!important;bottom:auto!important;left:auto!important;';
     }
 
     function voteClass(extra) {
@@ -1241,44 +1231,11 @@
             };
         }
 
-        var STEP = 0.1;
-        var MIN_OFF = -5;
-        var MAX_OFF = 5;
-        function applyOffset(dx, dy) {
-            var x = parseFloat(Lampa.Storage.get('rating_offset_x', '0'));
-            var y = parseFloat(Lampa.Storage.get('rating_offset_y', '0'));
-            if (isNaN(x)) x = 0;
-            if (isNaN(y)) y = 0;
-            x = Math.max(MIN_OFF, Math.min(MAX_OFF, x + dx));
-            y = Math.max(MIN_OFF, Math.min(MAX_OFF, y + dy));
-            Lampa.Storage.set('rating_offset_x', String(x));
-            Lampa.Storage.set('rating_offset_y', String(y));
-            applyRatingSettingsRefresh();
-        }
-        function addOffsetButton(text, dx, dy) {
-            var btn = $('<div class="selector menu-edit-list__item rate-settings-offset-btn" tabindex="0"></div>').text(text).css({
-                display: 'block', textAlign: 'center', padding: '0.5em 0.4em', marginBottom: '0.2em', borderRadius: '0.35em',
-                border: '3px solid transparent', boxSizing: 'border-box', background: 'rgba(255,255,255,0.08)'
-            });
-            btn.on('hover:enter', function () { applyOffset(dx, dy); });
-            btn.on('click', function (e) {
-                if (e && e.preventDefault) e.preventDefault();
-                if (e && e.stopPropagation) e.stopPropagation();
-                blurActiveAfterMouseClick(e);
-            });
-            return btn;
-        }
-
-        var rowSource = addCycleRow('Источник рейтинга', 'rating_source', SOURCE_LABELS, 'all');
+         var rowSource = addCycleRow('Источник рейтинга', 'rating_source', SOURCE_LABELS, 'all');
         var rowAnimated = addTriggerRow('Анимированные реакции на постерах', 'animated_reactions', false);
         var rowColored = addTriggerRow('Цветные рейтинги (цифры)', 'colored_ratings_poster', true);
         var rowColoredWin = addTriggerRow('Цветные окна (цифры белые)', 'rating_colored_windows', false);
         var rowPosition = addCycleRow('Позиция на постере', 'rating_position', POSITION_LABELS, 'bottom');
-        list.append($('<div class="menu-edit-list__item rate-settings-offset-label"></div>').css({ display: 'block', width: '100%', padding: '0.3em 0.4em', marginBottom: '0.1em', fontWeight: 'bold', boxSizing: 'border-box', whiteSpace: 'nowrap', overflow: 'hidden', textAlign: 'center' }).text('Смещение (нажатие-сдвиг)'));
-        list.append(addOffsetButton('Влево', -STEP, 0));
-        list.append(addOffsetButton('Вправо', STEP, 0));
-        list.append(addOffsetButton('Вверх', 0, -STEP));
-        list.append(addOffsetButton('Вниз', 0, STEP));
         var rowShowTmdb = addTriggerRow('Показывать TMDB (при «Все»)', 'rating_show_tmdb', true);
         var rowShowImdb = addTriggerRow('Показывать IMDB (при «Все»)', 'rating_show_imdb', true);
         var rowShowKp = addTriggerRow('Показывать КиноПоиск (при «Все»)', 'rating_show_kp', true);
@@ -1320,8 +1277,6 @@
             setColoredRatingsPoster(true);
             Lampa.Storage.set('rating_colored_windows', 'false');
             Lampa.Storage.set('rating_position', 'bottom');
-            Lampa.Storage.set('rating_offset_x', '0');
-            Lampa.Storage.set('rating_offset_y', '0');
             Lampa.Storage.set('rating_show_tmdb', 'true');
             Lampa.Storage.set('rating_show_imdb', 'true');
             Lampa.Storage.set('rating_show_kp', 'true');
