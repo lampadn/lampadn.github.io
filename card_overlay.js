@@ -396,6 +396,7 @@
         var idStr = data.id.toString();
         if (el.dataset.movieId !== idStr) return;
         el.classList.add('card__vote--separate');
+        function refreshBR() { var c = el.closest('.card'); if (c) fixSeparateBorderRadius(c); }
         if (rateSource === 'tmdb') {
             var rating = getTMDBRating(data);
             if (rating !== '0.0') {
@@ -404,7 +405,7 @@
                 el.style.display = ''; el.classList.remove('card__vote--hidden');
                 el.style.background = getRatingBackgroundColor(rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
             } else { el.classList.add('card__vote--hidden'); }
-            return;
+            refreshBR(); return;
         }
         if (rateSource === 'imdb' || rateSource === 'kp') {
             getKinopoiskRating(data, function (res) {
@@ -416,6 +417,7 @@
                     el.style.display = ''; el.classList.remove('card__vote--hidden');
                     el.style.background = getRatingBackgroundColor(val) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
                 } else { el.classList.add('card__vote--hidden'); }
+                refreshBR();
             }); return;
         }
         if (rateSource === 'lampa') {
@@ -432,6 +434,7 @@
                         if (iconEl) iconEl.style.backgroundImage = 'url(' + getReactionImageSrc(result.medianReaction) + ')';
                     }
                 } else { el.classList.add('card__vote--hidden'); }
+                refreshBR();
             });
         }
     }
@@ -458,6 +461,18 @@
         var idStr = data.id.toString();
         var elements = card.querySelectorAll('.card__vote-separate-wrap [data-rate-source]');
         for (var i = 0; i < elements.length; i++) { elements[i].dataset.movieId = idStr; fillSingleRatingElement(elements[i], data, elements[i].dataset.rateSource); }
+        fixSeparateBorderRadius(card);
+    }
+    function fixSeparateBorderRadius(card) {
+        var wrap = card.querySelector('.card__vote-separate-wrap');
+        if (!wrap) return;
+        var items = wrap.querySelectorAll('.card__vote');
+        for (var i = 0; i < items.length; i++) items[i].classList.remove('visible-first', 'visible-last', 'visible-only');
+        var vis = [];
+        for (var i = 0; i < items.length; i++) { if (!items[i].classList.contains('card__vote--hidden')) vis.push(items[i]); }
+        if (!vis.length) return;
+        if (vis.length === 1) vis[0].classList.add('visible-only');
+        else { vis[0].classList.add('visible-first'); vis[vis.length - 1].classList.add('visible-last'); }
     }
     function showTmdbFallback(ratingElement, data) {
         var tmdb = getTMDBRating(data);
@@ -1365,8 +1380,12 @@
             '.card__vote--bottom{top:auto!important;right:0!important;bottom:0!important;border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote:last-child{border-radius:0.75em 0!important}' +
+            '.card__vote-separate-wrap.card__vote--bottom .card__vote.visible-last{border-radius:0.75em 0!important}' +
+            '.card__vote-separate-wrap.card__vote--bottom .card__vote.visible-only{border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote:first-child{border-radius:0 0.75em!important}' +
+            '.card__vote-separate-wrap.card__vote--top .card__vote.visible-first{border-radius:0 0.75em!important}' +
+            '.card__vote-separate-wrap.card__vote--top .card__vote.visible-only{border-radius:0 0.75em!important}' +
             '.card__vote-line .card__rate-item{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;white-space:nowrap}' +
             '.card__vote-line .card__rate-item:last-child{margin-bottom:0}' +
             '.card__vote .source--name{font-size:0!important;display:block!important;color:transparent!important;width:12px!important;height:12px!important;overflow:hidden!important;background-repeat:no-repeat!important;background-position:center!important;background-size:contain!important;margin-left:auto!important;padding:0!important;border:none!important;flex-shrink:0!important}' +
