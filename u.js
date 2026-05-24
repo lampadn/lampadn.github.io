@@ -109,45 +109,9 @@
             token: '720fbdfd04f4cb54579a9875fd9289',
             host: 'https://hdpoisk.ru/',
             vpsIp: '108.165.164.64',
-            extractorIp: '62.60.152.164',
             getHost: function() { return this.host; },
             getSubtitle: function() { return 'hdpoisk.ru'; },
             auth: function(url) { return url; }
-        },
-        lampaua: {
-            label: 'LampaUA',
-            uids: ['guest'],
-            currentIndex: 0,
-            host: 'https://apn2.akter-black.com/http://lampaua.mooo.com/',
-            proxy: 'https://apn2.akter-black.com/',
-            getHost: function() { return this.host; },
-            getSubtitle: function() { return 'lampaua.mooo.com'; },
-            auth: function(url, cfg) {
-                var uid = cfg.uids[cfg.currentIndex];
-                if (url.indexOf('uid=') === -1)
-                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + uid);
-                else
-                    url = url.replace(/uid=([^&]+)/, 'uid=' + uid);
-                if (url.indexOf('lampaua.mooo.com') !== -1 && url.indexOf(cfg.proxy) === -1)
-                    url = cfg.proxy + url;
-                return url;
-            }
-        },
-        beta: {
-            label: 'Beta L-Vid',
-            uids: ['eis3ey9m', 'p8825724-9005-428a-9d86-a466c13ddff3', 'y9725724-9005-428a-9d86-a466c13ddcc4'],
-            currentIndex: 0,
-            host: 'http://beta.l-vid.online:888/',
-            getHost: function() { return this.host; },
-            getSubtitle: function() { return 'beta.l-vid.online'; },
-            auth: function(url, cfg) {
-                var uid = cfg.uids[cfg.currentIndex];
-                if (url.indexOf('uid=') === -1)
-                    url = Lampa.Utils.addUrlComponent(url, 'uid=' + uid);
-                else
-                    url = url.replace(/uid=([^&]+)/, 'uid=' + uid);
-                return url;
-            }
         }
     };
 
@@ -947,7 +911,7 @@
                 });
                 
                 // ЗАМЕНИ НА IP ТВОЕГО VPS! Порт 3000 мы задали в server.js
-                var extractorUrl = 'http://' + SERVER_CONFIG.hdpoisk.extractorIp + ':3000/extract?url=' + encodeURIComponent(file.url);
+                var extractorUrl = 'http://' + SERVER_CONFIG.hdpoisk.vpsIp + ':3000/extract?url=' + encodeURIComponent(file.url);
 
                 network.silent(extractorUrl, function(json) {
                     Lampa.Loading.stop();
