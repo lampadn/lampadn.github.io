@@ -305,7 +305,7 @@
         ratingElement.className = voteClass();
         var posCSS = getRatingPositionCSS();
         var bgAlpha = getOverlayAlpha();
-        ratingElement.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;align-items:center;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.35em;';
+        ratingElement.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;align-items:center;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.7em;';
         getRatingParent(card).appendChild(ratingElement);
         return ratingElement;
     }
@@ -313,7 +313,7 @@
         var el = document.createElement('div');
         el.className = voteClass();
         var bgAlpha = getOverlayAlpha();
-        el.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;display:flex;align-items:center;background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.35em;';
+        el.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;display:flex;align-items:center;background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.7em;';
         return el;
     }
     function createRatingLineElement(card) {
@@ -321,7 +321,7 @@
         line.className = voteClass('card__vote-line');
         var posCSS = getRatingPositionCSS();
         var bgAlpha = getOverlayAlpha();
-        line.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.35em;';
+        line.style.cssText = 'line-height:1;font-family:"SegoeUI",sans-serif;cursor:pointer;box-sizing:border-box;outline:none;user-select:none;position:absolute;z-index:1;display:flex;flex-direction:column;align-items:flex-start;' + posCSS + 'background:rgba(0,0,0,' + bgAlpha + ');color:#fff;padding:0.2em 0.1em 0.2em 0.7em;';
         line.innerHTML = '<div class="card__rate-item rate--tmdb" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--imdb" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--kp" style="display:none"><div>0.0</div><span class="source--name"></span></div><div class="card__rate-item rate--lampa" style="display:none"><span class="rate-value">0.0</span><span class="source--name rate-icon-reaction"></span></div>';
         getRatingParent(card).appendChild(line);
         return line;
@@ -424,7 +424,8 @@
                 if (!el.parentNode || el.dataset.movieId !== idStr) return;
                 if (result.rating > 0) {
                     var html = '<span style="color:' + getRatingColor(result.rating) + '">' + formatRating(result.rating) + '</span>';
-                    if (result.medianReaction) html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
+                    if (result.medianReaction) html += '<span class="source--name rate-icon-reaction"></span>';
+                    else html += '<span class="source--name rate-icon-reaction"></span>';
                     el.className = voteClass('rate--lampa card__vote--separate');
                     el.innerHTML = html; el.style.display = ''; el.classList.remove('card__vote--hidden');
                     el.style.background = getRatingBackgroundColor(result.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
@@ -530,7 +531,7 @@
             }
             return;
         }
-        ratingElement = card.querySelector('.card__vote:not(.card__vote-line):not(.card__vote--separate):not(.card__vote-separate-wrap)');
+        ratingElement = card.querySelector('.card__vote:not(.card__vote-line):not(.card__vote-separate-wrap)');
         if (!ratingElement || ratingElement.dataset.source !== source || ratingElement.dataset.movieId !== idStr) { removeAllRatingElements(card); ratingElement = createRatingElement(card); }
         ratingElement.dataset.source = source; ratingElement.dataset.movieId = idStr;
         ratingElement.style.display = ''; ratingElement.classList.remove('card__vote--hidden');
@@ -544,15 +545,16 @@
             }
             return false;
         }
-        if (source === 'tmdb') { ratingElement.className = voteClass('rate--tmdb'); if (!applyTmdbToElement(ratingElement)) showTmdbFallback(ratingElement, data); }
+        if (source === 'tmdb') { ratingElement.className = voteClass('rate--tmdb card__vote--separate'); if (!applyTmdbToElement(ratingElement)) showTmdbFallback(ratingElement, data); }
         else if (source === 'lampa') {
             var type = (data.seasons || data.first_air_date || data.original_name) ? 'tv' : 'movie';
             var ratingKey = type + '_' + data.id;
             var cached = ratingCache.get('lampa_rating', ratingKey);
             if (cached && cached.rating > 0) {
-                ratingElement.className = voteClass('rate--lampa');
+                ratingElement.className = voteClass('rate--lampa card__vote--separate');
                 var html = '<span style="color:' + getRatingColor(cached.rating) + '">' + formatRating(cached.rating) + '</span>';
-                if (cached.medianReaction) html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cached.medianReaction) + '">';
+                if (cached.medianReaction) html += '<span class="source--name rate-icon-reaction"></span>';
+                else html += '<span class="source--name rate-icon-reaction"></span>';
                 ratingElement.innerHTML = html;
                 ratingElement.style.background = getRatingBackgroundColor(cached.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
                 return;
@@ -561,9 +563,10 @@
             addToQueue(function () {
                 getLampaRating(ratingKey).then(function (result) {
                     if (ratingElement.parentNode && ratingElement.dataset.movieId === idStr && result.rating > 0) {
-                        ratingElement.className = voteClass('rate--lampa');
+                        ratingElement.className = voteClass('rate--lampa card__vote--separate');
                         var html = '<span style="color:' + getRatingColor(result.rating) + '">' + formatRating(result.rating) + '</span>';
-                        if (result.medianReaction) html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
+                        if (result.medianReaction) html += '<span class="source--name rate-icon-reaction"></span>';
+                        else html += '<span class="source--name rate-icon-reaction"></span>';
                         ratingElement.innerHTML = html;
                         ratingElement.style.background = getRatingBackgroundColor(result.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
                     }
@@ -575,7 +578,7 @@
                 if (ratingElement.parentNode && ratingElement.dataset.movieId === idStr) {
                     var val = source === 'kp' ? res.kp : res.imdb;
                     if (val && val > 0) {
-                        ratingElement.className = voteClass('rate--' + source);
+                        ratingElement.className = voteClass('rate--' + source + ' card__vote--separate');
                         ratingElement.innerHTML = '<span style="color:' + getRatingColor(val) + '">' + formatRating(val) + '</span><span class="source--name"></span>';
                         ratingElement.style.background = getRatingBackgroundColor(val) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
                     }
@@ -612,7 +615,7 @@
             var idStr = data.id.toString();
             var lineEl = card.querySelector('.card__vote-line');
             var separateEls = card.querySelectorAll('.card__vote-separate-wrap [data-rate-source]');
-            var singleEl = card.querySelector('.card__vote:not(.card__vote-line):not(.card__vote--separate):not(.card__vote-separate-wrap)');
+            var singleEl = card.querySelector('.card__vote:not(.card__vote-line):not(.card__vote-separate-wrap)');
             var needFull = false;
             if (source === 'all') {
                 if (displayMode === 'single') { if (!lineEl || lineEl.dataset.movieId !== idStr) needFull = true; else updateCardRatingLine(lineEl, data); }
@@ -1347,12 +1350,12 @@
             '.rate-settings-site{display:inline-block;color:#8ab4ff!important;text-decoration:underline!important;white-space:nowrap!important}' +
             '[data-name="rating_modal_open"] .settings-param__value,[data-name="rating_modal_open"] .settings-param__control,[data-name="rating_modal_open"] input[type="checkbox"]{display:none!important}' +
             '.card .card__view{position:relative!important}' +
-            '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap):not(.card__vote--separate){display:none!important}' +
-            '.card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.1em 0.2em 0.35em!important;white-space:nowrap!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap){display:none!important}' +
+            '.card__vote,.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:absolute!important;z-index:1!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.1em 0.2em 0.7em!important;white-space:nowrap!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote-separate-wrap .card__vote{position:static!important;transform:none!important;flex-shrink:0!important}' +
             '.card__vote.card__vote--hidden,.card__vote-separate-wrap .card__vote.card__vote--hidden{display:none!important;height:0!important;padding:0!important;margin:0!important;overflow:hidden!important;min-width:0!important;min-height:0!important;border:none!important;width:0!important;position:absolute!important;opacity:0!important;pointer-events:none!important}' +
-            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.1em 0.2em 0.35em!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
-            '.card__vote-separate-wrap{background:transparent!important;padding:0!important;width:auto!important;min-width:3.5em!important;max-width:100%!important;overflow:visible!important;transform:scale(var(--rating-scale,1))!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0.15em!important;font-size:1.1em!important}' +
-            '.card__vote-separate-wrap .card__vote{display:flex!important;align-items:center!important;justify-content:flex-start!important;position:static!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;padding:0.2em 0.1em 0.2em 0.7em!important;white-space:nowrap!important;flex-shrink:0!important;box-sizing:border-box!important;transform:none!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote-line{display:flex!important;flex-direction:column!important;align-items:flex-start!important;position:absolute!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;box-sizing:border-box!important;transform:scale(var(--rating-scale,1))!important;padding:0.2em 0.1em 0.2em 0.7em!important;font-size:1.1em!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
+            '.card__vote-separate-wrap{background:transparent!important;padding:0!important;width:auto!important;min-width:2.8em!important;max-width:100%!important;overflow:visible!important;transform:scale(var(--rating-scale,1))!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0.15em!important;font-size:1.1em!important}' +
             '.card__vote > span:first-child,.card__vote-line .card__rate-item > div,.card__vote-line .card__rate-item > .rate-value{display:inline-block!important;min-width:3ch!important;text-align:left!important}' +
             '.card__vote--top,.card__vote-line.card__vote--top,.card__vote-separate-wrap.card__vote--top{transform-origin:top right!important;transform:scale(var(--rating-scale,1))!important}' +
             '.card__vote--bottom,.card__vote-line.card__vote--bottom,.card__vote-separate-wrap.card__vote--bottom{transform-origin:bottom right!important;transform:scale(var(--rating-scale,1))!important}' +
