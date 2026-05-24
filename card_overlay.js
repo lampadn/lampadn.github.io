@@ -1166,22 +1166,19 @@
         var css = '';
         if (isGlassThemeOn()) {
             css +=
-                '.card__vote{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important;border-radius:14px!important}' +
-                '.card__vote--top{border-radius:14px!important}' +
-                '.card__vote--bottom{border-radius:14px!important}' +
-                '.card__vote-separate-wrap.card__vote--bottom .card__vote{border-radius:14px!important}' +
-                '.card__vote-separate-wrap.card__vote--bottom .card__vote:last-child{border-radius:14px!important}' +
-                '.card__vote-separate-wrap.card__vote--top .card__vote{border-radius:14px!important}' +
-                '.card__vote-separate-wrap.card__vote--top .card__vote:first-child{border-radius:14px!important}' +
-                '.card__quality{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important;border-radius:14px!important}' +
-                '.content-label{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important;border-radius:14px!important}' +
+                '.card__vote{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.card__vote-separate-wrap .card__vote{border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.card__vote-separate-wrap .card__vote:not(.card__vote--hidden){background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important}' +
+                '.card__quality{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.content-label{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
                 '.content-label.serial-label{background:linear-gradient(to top,rgba(52,152,219,0.35),rgba(30,80,140,0.25))!important}' +
                 '.content-label.movie-label{background:linear-gradient(to top,rgba(46,204,113,0.35),rgba(30,120,70,0.25))!important}';
         }
         if (isGlassButtonsOn()) {
             css +=
-                '.full-start-new__reactions .reaction{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important;border-radius:14px!important;padding:4px!important}' +
-                '.full-start-new__buttons .full-start__button{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important;border-radius:14px!important}';
+                '.full-start-new__reactions .reaction{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.full-start-new__buttons .full-start__button{background:linear-gradient(to top,rgba(80,80,80,0.35),rgba(30,30,35,0.25))!important;border:1px solid rgba(255,255,255,0.12)!important;box-shadow:inset 0 0 6px rgba(0,0,0,0.5)!important}' +
+                '.full-start-new__buttons .full-start__button.focus,.full-start-new__buttons .full-start__button:hover,.full-start-new__buttons .full-start__button.active{background:linear-gradient(to top,rgba(100,100,100,0.45),rgba(40,40,45,0.35))!important;border-color:rgba(255,255,255,0.25)!important;box-shadow:inset 0 0 8px rgba(0,0,0,0.6)!important}';
         }
         if (!css) return;
         var st = document.createElement('style');
@@ -1245,7 +1242,7 @@
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
-            param: { name: 'colored_elements', type: 'trigger', default: true },
+            param: { name: 'colored_elements', type: 'trigger', default: false },
             field: { name: 'Цветные элементы', description: 'Статусы сериалов и возрастные ограничения цветными' },
             onChange: function (v) {
                 Lampa.Settings.update();
