@@ -303,7 +303,7 @@
     /*** 3) ТИП КОНТЕНТА ***/
     function changeMovieTypeLabels() {
         var style = $(`<style id="movie_type_styles">
-            .content-label { position: absolute!important; left: 0!important; top: 0!important; color: white!important; padding: 0.2em 0.45em!important; border-radius: 0.75em 0!important; font-size: 1.3em!important; z-index: 10!important; line-height: 1!important; display: flex!important; align-items: center!important; justify-content: center!important; }
+            .content-label { position: absolute!important; left: 0!important; top: 0!important; color: white!important; padding: 0.2em 0.45em!important; border-radius: 0.75em 0!important; font-size: 1.1em!important; line-height: 1!important; z-index: 10!important; display: flex!important; align-items: center!important; justify-content: center!important; }
             .serial-label { background-color: #3498db!important; }
             .movie-label  { background-color: #2ecc71!important; }
             body[data-movie-labels="on"] .card--tv .card__type { display: none!important; }
