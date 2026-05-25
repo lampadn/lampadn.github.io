@@ -774,6 +774,11 @@
         v = Math.max(60, Math.min(150, v)) / 100;
         try { document.body.style.setProperty('--rating-scale', String(v)); } catch (e) {}
     }
+    var _settingsRefreshTimer = 0;
+    function scheduleSettingsRefresh(delay) {
+        if (_settingsRefreshTimer) clearTimeout(_settingsRefreshTimer);
+        _settingsRefreshTimer = setTimeout(function () { _settingsRefreshTimer = 0; applyRatingSettingsRefresh(); }, delay == null ? 180 : delay);
+    }
     function applyRatingSettingsRefresh() {
         applyRatingScale();
         var allCards = document.querySelectorAll('.card');
@@ -1129,7 +1134,7 @@
                 var r = makeRow(label, labels[current] || current, function (rowEl, valEl) {
                     var cur = Lampa.Storage.get(storageKey, defaultVal); var idx = values.indexOf(cur); if (idx < 0) idx = 0;
                     idx = (idx + 1) % values.length; var next = values[idx];
-                    Lampa.Storage.set(storageKey, next); valEl.text(labels[next] || next); applyRatingSettingsRefresh();
+                    Lampa.Storage.set(storageKey, next); valEl.text(labels[next] || next); scheduleSettingsRefresh();
                 });
                 r.updateVal(labels[current] || current); list.append(r.row); return r;
             }
@@ -1139,7 +1144,7 @@
                     var next = !isOn();
                     if (storageKey === 'colored_ratings_poster') setColoredRatingsPoster(next);
                     else Lampa.Storage.set(storageKey, next ? 'true' : 'false');
-                    valEl.text(next ? 'Вкл' : 'Выкл'); applyRatingSettingsRefresh();
+                    valEl.text(next ? 'Вкл' : 'Выкл'); scheduleSettingsRefresh();
                 });
                 list.append(r.row); return r;
             }
@@ -1150,7 +1155,7 @@
                 var valEl = $('<div class="rate-settings-value"></div>').css({ whiteSpace: 'nowrap', opacity: 0.9, minWidth: '2.5em', textAlign: 'center' }).text(val + (suffix || ''));
                 var btnMinus = $('<div class="selector menu-edit-list__item rate-settings-plusminus-btn" tabindex="0" aria-label="Уменьшить"></div>').text('−').css({ width: '2em', minHeight: '2em', padding: 0, borderRadius: '0.35em', border: '3px solid transparent', boxSizing: 'border-box', background: 'rgba(255,255,255,0.12)', fontSize: '1.1em', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' });
                 var btnPlus = $('<div class="selector menu-edit-list__item rate-settings-plusminus-btn" tabindex="0" aria-label="Увеличить"></div>').text('+').css({ width: '2em', minHeight: '2em', padding: 0, borderRadius: '0.35em', border: '3px solid transparent', boxSizing: 'border-box', background: 'rgba(255,255,255,0.12)', fontSize: '1.1em', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' });
-                function applyChange(delta) { var num = parseFloat(Lampa.Storage.get(storageKey, defaultVal)); num = isNaN(num) ? defaultVal : num; var next = Math.max(min, Math.min(max, num + delta)); Lampa.Storage.set(storageKey, String(next)); valEl.text(next + (suffix || '')); applyRatingSettingsRefresh(); }
+                function applyChange(delta) { var num = parseFloat(Lampa.Storage.get(storageKey, defaultVal)); num = isNaN(num) ? defaultVal : num; var next = Math.max(min, Math.min(max, num + delta)); Lampa.Storage.set(storageKey, String(next)); valEl.text(next + (suffix || '')); scheduleSettingsRefresh(); }
                 btnMinus.on('hover:enter', function () { applyChange(-(step || 1)); }); btnMinus.on('click', function (e) { if (e && e.preventDefault) e.preventDefault(); if (e && e.stopPropagation) e.stopPropagation(); blurActiveAfterMouseClick(e); });
                 btnPlus.on('hover:enter', function () { applyChange(step || 1); }); btnPlus.on('click', function (e) { if (e && e.preventDefault) e.preventDefault(); if (e && e.stopPropagation) e.stopPropagation(); blurActiveAfterMouseClick(e); });
                 var row = $('<div class="menu-edit-list__item rate-settings-row rate-settings-number-row"></div>').css({ display: 'grid', gridTemplateColumns: '1fr auto auto auto', alignItems: 'center', gap: '0.35em', padding: '0.5em 0.4em', marginBottom: '0.2em', borderRadius: '0.35em', border: '3px solid transparent', boxSizing: 'border-box' });
@@ -1188,7 +1193,7 @@
                 if (typeof Lampa.Input !== 'undefined' && typeof Lampa.Input.edit === 'function') {
                     closeModalSafe();
                     setTimeout(function () {
-                        Lampa.Input.edit({ free: true, title: 'API-ключ kinopoiskapiunofficial.tech', nosave: true, value: String(Lampa.Storage.get('rating_kp_api_key', '') || ''), nomic: true }, function (raw) { Lampa.Storage.set('rating_kp_api_key', (raw || '').trim()); valEl.text(kpApiKeyRowText()); applyRatingSettingsRefresh(); setTimeout(function () { openRatingSettingsModal(); }, 300); });
+                        Lampa.Input.edit({ free: true, title: 'API-ключ kinopoiskapiunofficial.tech', nosave: true, value: String(Lampa.Storage.get('rating_kp_api_key', '') || ''), nomic: true }, function (raw) { Lampa.Storage.set('rating_kp_api_key', (raw || '').trim()); valEl.text(kpApiKeyRowText()); scheduleSettingsRefresh(50); setTimeout(function () { openRatingSettingsModal(); }, 300); });
                     }, 300);
                 }
             });
@@ -1212,7 +1217,7 @@
                 rowOpacity.updateVal('40%'); rowScale.updateVal('100%'); rowKpKey.updateVal(kpApiKeyRowText());
                 rowQualityShow.updateVal('Вкл'); rowQualityColored.updateVal('Выкл');
                 rowTypeLabelsShow.updateVal('Вкл'); rowTypeLabelsColored.updateVal('Выкл');
-                applyRatingSettingsRefresh();
+                scheduleSettingsRefresh(50);
                 try { Lampa.Noty.show('Настройки сброшены'); } catch (e) {}
             }
             var resetBtn = $('<div class="selector menu-edit-list__item rate-settings-reset" tabindex="0">Сбросить всё по умолчанию</div>').css({ display: 'block', textAlign: 'center', padding: '0.6em 0.4em', marginTop: '0.4em', background: 'rgba(200,100,80,0.5)', borderRadius: '0.35em', border: '3px solid transparent', boxSizing: 'border-box' });
