@@ -625,10 +625,21 @@
     var _ratingUpdateRafScheduled = false;
     var _mainObserver = null;
     var _cardIntersectionObserver = null;
+    function isCardUpdatesBlocked() {
+        try {
+            var selectors = ['.modal', '.settings-input__content', '.selectbox__content', '.menu-edit-list'];
+            for (var i = 0; i < selectors.length; i++) {
+                var node = document.querySelector(selectors[i]);
+                if (node && node.offsetParent !== null) return true;
+            }
+        } catch (e) {}
+        return false;
+    }
     function isCardNearViewport(card, windowHeight) { var rect = card.getBoundingClientRect(); return !(rect.bottom < -200 || rect.top > windowHeight + 200); }
     function updateVisibleCards(limit) {
-        if (document.hidden) return;
-        var allCards = document.querySelectorAll('.card');
+        if (document.hidden || isCardUpdatesBlocked()) return;
+        var allCards = document.querySelectorAll('.card[data-rating-visible="1"]');
+        if (!allCards.length) allCards = document.querySelectorAll('.card');
         var maxCards = typeof limit === 'number' && limit > 0 ? limit : allCards.length;
         var wH = window.innerHeight || 1000;
         var updated = 0;
@@ -682,7 +693,8 @@
         if (!_cardIntersectionObserver && typeof IntersectionObserver !== 'undefined') {
             _cardIntersectionObserver = new IntersectionObserver(function (entries) {
                 for (var i = 0; i < entries.length; i++) {
-                    if (entries[i].isIntersecting && entries[i].target && entries[i].target.card_data) {
+                    if (entries[i].target) entries[i].target.setAttribute('data-rating-visible', entries[i].isIntersecting ? '1' : '0');
+                    if (entries[i].isIntersecting && entries[i].target && entries[i].target.card_data && !isCardUpdatesBlocked()) {
                         updateCardRating({ card: entries[i].target, data: entries[i].target.card_data });
                         if (isQualityShowOn()) processQualityForCards([entries[i].target]);
                         addTypeLabel(entries[i].target);
@@ -711,7 +723,6 @@
                         if (node.querySelector && (node.querySelector('.selectbox-item__icon') || node.querySelector('.selectbox-item__icon img'))) needSelectbox = true;
                     }
                 }
-                if (m.type === 'attributes' && m.attributeName === 'class' && m.target && m.target.classList && m.target.classList.contains('card')) needCards = true;
             }
             if (needRatings) scheduleVisibleRatingsUpdate(50);
             if (needCards) {
@@ -732,7 +743,7 @@
             }
             if (needSelectbox && document.querySelector('.selectbox-item__icon img')) applyReactionsToSelectbox();
         });
-        _mainObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+        _mainObserver.observe(document.body, { childList: true, subtree: true });
     }
 
 
@@ -1496,6 +1507,7 @@
         setTimeout(function () { scheduleVisibleRatingsUpdate(900); }, 900);
         window.addEventListener('scroll', function () { scheduleVisibleRatingsUpdate(0); }, { passive: true });
         window.addEventListener('keydown', function (e) {
+            if (isCardUpdatesBlocked()) return;
             var code = e && (e.code || e.key);
             if (code === 'ArrowUp' || code === 'ArrowDown' || code === 'ArrowLeft' || code === 'ArrowRight' || code === 'PageUp' || code === 'PageDown') scheduleVisibleRatingsUpdate(0);
         }, { passive: true });
