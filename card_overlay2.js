@@ -273,9 +273,13 @@
     }
     function renderLampaPosterIcon(target, medianReaction) {
         if (!target) return;
-        target.innerHTML = '<span class="source--name rate-icon-reaction"></span>';
         var icon = target.querySelector('.rate-icon-reaction');
-        if (icon) icon.style.backgroundImage = medianReaction ? 'url(' + getReactionImageSrc(medianReaction) + ')' : '';
+        if (!icon) {
+            icon = document.createElement('span');
+            icon.className = 'source--name rate-icon-reaction';
+            target.appendChild(icon);
+        }
+        icon.style.backgroundImage = medianReaction ? 'url(' + getReactionImageSrc(medianReaction) + ')' : '';
     }
     function renderLampaFullIcon($scope, medianReaction) {
         var icon = $scope.find('.rate--lampa .rate-icon');
@@ -1296,25 +1300,33 @@
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
             param: { name: 'clear_ratings_cache', type: 'trigger', default: false },
-            field: { name: 'Очистить кэш рейтингов', description: 'Сбросить кэш TMDB, KP, IMDB и Lampa' },
-            onChange: function () {
+            field: { name: 'Очистить кэш рейтингов', description: 'Одноразовое действие' },
+            onChange: function (v) {
+                if (!(v === true || v === 'true' || v === '1' || v === 1)) return;
                 try {
                     Lampa.Storage.set('rating_cache_tmdb_rating', {});
                     Lampa.Storage.set('rating_cache_kp_rating', {});
                     Lampa.Storage.set('rating_cache_lampa_rating', {});
                     ratingCache.caches = {};
+                    Lampa.Storage.set('clear_ratings_cache', 'false');
                 } catch (e) {}
                 Lampa.Noty.show('Кэш рейтингов очищен');
+                Lampa.Settings.update();
                 applyRatingSettingsRefresh();
             }
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
             param: { name: 'clear_quality_cache', type: 'trigger', default: false },
-            field: { name: 'Очистить кэш качества', description: 'Сбросить сохранённые значения качества' },
-            onChange: function () {
-                try { Lampa.Storage.set(QUALITY_CACHE_KEY, {}); } catch (e) {}
+            field: { name: 'Очистить кэш качества', description: 'Одноразовое действие' },
+            onChange: function (v) {
+                if (!(v === true || v === 'true' || v === '1' || v === 1)) return;
+                try {
+                    Lampa.Storage.set(QUALITY_CACHE_KEY, {});
+                    Lampa.Storage.set('clear_quality_cache', 'false');
+                } catch (e) {}
                 Lampa.Noty.show('Кэш качества очищен');
+                Lampa.Settings.update();
                 refreshAllQualityLabels();
             }
         });
