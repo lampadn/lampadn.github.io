@@ -284,6 +284,7 @@
         else icon.empty();
     }
 
+    function getRatingPositionCSS() {
         var pos = Lampa.Storage.get('rating_position', 'bottom');
         if (pos === 'bottom') return 'right:0!important;bottom:0!important;top:auto!important;left:auto!important;';
         return 'right:0!important;top:0!important;bottom:auto!important;left:auto!important;';
@@ -486,20 +487,18 @@
         var lampaKey = (data.seasons || data.first_air_date || data.original_name) ? 'tv_' + data.id : 'movie_' + data.id;
         var cachedLampa = ratingCache.get('lampa_rating', lampaKey);
         if (cachedLampa && cachedLampa.rating > 0) {
-            var html = '<span style="color:' + getRatingColor(cachedLampa.rating) + '">' + formatRating(cachedLampa.rating) + '</span>';
-            if (cachedLampa.medianReaction) html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">';
             ratingElement.className = voteClass('rate--lampa');
-            ratingElement.innerHTML = html;
+            ratingElement.innerHTML = '<span style="color:' + getRatingColor(cachedLampa.rating) + '">' + formatRating(cachedLampa.rating) + '</span>';
+            renderLampaPosterIcon(ratingElement, cachedLampa.medianReaction);
             ratingElement.style.background = getRatingBackgroundColor(cachedLampa.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
             return;
         }
         getLampaRating(lampaKey).then(function (result) {
             if (!ratingElement.parentNode || ratingElement.dataset.movieId !== data.id.toString()) return;
             if (result.rating > 0) {
-                var html = '<span style="color:' + getRatingColor(result.rating) + '">' + formatRating(result.rating) + '</span>';
-                if (result.medianReaction) html += '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(result.medianReaction) + '">';
                 ratingElement.className = voteClass('rate--lampa');
-                ratingElement.innerHTML = html;
+                ratingElement.innerHTML = '<span style="color:' + getRatingColor(result.rating) + '">' + formatRating(result.rating) + '</span>';
+                renderLampaPosterIcon(ratingElement, result.medianReaction);
                 ratingElement.style.background = getRatingBackgroundColor(result.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
             } else { ratingElement.classList.add('card__vote--hidden'); }
         });
@@ -1440,11 +1439,9 @@
             '.card__vote--top{top:0!important;right:0!important;bottom:auto!important;border-radius:0 0.75em!important}' +
             '.card__vote--bottom{top:auto!important;right:0!important;bottom:0!important;border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
-            '.card__vote-separate-wrap.card__vote--bottom .card__vote:last-child{border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote.visible-last{border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--bottom .card__vote.visible-only{border-radius:0.75em 0!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote{border-radius:0.75em 0 0 0.75em!important}' +
-            '.card__vote-separate-wrap.card__vote--top .card__vote:first-child{border-radius:0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote.visible-first{border-radius:0 0.75em!important}' +
             '.card__vote-separate-wrap.card__vote--top .card__vote.visible-only{border-radius:0 0.75em!important}' +
             '.card__vote-line .card__rate-item{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;white-space:nowrap}' +
