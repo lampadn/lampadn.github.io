@@ -283,6 +283,14 @@
         if (medianReaction) icon.html('<img style="width:1em;height:1em;margin:0 0.15em;object-fit:contain;" data-reaction-type="' + medianReaction + '" src="' + getReactionImageSrc(medianReaction) + '">');
         else icon.empty();
     }
+    function getTMDBRating(data) {
+        var ratingKey = data.id;
+        var cached = ratingCache.get('tmdb_rating', ratingKey);
+        if (cached) return cached.vote_average.toFixed(1);
+        var rating = data.vote_average ? data.vote_average.toFixed(1) : '0.0';
+        ratingCache.set('tmdb_rating', ratingKey, { vote_average: parseFloat(rating) });
+        return rating;
+    }
 
     function getRatingPositionCSS() {
         var pos = Lampa.Storage.get('rating_position', 'bottom');
@@ -641,7 +649,8 @@
                         var ratingKey = (data.seasons || data.first_air_date || data.original_name) ? 'tv_' + data.id : 'movie_' + data.id;
                         var cachedLampa = ratingCache.get('lampa_rating', ratingKey);
                         if (cachedLampa && cachedLampa.rating > 0) {
-                            singleEl.innerHTML = '<span style="color:' + getRatingColor(cachedLampa.rating) + '">' + formatRating(cachedLampa.rating) + '</span>' + (cachedLampa.medianReaction ? '<img style="max-height:12px;max-width:12px;object-fit:contain;flex-shrink:0;margin-left:auto;" src="' + getReactionImageSrc(cachedLampa.medianReaction) + '">' : '');
+                            singleEl.innerHTML = '<span style="color:' + getRatingColor(cachedLampa.rating) + '">' + formatRating(cachedLampa.rating) + '</span>';
+                            renderLampaPosterIcon(singleEl, cachedLampa.medianReaction);
                         }
                     } else if (source === 'tmdb') {
                         var cachedTmdb = ratingCache.get('tmdb_rating', data.id);
