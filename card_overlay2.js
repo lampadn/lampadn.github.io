@@ -61,12 +61,6 @@
         if (v < 8) return 'rgba(70,130,180,' + alpha + ')';
         return 'rgba(80,180,0,' + alpha + ')';
     }
-    function getYearText(item) {
-        if (!item) return '';
-        var date = item.release_date || item.first_air_date || item.last_air_date || '';
-        var year = String(date).slice(0, 4);
-        return /^\d{4}$/.test(year) ? year : '';
-    }
     function getYearPositionCSS() {
         var pos = Lampa.Storage.get('rating_position', 'bottom');
         if (pos === 'bottom') return 'right:0!important;top:0!important;bottom:auto!important;left:auto!important;border-radius:0 0.75em!important;';
@@ -74,19 +68,12 @@
     }
     function addYearBadge(card) {
         if (!card || !card.querySelector) return;
-        var data = card.card_data || {};
-        var year = getYearText(data);
         var view = card.querySelector('.card__view');
-        if (!view) return;
-        var old = view.querySelector('.card__year-badge');
-        if (!year) { if (old) old.remove(); return; }
-        if (!old) {
-            old = document.createElement('div');
-            old.className = 'card__year-badge';
-            view.appendChild(old);
-        }
-        old.textContent = year;
-        old.style.cssText = 'position:absolute;z-index:1;line-height:1;font-family:"SegoeUI",sans-serif;box-sizing:border-box;user-select:none;padding:0.25em 0.45em;background:rgba(0,0,0,' + getOverlayAlpha() + ');color:#fff;font-size:1.1em;white-space:nowrap;' + getYearPositionCSS();
+        var age = card.querySelector('.card__age');
+        if (!view || !age) return;
+        if (age.parentNode !== view) view.appendChild(age);
+        age.classList.add('card__year-badge');
+        age.style.cssText = 'position:absolute;z-index:1;line-height:1;font-family:"SegoeUI",sans-serif;box-sizing:border-box;user-select:none;padding:0.25em 0.45em;background:rgba(0,0,0,' + getOverlayAlpha() + ');color:#fff;font-size:1.1em;white-space:nowrap;margin-top:0;' + getYearPositionCSS();
     }
     function refreshAllYearBadges() {
         var allCards = document.querySelectorAll('.card');
