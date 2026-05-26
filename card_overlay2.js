@@ -317,6 +317,9 @@
         return !(v === false || v === 'false' || v === 0 || v === '0' || v === '' || v === null || v === undefined);
     }
 
+    function isAnyKinopoiskSourceVisible() {
+        return isRatingSourceVisible('kp') || isRatingSourceVisible('imdb');
+    }
     function createRatingElement(card) {
         var ratingElement = document.createElement('div');
         ratingElement.className = voteClass();
@@ -542,7 +545,7 @@
                 }
                 if (separateWrap) { separateWrap.dataset.movieId = idStr; separateWrap.dataset.source = 'all'; }
                 updateCardRatingSeparate(card, data);
-                if (canUseKinopoiskApi()) getKinopoiskRating(data, function () { if (card.parentNode && document.body.contains(card)) updateCardRatingSeparate(card, data); });
+                if (canUseKinopoiskApi() && isAnyKinopoiskSourceVisible()) getKinopoiskRating(data, function () { if (card.parentNode && document.body.contains(card)) updateCardRatingSeparate(card, data); });
                 var lampaKey = (data.seasons || data.first_air_date || data.original_name) ? 'tv_' + data.id : 'movie_' + data.id;
                 getLampaRating(lampaKey).then(function () { if (card.parentNode && document.body.contains(card)) updateCardRatingSeparate(card, data); });
             } else {
@@ -551,7 +554,7 @@
                 ratingElement.dataset.source = 'all'; ratingElement.dataset.movieId = idStr;
                 ratingElement.style.display = ''; ratingElement.classList.remove('card__vote--hidden');
                 updateCardRatingLine(ratingElement, data);
-                if (canUseKinopoiskApi() && !ratingElement.dataset.kpRequested) {
+                if (canUseKinopoiskApi() && isAnyKinopoiskSourceVisible() && !ratingElement.dataset.kpRequested) {
                     ratingElement.dataset.kpRequested = String(Date.now());
                     getKinopoiskRating(data, function () { if (ratingElement.parentNode && ratingElement.dataset.movieId === idStr) updateCardRatingLine(ratingElement, data); });
                 }
@@ -1506,15 +1509,14 @@
         addSettings();
         setupCardListener();
         startMainObserver();
-        scheduleVisibleRatingsUpdate(0);
-        setTimeout(function () { scheduleVisibleRatingsUpdate(120); }, 120);
-        setTimeout(function () { scheduleVisibleRatingsUpdate(350); }, 350);
-        setTimeout(function () { scheduleVisibleRatingsUpdate(900); }, 900);
-        window.addEventListener('scroll', function () { scheduleVisibleRatingsUpdate(0); }, { passive: true });
+        scheduleVisibleRatingsUpdate(120);
+        setTimeout(function () { scheduleVisibleRatingsUpdate(250); }, 250);
+        setTimeout(function () { scheduleVisibleRatingsUpdate(600); }, 600);
+        window.addEventListener('scroll', function () { scheduleVisibleRatingsUpdate(120); }, { passive: true });
         window.addEventListener('keydown', function (e) {
             if (isCardUpdatesBlocked()) return;
             var code = e && (e.code || e.key);
-            if (code === 'ArrowUp' || code === 'ArrowDown' || code === 'ArrowLeft' || code === 'ArrowRight' || code === 'PageUp' || code === 'PageDown') scheduleVisibleRatingsUpdate(0);
+            if (code === 'PageUp' || code === 'PageDown') scheduleVisibleRatingsUpdate(120);
         }, { passive: true });
         window.addEventListener('resize', function () { scheduleVisibleRatingsUpdate(0); }, { passive: true });
         document.addEventListener('visibilitychange', function () { if (!document.hidden) scheduleVisibleRatingsUpdate(0); });
