@@ -2,6 +2,7 @@
     'use strict';
 
     var TARGET_UID = 'guest';
+    var STORAGE_KEY = 'lampac_unic_id';
 
     function hasUid(url) {
         return /[?&]uid=/.test(String(url || ''));
@@ -34,6 +35,33 @@
         };
 
         Lampa.Utils.__uidGuestPatched = true;
+        return true;
+    }
+
+    function patchStorage() {
+        if (!window.Lampa || !Lampa.Storage || typeof Lampa.Storage.get !== 'function' || typeof Lampa.Storage.set !== 'function') return false;
+        if (Lampa.Storage.__uidGuestPatched) {
+            Lampa.Storage.set(STORAGE_KEY, TARGET_UID);
+            return true;
+        }
+
+        var originalGet = Lampa.Storage.get;
+        var originalSet = Lampa.Storage.set;
+
+        Lampa.Storage.get = function(name) {
+            if (name === STORAGE_KEY) return TARGET_UID;
+            return originalGet.apply(this, arguments);
+        };
+
+        Lampa.Storage.set = function(name, value) {
+            if (name === STORAGE_KEY) {
+                arguments[1] = TARGET_UID;
+            }
+            return originalSet.apply(this, arguments);
+        };
+
+        Lampa.Storage.set(STORAGE_KEY, TARGET_UID);
+        Lampa.Storage.__uidGuestPatched = true;
         return true;
     }
 
@@ -70,6 +98,7 @@
         var ready = false;
 
         if (patchUtils()) ready = true;
+        if (patchStorage()) ready = true;
         if (patchRequest()) ready = true;
         if (patchNetwork()) ready = true;
 
