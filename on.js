@@ -3679,12 +3679,11 @@
 			}
 		});
 		try {
-			if (Lampa.Activity.active().component == "full") {
+			var active = Lampa.Activity.active();
+			if (active && active.component == "full" && active.activity && active.activity.render) {
 				addButton({
-					render: Lampa.Activity.active()
-						.activity.render()
-						.find(".view--torrent"),
-					movie: Lampa.Activity.active().card
+					render: active.activity.render().find(".view--torrent"),
+					movie: active.card
 				});
 			}
 		} catch (e) {
