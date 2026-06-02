@@ -664,7 +664,7 @@
 
         // ПАТЧ: запускаем watchdog — если за отведённое время ничего не нарисуется,
         // покажем экран ошибки с возможностью сменить сервер
-        this.startWatchdog();
+        this.startWatchdog('server');
 
         if (object.balanser) {
             files.render().find('.filter--search').remove();
@@ -675,6 +675,7 @@
             balanser = object.balanser;
             filter_sources = [];
 
+            this.startWatchdog('source');
             return network["native"](account(object.url.replace('rjson=', 'nojson=')), this.parse.bind(this), function() {
                 files.render().find('.torrent-filter').remove();
                 _this.empty();
@@ -933,7 +934,7 @@
         var _this = this;
 
         // ПАТЧ: перезапускаем watchdog на каждый запрос контента
-        _this.startWatchdog();
+        _this.startWatchdog('source');
 
         function runRequest() {
             number_of_requests++;
@@ -1400,13 +1401,14 @@
             this.activity.toggle();
         }
     };
-    // ПАТЧ: watchdog — ловит любой висяк (в т.ч. nws/websocket),
-    // через 20 c показывает экран ошибки с возможностью сменить сервер
-    this.startWatchdog = function() {
+    // ПАТЧ: watchdog — ловит любой висяк (в т.ч. nws/websocket).
+    // Для загрузки сервера показывает смену сервера, для контента — смену источника.
+    this.startWatchdog = function(mode) {
         var _this = this;
         clearTimeout(load_timer);
         load_timer = setTimeout(function() {
-            _this.noConnectToServer({});
+            if (mode == 'source') _this.doesNotAnswer({});
+            else _this.noConnectToServer({});
         }, 20000);
     };
     this.stopWatchdog = function() {
@@ -2390,10 +2392,10 @@
                 zh: '清除所有时间代码'
             },
             lampac_change_balanser: {
-                ru: 'Изменить балансер',
-                uk: 'Змінити балансер',
-                en: 'Change balancer',
-                zh: '更改平衡器'
+                ru: 'Сменить источник',
+                uk: 'Змінити джерело',
+                en: 'Change source',
+                zh: '更改来源'
             },
             lampac_change_server: {
                 ru: 'Сменить сервер',
