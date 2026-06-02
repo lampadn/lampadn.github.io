@@ -155,6 +155,12 @@
         return false;
     }
 
+    function nextConnectionSource() {
+    var keys = Object.keys(SERVER_CONFIG);
+    var i = keys.indexOf(connection_source);
+    return keys[(i + 1) % keys.length];
+    }
+
     function setSkazStartupAccount() {
         var cfg = SERVER_CONFIG.skaz;
         cfg.startupIndex = pickRandomIndex(cfg.accounts);
@@ -570,6 +576,15 @@
             scroll.body().append(Lampa.Template.get('lampac_content_loading'));
             Lampa.Controller.enable('content');
             this.loading(false);
+            // делаем селектор "Сервер" доступным ещё до ответа сервера
+            filter.set('filter', [{
+               title: 'Сервер',
+               subtitle: (SERVER_CONFIG[connection_source] && SERVER_CONFIG[connection_source].getSubtitle)
+                   ? SERVER_CONFIG[connection_source].getSubtitle() : '',
+               items: getServerFilterItems(),
+               stype: 'connection'
+           }]);
+           filter.set('sort', []);
             if (object.balanser) {
                 files.render().find('.filter--search').remove();
                 sources = {};
@@ -783,7 +798,7 @@
             var _this4 = this;
             return new Promise(function(resolve, reject) {
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
-                network.timeout(15000);
+                network.timeout(8000);
                 network.silent(account(url), function(json) {
                     if (json.accsdb) return reject(json);
                     if (json.life) {
@@ -848,6 +863,7 @@
             if (connection_source === 'skaz') {
                 var wake_title = object.movie.title;
                 var wake_url = 'http://online' + dd + '3.skaz.tv/lite/filmix?title=' + encodeURIComponent(wake_title);
+                network.timeout(8000);
                 network.silent(account(wake_url), function() {
                     runRequest();
                 }, function() {
@@ -1772,47 +1788,52 @@
             this.loading(false);
         };
         this.noConnectToServer = function(er) {
-            var html = Lampa.Template.get('lampac_does_not_answer', {});
-            html.find('.online-empty__buttons').remove();
-            html.find('.online-empty__title').text(Lampa.Lang.translate('title_error'));
-            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', sources[balanser] ? sources[balanser].name : (balanser || '')));
-            scroll.clear();
-            scroll.append(html);
-            this.loading(false);
-        };
-        this.doesNotAnswer = function(er) {
-            var _this9 = this;
-            this.reset();
-            var html = Lampa.Template.get('lampac_does_not_answer', {
-                balanser: balanser
-            });
-            if (er && er.accsdb) html.find('.online-empty__title').html(er.msg);
+    var _this = this;
+    clearInterval(balanser_timer);
+    network.clear();
 
-            var tic = er && er.accsdb ? 10 : 5;
-            html.find('.cancel').on('hover:enter', function() {
-                clearInterval(balanser_timer);
+    var html = Lampa.Template.get('lampac_does_not_answer', { balanser: connection_source });
+    if (er && er.accsdb) html.find('.online-empty__title').html(er.msg);
+    else html.find('.online-empty__title').text(Lampa.Lang.translate('title_error'));
+
+    // кнопка "Изменить балансер" -> открываем фильтр (там пункт "Сервер")
+    html.find('.change').on('hover:enter', function() {
+        clearInterval(balanser_timer);
+        filter.show(Lampa.Lang.translate('title_filter'), 'filter');
+    });
+    html.find('.cancel').on('hover:enter', function() {
+        clearInterval(balanser_timer);
+    });
+
+    scroll.clear();
+    scroll.append(html);
+    this.loading(false);
+
+    // ВАЖНО: вернуть управление на экран, чтобы кнопки были доступны
+    Lampa.Controller.enable('content');
+    last = html.find('.change')[0] || false;
+    Lampa.Controller.toggle('content');
+
+    // авто-переключение на СЛЕДУЮЩИЙ сервер по таймеру
+    var tic = er && er.accsdb ? 10 : 8;
+    balanser_timer = setInterval(function() {
+        tic--;
+        html.find('.timeout').text(tic);
+        if (tic <= 0) {
+            clearInterval(balanser_timer);
+            connection_source = nextConnectionSource();
+            Lampa.Storage.set('connection_source', connection_source);
+            Defined.localhost = getHost();
+            balanser = ''; source = ''; sources = {}; filter_sources = [];
+            _this.reset();
+            _this.createSource().then(function() {
+                _this.search();
+            })["catch"](function(e) {
+                _this.noConnectToServer(e);
             });
-            html.find('.change').on('hover:enter', function() {
-                clearInterval(balanser_timer);
-                filter.render().find('.filter--sort').trigger('hover:enter');
-            });
-            scroll.clear();
-            scroll.append(html);
-            this.loading(false);
-            balanser_timer = setInterval(function() {
-                tic--;
-                html.find('.timeout').text(tic);
-                if (tic == 0) {
-                    clearInterval(balanser_timer);
-                    var keys = Lampa.Arrays.getKeys(sources);
-                    var indx = keys.indexOf(balanser);
-                    var next = keys[indx + 1];
-                    if (!next) next = keys[0];
-                    balanser = next;
-                    if (Lampa.Activity.active().activity == _this9.activity) _this9.changeBalanser(balanser);
-                }
-            }, 1000);
-        };
+        }
+    }, 1000);
+};
         this.getLastEpisode = function(items) {
             var last_episode = 0;
             items.forEach(function(e) {
