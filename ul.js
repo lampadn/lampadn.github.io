@@ -22,10 +22,10 @@
         return isNaN(n) ? 0 : n;
     }
 
-    // ПАТЧ: минимальное качество настраивается (0 = без фильтра), по умолчанию 1080
+    // ПАТЧ: минимальное качество настраивается (0 = без фильтра), по умолчанию 720
     function getMinQuality() {
-        var v = parseInt(Lampa.Storage.get('skaz_min_quality', '1080'), 10);
-        return isNaN(v) ? 1080 : v;
+        var v = parseInt(Lampa.Storage.get('skaz_min_quality', '720'), 10);
+        return isNaN(v) ? 720 : v;
     }
 
     // ПАТЧ: фильтр качества с фолбэком — если после фильтра ничего не останется,
@@ -589,6 +589,7 @@
                 if (a.stype == 'connection') {
                     cancelSourceRequest();
                     network.clear();
+                    object.lampac_custom_select = '';
                     balansers_with_search = undefined;
                     connection_source = b.source || 'skaz';
                     Lampa.Storage.set('connection_source', connection_source);
@@ -638,6 +639,7 @@
                 }
             } else if (type == 'sort') {
                 Lampa.Select.close();
+                if (!sourceIsActive(a.source)) return;
                 object.lampac_custom_select = a.source;
                 _this.changeBalanser(a.source);
             }
@@ -735,13 +737,17 @@
         });
     };
     this.updateBalanser = function(balanser_name) {
+        if (!balanser_name) return;
         var last_select_balanser = Lampa.Storage.cache('online_last_balanser', 3000, {});
         last_select_balanser[object.movie.id] = balanser_name;
         Lampa.Storage.set('online_last_balanser', last_select_balanser);
     };
     this.changeBalanser = function(balanser_name) {
+        balanser_name = normalizeSource(balanser_name);
+        if (!balanser_name) return;
         this.updateBalanser(balanser_name);
         Lampa.Storage.set('online_balanser', balanser_name);
+        Lampa.Storage.set('active_balanser', balanser_name);
         var to = this.getChoice(balanser_name);
         var from = this.getChoice();
         if (from.voice_name) to.voice_name = from.voice_name;
@@ -775,8 +781,33 @@
             return Lampa.Storage.get('online_balanser', filter_sources.length ? filter_sources[0] : '');
         }
     };
+    function sourceIsActive(name) {
+        return !!(name && sources[name] && sources[name].show !== false);
+    }
+    function firstActiveSource() {
+        for (var i = 0; i < filter_sources.length; i++) {
+            if (sourceIsActive(filter_sources[i])) return filter_sources[i];
+        }
+        return filter_sources[0] || '';
+    }
+    function normalizeSource(name) {
+        if (sourceIsActive(name)) return name;
+        return firstActiveSource();
+    }
+    function nextActiveSource(current) {
+        if (!filter_sources.length) return '';
+        var start = filter_sources.indexOf(current);
+        for (var i = 1; i <= filter_sources.length; i++) {
+            var name = filter_sources[(start + i + filter_sources.length) % filter_sources.length];
+            if (sourceIsActive(name)) return name;
+        }
+        return firstActiveSource();
+    }
     this.startSource = function(json) {
+        var _this = this;
         return new Promise(function(resolve, reject) {
+            sources = {};
+            filter_sources = [];
             json.forEach(function(j) {
                 var name = balanserName(j);
                 sources[name] = {
@@ -793,10 +824,12 @@
                 } else {
                     balanser = Lampa.Storage.get('online_balanser', filter_sources[0]);
                 }
-                if (!sources[balanser]) balanser = filter_sources[0];
-                if (!sources[balanser].show && !object.lampac_custom_select) balanser = filter_sources[0];
+                balanser = normalizeSource(balanser);
+                if (!balanser || !sources[balanser]) return reject();
                 source = sources[balanser].url;
                 Lampa.Storage.set('active_balanser', balanser);
+                Lampa.Storage.set('online_balanser', balanser);
+                _this.updateBalanser(balanser);
                 resolve(json);
             } else {
                 reject();
@@ -818,7 +851,7 @@
                 var last_balanser = _this3.getLastChoiceBalanser();
                 if (!red) {
                     var _filter = json.online.filter(function(c) {
-                        return any ? c.show : c.show && c.name.toLowerCase() == last_balanser;
+                        return any ? c.show : c.show && balanserName(c) == last_balanser;
                     });
                     if (_filter.length) {
                         red = true;
@@ -847,6 +880,13 @@
                         };
                     });
                     filter_sources = Lampa.Arrays.getKeys(sources);
+                    balanser = normalizeSource(balanser || _this3.getLastChoiceBalanser());
+                    if (balanser && sources[balanser]) {
+                        source = sources[balanser].url;
+                        Lampa.Storage.set('active_balanser', balanser);
+                        Lampa.Storage.set('online_balanser', balanser);
+                        _this3.updateBalanser(balanser);
+                    }
                     filter.set('sort', filter_sources.map(function(e) {
                         return {
                             title: sources[e].name,
@@ -1082,6 +1122,59 @@
             data.url_reserve = urls[1];
         }
     };
+    this.isVeoveoUrl = function(url) {
+        return typeof url == 'string' && /(rstprgapipt\.com|mvapspdmpg\.com|veoveo|veveo)/i.test(url);
+    };
+    this.isVeoveoPlayback = function(data) {
+        if ((balanser + '').match(/veo?veo/i)) return true;
+        if (data && (this.isVeoveoUrl(data.url) || this.isVeoveoUrl(data.url_reserve))) return true;
+        if (data && data.quality) {
+            for (var q in data.quality) {
+                if (this.isVeoveoUrl(data.quality[q])) return true;
+            }
+        }
+        return false;
+    };
+    this.preparePlayback = function(element) {
+        if (this.isVeoveoPlayback(element)) {
+            // Veoveo отвечает 403 на HEAD исходного content-router URL с Origin.
+            // Не включаем IPTV-режим, чтобы плеер не делал лишнюю предпроверку ссылки.
+            delete element.iptv;
+            element.referrerPolicy = 'no-referrer';
+            element.referrer_policy = 'no-referrer';
+            element.no_referrer = true;
+            delete element.headers;
+            element.hls_manifest_timeout = element.hls_manifest_timeout || 30000;
+        } else {
+            element.iptv = true;
+        }
+
+        element.isonline = true;
+    };
+    this.resolveVeoveoRedirect = function(element, call) {
+        if (!this.isVeoveoPlayback(element) || !this.isVeoveoUrl(element.url) || typeof fetch == 'undefined') return call();
+
+        var done = false;
+        var timer = setTimeout(function() {
+            if (done) return;
+            done = true;
+            call();
+        }, 2500);
+
+        fetch(element.url, {
+            method: 'GET',
+            cache: 'no-store',
+            credentials: 'omit',
+            referrerPolicy: 'no-referrer'
+        }).then(function(response) {
+            if (response && response.url) element.url = response.url;
+        })["catch"](function() {})["then"](function() {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            call();
+        });
+    };
     this.setDefaultQuality = function(data) {
         filterMinQuality(data.quality);
         if (Lampa.Arrays.getKeys(data.quality).length) {
@@ -1165,13 +1258,14 @@
                         if (playlist.length > 1) first.playlist = playlist;
                         if (first.url) {
                             var element = first;
-                            element.iptv = true;
-                            element.isonline = true;
-                            Lampa.Player.play(element);
-                            Lampa.Player.playlist(playlist);
-                            if (element.subtitles_call) _this5.loadSubtitles(element.subtitles_call)
-                            item.mark();
-                            _this5.updateBalanser(balanser);
+                            _this5.preparePlayback(element);
+                            _this5.resolveVeoveoRedirect(element, function() {
+                                Lampa.Player.play(element);
+                                Lampa.Player.playlist(playlist);
+                                if (element.subtitles_call) _this5.loadSubtitles(element.subtitles_call)
+                                item.mark();
+                                _this5.updateBalanser(balanser);
+                            });
                         } else {
                             Lampa.Noty.show(Lampa.Lang.translate('lampac_nolink'));
                         }
@@ -1369,7 +1463,7 @@
         var data = Lampa.Storage.cache('online_choice_' + (for_balanser || balanser), 3000, {});
         data[object.movie.id] = choice;
         Lampa.Storage.set('online_choice_' + (for_balanser || balanser), data);
-        this.updateBalanser(for_balanser || balanser);
+        if (sourceIsActive(for_balanser || balanser)) this.updateBalanser(for_balanser || balanser);
     };
     this.replaceChoice = function(choice, for_balanser) {
         var to = this.getChoice(for_balanser);
@@ -1950,7 +2044,7 @@
             last = html.find('.change')[0] || false;
             Lampa.Controller.toggle('content');
 
-            var tic = er && er.accsdb ? 10 : 8;
+            var tic = er && er.accsdb ? 10 : 3;
             balanser_timer = setInterval(function() {
                 tic--;
                 html.find('.timeout').text(tic);
@@ -1999,10 +2093,8 @@
                 html.find('.timeout').text(tic);
                 if (tic == 0) {
                     clearInterval(balanser_timer);
-                    var keys = Lampa.Arrays.getKeys(sources);
-                    var indx = keys.indexOf(balanser);
-                    var next = keys[indx + 1];
-                    if (!next) next = keys[0];
+                    var next = nextActiveSource(balanser);
+                    if (!next) return;
                     balanser = next;
                     if (Lampa.Activity.active().activity == _this9.activity) _this9.changeBalanser(balanser);
                 }
@@ -2246,7 +2338,7 @@
                         '1440': 'от 1440p',
                         '2160': 'от 4K'
                     },
-                    default: '1080'
+                    default: '720'
                 },
                 field: {
                     name: 'Минимальное качество',
@@ -2404,10 +2496,10 @@
                 zh: '更换服务器'
             },
             lampac_server_timeout: {
-                ru: 'Сервер будет переключён автоматически через <span class="timeout">8</span> секунд.',
-                uk: 'Сервер буде автоматично переключено через <span class="timeout">8</span> секунд.',
-                en: 'The server will be switched automatically after <span class="timeout">8</span> seconds.',
-                zh: '服务器将在<span class="timeout">8</span>秒后自动切换。'
+                ru: 'Сервер будет переключён автоматически через <span class="timeout">3</span> секунды.',
+                uk: 'Сервер буде автоматично переключено через <span class="timeout">3</span> секунди.',
+                en: 'The server will be switched automatically after <span class="timeout">3</span> seconds.',
+                zh: '服务器将在<span class="timeout">3</span>秒后自动切换。'
             },
             lampac_balanser_dont_work: {
                 ru: 'Поиск не дал результатов',
