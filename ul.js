@@ -236,6 +236,7 @@
     };
 
     var balansers_with_search;
+    var balansers_with_search_request = 0;
 
     var unic_id = getCurrentSkazAccount().uid;
 
@@ -459,6 +460,8 @@
     var initialized;
     var balanser_timer;
     var load_timer; // ПАТЧ: watchdog загрузки
+    var source_request;
+    var source_request_id = 0;
     var images = [];
     var number_of_requests = 0;
     var number_of_requests_timer;
@@ -475,15 +478,65 @@
         voice: []
     };
 
+    function hardSilent(url, timeoutMs, success, fail, data, options) {
+        var req = new Network();
+        var done = false;
+        var timer = setTimeout(function() {
+            if (done) return;
+            done = true;
+            try {
+                req.clear();
+            } catch (e) {}
+            fail({
+                timeout: true,
+                status: 0,
+                url: url
+            });
+        }, timeoutMs + 1000);
+
+        req.timeout(timeoutMs);
+        req.silent(account(url), function(json) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            success(json);
+        }, function(e) {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            fail(e || {});
+        }, data, options);
+
+        return req;
+    }
+
+    function cancelSourceRequest() {
+        source_request_id++;
+        clearTimeout(life_wait_timer);
+        life_wait_times = 0;
+        if (source_request && source_request.clear) {
+            try {
+                source_request.clear();
+            } catch (e) {}
+        }
+        source_request = null;
+    }
+
+    function loadBalansersWithSearch() {
+        var request_id = ++balansers_with_search_request;
+        hardSilent(Defined.localhost + 'lite/withsearch', 10000, function(json) {
+            if (request_id !== balansers_with_search_request) return;
+            balansers_with_search = Lampa.Arrays.isArray(json) ? json : [];
+        }, function() {
+            if (request_id !== balansers_with_search_request) return;
+            balansers_with_search = [];
+        });
+    }
+
     Defined.localhost = getHost();
 
     if (balansers_with_search == undefined) {
-        network.timeout(10000);
-        network.silent(account(Defined.localhost + 'lite/withsearch'), function(json) {
-            balansers_with_search = json;
-        }, function() {
-            balansers_with_search = [];
-        });
+        loadBalansersWithSearch();
     }
 
     function balanserName(j) {
@@ -534,6 +587,9 @@
             if (type == 'filter') {
                 // --- ОБРАБОТКА ВЫБОРА СЕРВЕРА ---
                 if (a.stype == 'connection') {
+                    cancelSourceRequest();
+                    network.clear();
+                    balansers_with_search = undefined;
                     connection_source = b.source || 'skaz';
                     Lampa.Storage.set('connection_source', connection_source);
                     balanser = '';
@@ -542,6 +598,7 @@
                     filter_sources = [];
 
                     Defined.localhost = getHost();
+                    loadBalansersWithSearch();
                     _this.reset();
                     _this.createSource().then(function(){
                          _this.search();
@@ -745,12 +802,17 @@
             }
         });
     };
-    this.lifeSource = function() {
+    this.lifeSource = function(request_id) {
         var _this3 = this;
         return new Promise(function(resolve, reject) {
+            function activeRequest() {
+                return typeof request_id == 'undefined' || request_id === source_request_id;
+            }
+
             var url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (_this3.memkey || ''));
             var red = false;
             var gou = function gou(json, any) {
+                if (!activeRequest()) return;
                 if (json.accsdb) return reject(json);
                 var last_balanser = _this3.getLastChoiceBalanser();
                 if (!red) {
@@ -768,8 +830,10 @@
                 }
             };
             var fin = function fin(call) {
+                if (!activeRequest()) return;
                 network.timeout(3000);
                 network.silent(account(url), function(json) {
+                    if (!activeRequest()) return;
                     life_wait_times++;
                     filter_sources = [];
                     sources = {};
@@ -793,6 +857,7 @@
                     filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
                     gou(json);
                     var lastb = _this3.getLastChoiceBalanser();
+                    if (!activeRequest()) return;
                     if (life_wait_times > 15 || json.ready) {
                         filter.render().find('.lampac-balanser-loader').remove();
                         gou(json, true);
@@ -803,6 +868,7 @@
                         life_wait_timer = setTimeout(fin, 1000);
                     }
                 }, function() {
+                    if (!activeRequest()) return;
                     life_wait_times++;
                     if (life_wait_times > 15) {
                         reject();
@@ -821,10 +887,13 @@
     this.createSource = function() {
         var _this4 = this;
 
+        cancelSourceRequest();
         return new Promise(function(resolve, reject) {
+            var request_id = source_request_id;
             var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
-            network.timeout(12000); // ПАТЧ: было 15000, чуть быстрее уходим в ошибку
-            network.silent(account(url), function(json) {
+            source_request = hardSilent(url, 12000, function(json) {
+                if (request_id !== source_request_id) return;
+                source_request = null;
                 if (json.accsdb) return reject(json);
                 if (json.life) {
                     _this4.memkey = json.memkey;
@@ -833,11 +902,15 @@
                         if (object.movie.title) object.movie.title = json.title;
                     }
                     filter.render().find('.filter--sort').append('<span class="lampac-balanser-loader" style="width: 1.2em; height: 1.2em; margin-top: 0; background: url(./img/loader.svg) no-repeat 50% 50%; background-size: contain; margin-left: 0.5em"></span>');
-                    _this4.lifeSource().then(_this4.startSource).then(resolve)["catch"](reject);
+                    _this4.lifeSource(request_id).then(_this4.startSource).then(resolve)["catch"](reject);
                 } else {
                     _this4.startSource(json).then(resolve)["catch"](reject);
                 }
-            }, reject, false, {
+            }, function(e) {
+                if (request_id !== source_request_id) return;
+                source_request = null;
+                reject(e || {});
+            }, false, {
                 headers: {
                     'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                 }
@@ -1841,6 +1914,7 @@
         this.noConnectToServer = function(er) {
             var _this = this;
             this.stopWatchdog();
+            cancelSourceRequest();
             clearInterval(balanser_timer);
             network.clear();
 
@@ -1880,9 +1954,11 @@
                 html.find('.timeout').text(tic);
                 if (tic <= 0) {
                     clearInterval(balanser_timer);
+                    balansers_with_search = undefined;
                     connection_source = nextConnectionSource();
                     Lampa.Storage.set('connection_source', connection_source);
                     Defined.localhost = getHost();
+                    loadBalansersWithSearch();
                     balanser = '';
                     source = '';
                     sources = {};
@@ -1982,6 +2058,7 @@
         this.stop = function() {};
         this.destroy = function() {
             network.clear();
+            cancelSourceRequest();
             this.clearImages();
             files.destroy();
             scroll.destroy();
