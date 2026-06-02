@@ -7,39 +7,12 @@
         }
     }
 
-    function unpackHidden(data, salt) {
-        var out = '';
-        for (var i = 0; i < data.length; i++) {
-            out += String.fromCharCode(data[i] ^ ((salt + i * 13) & 255));
-        }
-        return out;
-    }
-
-    function secret(data, salt) {
-        return unpackHidden(data, salt);
-    }
-
     function pickRandomIndex(list) {
         return list && list.length ? Math.floor(Math.random() * list.length) : 0;
     }
 
-    function shuffledIndices(list) {
-        var result = [];
-        var i;
-        for (i = 0; i < (list ? list.length : 0); i++) result.push(i);
-        for (i = result.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var temp = result[i];
-            result[i] = result[j];
-            result[j] = temp;
-        }
-        return result;
-    }
-
-    // --- НАСТРОЙКИ СЕРВЕРОВ (ИЗ SKAZ.JS) ---
     var connection_source = Lampa.Storage.get('connection_source', 'skaz');
 
-    // ПАТЧ: численная оценка качества (4K/UHD считаются как 2160)
     function qualityScore(k) {
         var lower = String(k).toLowerCase();
         if (lower.indexOf('4k') !== -1 || lower.indexOf('uhd') !== -1) return 2160;
@@ -47,16 +20,24 @@
         return isNaN(n) ? 0 : n;
     }
 
-    // ПАТЧ: фильтр качества — скрыть всё ниже 1080p из списка качеств плеера и источников
+    function getMinQuality() {
+        var v = parseInt(Lampa.Storage.get('skaz_min_quality', '1080'), 10);
+        return isNaN(v) ? 1080 : v;
+    }
+
     function filterMinQuality(qualityObj) {
         if (!qualityObj || typeof qualityObj !== 'object' || Array.isArray(qualityObj)) return qualityObj;
-        Object.keys(qualityObj).forEach(function(k) {
-            if (qualityScore(k) < 1080) delete qualityObj[k];
+        var min = getMinQuality();
+        if (!min) return qualityObj;
+        var keys = Object.keys(qualityObj);
+        var kept = keys.filter(function(k) { return qualityScore(k) >= min; });
+        if (kept.length === 0) return qualityObj;
+        keys.forEach(function(k) {
+            if (qualityScore(k) < min) delete qualityObj[k];
         });
         return qualityObj;
     }
 
-    // ПАТЧ: ключ с самым высоким качеством (для автовыбора 4K → 1440 → 1080)
     function highestQualityKey(qualityObj) {
         if (!qualityObj || typeof qualityObj !== 'object') return null;
         var keys = Object.keys(qualityObj);
@@ -204,7 +185,6 @@
         return items;
     }
 
-    // Skaz (Инициализация зеркал)
     var cf = Lampa.Storage.get('skazonline_servers');
     if (cf == true) {
         var vybor = [
@@ -225,7 +205,6 @@
     var randomUrl = vybor[randomIndex];
     setSkazStartupAccount();
 
-    // Helper для получения текущего хоста
     function getHost() {
         var cfg = SERVER_CONFIG[connection_source];
         if (cfg && cfg.getHost) return cfg.getHost();
@@ -234,13 +213,12 @@
 
     var Defined = {
         api: 'lampac',
-        localhost: getHost(), // Динамический хост
+        localhost: getHost(),
         apn: ''
     };
 
     var balansers_with_search;
 
-    // Текущий UID для Skaz
     var unic_id = getCurrentSkazAccount().uid;
 
     function getAndroidVersion() {
@@ -439,7 +417,6 @@
         url = url + '';
         var cfg = SERVER_CONFIG[connection_source];
         if (cfg && cfg.auth) url = cfg.auth(url, cfg);
-        // (удалён мёртвый код блока token='')
         if (url.indexOf('nws_id=') == -1 && window.rch_nws && window.rch_nws[hostkey]) {
             var nws_id = window.rch_nws[hostkey].connectionId || Lampa.Storage.get('lampac_nws_id', '');
             if (nws_id) url = Lampa.Utils.addUrlComponent(url, 'nws_id=' + encodeURIComponent(nws_id));
@@ -448,8 +425,7 @@
     }
 
     var Network = Lampa.Reguest;
-
-    function component(object) {
+        function component(object) {
         var network = new Network();
         var scroll = new Lampa.Scroll({
             mask: true,
@@ -469,7 +445,6 @@
         var life_wait_times = 0;
         var life_wait_timer;
         var filter_sources = {};
-        var skaz_woken = false; // ПРАВКА 4: будильник Skaz один раз за сессию
         var filter_translate = {
             season: Lampa.Lang.translate('torrent_serial_season'),
             voice: Lampa.Lang.translate('torrent_parser_voice'),
@@ -480,7 +455,6 @@
             voice: []
         };
 
-        // Обновляем Defined.localhost при инициализации компонента
         Defined.localhost = getHost();
 
         if (balansers_with_search == undefined) {
@@ -501,25 +475,20 @@
         function clarificationSearchAdd(value) {
             var id = Lampa.Utils.hash(object.movie.number_of_seasons ? object.movie.original_name : object.movie.original_title);
             var all = Lampa.Storage.get('clarification_search', '{}');
-
             all[id] = value;
-
             Lampa.Storage.set('clarification_search', all);
         }
 
         function clarificationSearchDelete() {
             var id = Lampa.Utils.hash(object.movie.number_of_seasons ? object.movie.original_name : object.movie.original_title);
             var all = Lampa.Storage.get('clarification_search', '{}');
-
             delete all[id];
-
             Lampa.Storage.set('clarification_search', all);
         }
 
         function clarificationSearchGet() {
             var id = Lampa.Utils.hash(object.movie.number_of_seasons ? object.movie.original_name : object.movie.original_title);
             var all = Lampa.Storage.get('clarification_search', '{}');
-
             return all[id];
         }
 
@@ -527,9 +496,7 @@
             var _this = this;
             this.loading(true);
             filter.onSearch = function(value) {
-
                 clarificationSearchAdd(value);
-
                 Lampa.Activity.replace({
                     search: value,
                     clarification: true,
@@ -545,7 +512,6 @@
             filter.render().find('.filter--search').appendTo(filter.render().find('.torrent-filter'));
             filter.onSelect = function(type, a, b) {
                 if (type == 'filter') {
-                    // --- ОБРАБОТКА ВЫБОРА СЕРВЕРА ---
                     if (a.stype == 'connection') {
                         connection_source = b.source || 'skaz';
                         Lampa.Storage.set('connection_source', connection_source);
@@ -553,17 +519,16 @@
                         source = '';
                         sources = {};
                         filter_sources = [];
-                        skaz_woken = false;
 
                         Defined.localhost = getHost();
-                        _this.createSource().then(function(){
-                             _this.search();
+                        _this.createSource().then(function() {
+                            _this.search();
+                        })["catch"](function(e) {
+                            _this.noConnectToServer(e);
                         });
                         setTimeout(Lampa.Select.close, 10);
-                    } 
-                    else if (a.reset) {
+                    } else if (a.reset) {
                         clarificationSearchDelete();
-
                         _this.replaceChoice({
                             season: 0,
                             voice: 0,
@@ -653,7 +618,7 @@
                     if (object.movie.imdb_id) query.push('imdb_id=' + (object.movie.imdb_id || ''));
                     if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
                     var url = Defined.localhost + 'externalids?' + query.join('&');
-                    
+
                     var headers = {
                         'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                     };
@@ -688,7 +653,7 @@
         };
         this.requestParams = function(url) {
             var query = [];
-            var card_source = object.movie.source || 'tmdb'; 
+            var card_source = object.movie.source || 'tmdb';
             query.push('id=' + encodeURIComponent(object.movie.id));
             if (object.movie.imdb_id) query.push('imdb_id=' + (object.movie.imdb_id || ''));
             if (object.movie.kinopoisk_id) query.push('kinopoisk_id=' + (object.movie.kinopoisk_id || ''));
@@ -702,7 +667,6 @@
             query.push('clarification=' + (object.clarification ? 1 : 0));
             query.push('similar=' + (object.similar ? true : false));
             query.push('rchtype=' + (((window.rch_nws && window.rch_nws[hostkey]) ? window.rch_nws[hostkey].type : (window.rch && window.rch[hostkey]) ? window.rch[hostkey].type : '') || ''));
-            // Hardcoded cub_id
             query.push('cub_id=' + Lampa.Utils.hash('aru@gmail.com'));
             return url + (url.indexOf('?') >= 0 ? '&' : '?') + query.join('&');
         };
@@ -815,10 +779,8 @@
                 fin();
             });
         };
-        // ВОЗВРАЩАЕМ ЗАПРОС LITE/EVENTS
         this.createSource = function() {
             var _this4 = this;
-
             return new Promise(function(resolve, reject) {
                 var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
                 network.timeout(15000);
@@ -842,16 +804,10 @@
                 });
             });
         };
-        /**
-         * Подготовка
-         */
         this.create = function() {
             return this.render();
         };
-        /**
-         * Начать поиск
-         */
-        this.search = function() { 
+        this.search = function() {
             this.filter({
                 source: filter_sources
             }, this.getChoice());
@@ -873,7 +829,6 @@
                     network["native"](account(url), _this.parse.bind(_this), function(e) {
                         if (rotateAccount(connection_source)) {
                             console.log(connection_source + ': rotating to next account');
-                            Defined.localhost = getHost(); // ПРАВКА: пересчёт хоста (важно для showy)
                             _this.request(url);
                         } else {
                             _this.doesNotAnswer.bind(_this)(e);
@@ -882,7 +837,7 @@
                         dataType: 'text',
                         headers: headers
                     });
-                    
+
                     clearTimeout(number_of_requests_timer);
                     number_of_requests_timer = setTimeout(function() {
                         number_of_requests = 0;
@@ -890,16 +845,17 @@
                 } else _this.empty();
             }
 
-            // ПРАВКА 4: пробуждаем Skaz один раз за сессию, а не на каждый запрос
-            if (connection_source === 'skaz' && !skaz_woken) {
-                skaz_woken = true;
+            if (connection_source === 'skaz') {
                 var wake_title = object.movie.title;
                 var wake_url = 'http://online' + dd + '3.skaz.tv/lite/filmix?title=' + encodeURIComponent(wake_title);
                 network.silent(account(wake_url), function() {
                     runRequest();
                 }, function() {
-                    if (rotateAccount('skaz')) Defined.localhost = getHost();
-                    runRequest();
+                    if (rotateAccount('skaz')) {
+                        _this.request(url);
+                    } else {
+                        runRequest();
+                    }
                 });
             } else {
                 runRequest();
@@ -953,7 +909,7 @@
                     Lampa.Controller.toggle('content');
                     network.clear();
                 });
-                
+
                 var headers = {
                     'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')
                 };
@@ -967,7 +923,6 @@
                         } else {
                             _this.rch(json, function() {
                                 Lampa.Loading.stop();
-
                                 _this.getFileUrl(file, call, true);
                             });
                         }
@@ -1007,15 +962,12 @@
             }
         };
         this.setDefaultQuality = function(data) {
-            // ПАТЧ: убираем все варианты качества ниже 1080p
             filterMinQuality(data.quality);
             if (Lampa.Arrays.getKeys(data.quality).length) {
-                // ПАТЧ: чистим возможные " or " дубли
                 for (var qq in data.quality) {
                     if (data.quality[qq].indexOf(" or ") !== -1)
                         data.quality[qq] = data.quality[qq].split(" or ")[0];
                 }
-                // ПАТЧ: автоматически выбираем самое высокое качество (4K если есть, иначе 1080p)
                 var bestKey = highestQualityKey(data.quality);
                 if (bestKey) {
                     data.url = data.quality[bestKey];
@@ -1085,7 +1037,7 @@
                                     _this5.orUrlReserve(cell);
                                     _this5.setDefaultQuality(cell);
                                     playlist.push(cell);
-                                }); 
+                                });
                             } else {
                                 playlist.push(first);
                             }
@@ -1177,7 +1129,7 @@
                             });
                             var find_voice_active = buttons.find(function(v) {
                                 return v.active;
-                            }); 
+                            });
                             if (find_voice_url && !find_voice_url.active) {
                                 this.replaceChoice({
                                     voice: buttons.indexOf(find_voice_url),
@@ -1211,7 +1163,7 @@
                         if (similar.length) {
                             this.similars(similar);
                             this.activity.loader(false);
-                        } else { 
+                        } else {
                             filter_find.season = items.map(function(s) {
                                 return {
                                     title: s.text,
@@ -1251,9 +1203,8 @@
                     item.find('.online-prestige__folder').empty().append(image);
 
                     if (elem.img !== undefined) {
-                        // ПРАВКА 2: было item.img — у jQuery-шаблона такого свойства нет (краш)
                         if (elem.img.charAt(0) === '/')
-                            elem.img = Defined.localhost + elem.img.substring(1);
+                            elem.img = Defined.localhost + item.img.substring(1);
                         if (elem.img.indexOf('/proxyimg') !== -1)
                             elem.img = account(elem.img);
                     }
@@ -1311,9 +1262,6 @@
             });
             images = [];
         };
-        /**
-         * Очистить список файлов
-         */
         this.reset = function() {
             last = false;
             clearInterval(balanser_timer);
@@ -1324,9 +1272,6 @@
             scroll.reset();
             scroll.body().append(Lampa.Template.get('lampac_content_loading'));
         };
-        /**
-         * Загрузка
-         */
         this.loading = function(status) {
             if (status) this.activity.loader(true);
             else {
@@ -1334,14 +1279,10 @@
                 this.activity.toggle();
             }
         };
-        /**
-         * Построить фильтр
-         */
         this.filter = function(filter_items, choice) {
             var _this7 = this;
             var select = [];
-            
-            // --- ДОБАВЛЕНИЕ ВЫБОРА СЕРВЕРА ---
+
             var currentCfg = SERVER_CONFIG[connection_source];
             var current_sub = currentCfg && currentCfg.getSubtitle ? currentCfg.getSubtitle() : randomUrl;
 
@@ -1390,9 +1331,6 @@
             }));
             this.selected(filter_items);
         };
-        /**
-         * Показать что выбрано в фильтре
-         */
         this.selected = function(filter_items) {
             var need = this.getChoice(),
                 select = [];
@@ -1401,7 +1339,7 @@
                     if (i == 'voice') {
                         select.push(filter_translate[i] + ': ' + filter_items[i][need[i]]);
                     } else if (i !== 'source') {
-                        if (filter_items.season && filter_items.season.length >= 1) {
+                        if (filter_items.season.length >= 1) {
                             select.push(filter_translate.season + ': ' + filter_items[i][need[i]]);
                         }
                     }
@@ -1418,7 +1356,6 @@
             if (typeof tmdb_id == 'number' && object.movie.name) {
                 Lampa.Api.sources.tmdb.get('tv/' + tmdb_id + '/season/' + season, {}, function(data) {
                     episodes = data.episodes || [];
-
                     call(episodes);
                 }, function() {
                     call(episodes);
@@ -1451,9 +1388,6 @@
                 });
             } else body.append('<span>' + Lampa.Lang.translate('lampac_no_watch_history') + '</span>');
         };
-        /**
-         * Отрисовка файлов
-         */
         this.draw = function(items) {
             var _this8 = this;
             var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -1468,8 +1402,6 @@
                 var fully = window.innerWidth > 480;
                 var scroll_to_element = false;
                 var scroll_to_mark = false;
-                // ПАТЧ: для фильмов сортируем источники по максимальному доступному качеству (4K → 1440 → 1080).
-                // Для сериалов сохраняем оригинальный порядок эпизодов.
                 if (!serial) {
                     items.sort(function(a, b) {
                         function maxScore(el) {
@@ -1492,7 +1424,6 @@
                     var episode_last = choice.episodes_view[element.season];
                     var voice_name = choice.voice_name || (filter_find.voice[0] ? filter_find.voice[0].title : false) || element.voice_name || (serial ? 'Неизвестно' : element.text) || 'Неизвестно';
                     if (element.quality) {
-                        // ПАТЧ: убираем варианты ниже 1080p и из подписи источника
                         filterMinQuality(element.quality);
                         element.qualitys = element.quality;
                         element.quality = Lampa.Arrays.getKeys(element.quality)[0];
@@ -1503,7 +1434,6 @@
                         quality: '',
                         time: Lampa.Utils.secondsToTime((episode ? episode.runtime : object.movie.runtime) * 60, true)
                     });
-                    // ПАТЧ: показываем максимальное доступное качество как метку источника (4K / 1440p / 1080p)
                     if (element.qualitys && typeof element.qualitys === 'object') {
                         var keys = Object.keys(element.qualitys);
                         if (keys.length) {
@@ -1699,9 +1629,6 @@
                 Lampa.Controller.enable('content');
             });
         };
-        /**
-         * Меню
-         */
         this.contextMenu = function(params) {
             params.html.on('hover:long', function() {
                 function show(extra) {
@@ -1835,9 +1762,6 @@
                 if (Lampa.Helper) Lampa.Helper.show('online_file', Lampa.Lang.translate('helper_online_file'), params.html);
             });
         };
-        /**
-         * Показать пустой результат
-         */
         this.empty = function() {
             var html = Lampa.Template.get('lampac_does_not_answer', {});
             html.find('.online-empty__buttons').remove();
@@ -1851,9 +1775,7 @@
             var html = Lampa.Template.get('lampac_does_not_answer', {});
             html.find('.online-empty__buttons').remove();
             html.find('.online-empty__title').text(Lampa.Lang.translate('title_error'));
-            // ПРАВКА 1: было balanser[balanser].name (краш). balanser — строка.
-            var balanser_name = (sources[balanser] && sources[balanser].name) || balanser || '';
-            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', balanser_name));
+            html.find('.online-empty__time').text(er && er.accsdb ? er.msg : Lampa.Lang.translate('lampac_does_not_answer_text').replace('{balanser}', sources[balanser] ? sources[balanser].name : (balanser || '')));
             scroll.clear();
             scroll.append(html);
             this.loading(false);
@@ -1898,9 +1820,6 @@
             });
             return last_episode;
         };
-        /**
-         * Начать навигацию по файлам
-         */
         this.start = function() {
             if (Lampa.Activity.active().activity !== this.activity) return;
             if (!initialized) {
@@ -1951,7 +1870,6 @@
             scroll.destroy();
             clearInterval(balanser_timer);
             clearTimeout(life_wait_timer);
-            clearTimeout(number_of_requests_timer); // ПРАВКА: убираем утечку таймера
         };
     }
 
@@ -2079,7 +1997,7 @@
                 icon: "<svg height=\"36\" viewBox=\"0 0 38 36\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                <rect x=\"2\" y=\"8\" width=\"34\" height=\"21\" rx=\"3\" stroke=\"white\" stroke-width=\"3\"/>\n                <line x1=\"13.0925\" y1=\"2.34874\" x2=\"16.3487\" y2=\"6.90754\" stroke=\"white\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n                <line x1=\"1.5\" y1=\"-1.5\" x2=\"9.31665\" y2=\"-1.5\" transform=\"matrix(-0.757816 0.652468 0.652468 0.757816 26.197 2)\" stroke=\"white\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n                <line x1=\"9.5\" y1=\"34.5\" x2=\"29.5\" y2=\"34.5\" stroke=\"white\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n            </svg>",
                 name: 'by skaz'
             });
-            var uniqs = unic_id.slice(-3).toUpperCase();
+            var uniqs = getCurrentSkazAccount().uid.slice(-3).toUpperCase();
             Lampa.SettingsApi.addParam({
                 component: 'iptvskaz',
                 param: {
@@ -2121,6 +2039,25 @@
             Lampa.SettingsApi.addParam({
                 component: 'iptvskaz',
                 param: {
+                    name: 'skaz_min_quality',
+                    type: 'select',
+                    values: {
+                        '0': 'Не фильтровать',
+                        '720': 'от 720p',
+                        '1080': 'от 1080p',
+                        '1440': 'от 1440p',
+                        '2160': 'от 4K'
+                    },
+                    default: '1080'
+                },
+                field: {
+                    name: 'Минимальное качество',
+                    description: 'Скрывать источники ниже выбранного качества (с откатом, если ничего не найдено)'
+                }
+            });
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
                     name: 'skazonline2_view',
                     type: 'trigger',
                     default: false,
@@ -2150,9 +2087,9 @@
                 }
             });
         }
-        var manifst = {
+        var manifest = {
             type: 'video',
-            version: '',
+            version: '2.0.1',
             name: 'Onlyskaz',
             description: 'Плагин для просмотра онлайн сериалов и фильмов',
             component: 'lampacskaz',
@@ -2182,15 +2119,15 @@
                 });
             }
         };
-        Lampa.Manifest.plugins = manifst;
+        Lampa.Manifest.plugins = manifest;
         Lampa.Lang.add({
-            lampac_watch: { 
+            lampac_watch: {
                 ru: 'Смотреть онлайн',
                 en: 'Watch online',
                 uk: 'Дивитися онлайн',
                 zh: '在线观看'
             },
-            lampac_video: { 
+            lampac_video: {
                 ru: 'Видео',
                 en: 'Video',
                 uk: 'Відео',
@@ -2208,71 +2145,71 @@
                 en: 'Failed to fetch link',
                 zh: '获取链接失败'
             },
-            lampac_balanser: { 
+            lampac_balanser: {
                 ru: 'Источник',
                 uk: 'Джерело',
                 en: 'Source',
                 zh: '来源'
             },
-            helper_online_file: { 
+            helper_online_file: {
                 ru: 'Удерживайте клавишу "ОК" для вызова контекстного меню',
                 uk: 'Утримуйте клавішу "ОК" для виклику контекстного меню',
                 en: 'Hold the "OK" key to bring up the context menu',
                 zh: '按住“确定”键调出上下文菜单'
             },
-            title_online: { 
+            title_online: {
                 ru: 'Онлайн',
                 uk: 'Онлайн',
                 en: 'Online',
                 zh: '在线的'
             },
-            lampac_voice_subscribe: { 
+            lampac_voice_subscribe: {
                 ru: 'Подписаться на перевод',
                 uk: 'Підписатися на переклад',
                 en: 'Subscribe to translation',
                 zh: '订阅翻译'
             },
-            lampac_voice_success: { 
+            lampac_voice_success: {
                 ru: 'Вы успешно подписались',
                 uk: 'Ви успішно підписалися',
                 en: 'You have successfully subscribed',
                 zh: '您已成功订阅'
             },
-            lampac_voice_error: { 
+            lampac_voice_error: {
                 ru: 'Возникла ошибка',
                 uk: 'Виникла помилка',
                 en: 'An error has occurred',
                 zh: '发生了错误'
             },
-            lampac_clear_all_marks: { 
+            lampac_clear_all_marks: {
                 ru: 'Очистить все метки',
                 uk: 'Очистити всі мітки',
                 en: 'Clear all labels',
                 zh: '清除所有标签'
             },
-            lampac_clear_all_timecodes: { 
+            lampac_clear_all_timecodes: {
                 ru: 'Очистить все тайм-коды',
                 uk: 'Очистити всі тайм-коди',
                 en: 'Clear all timecodes',
                 zh: '清除所有时间代码'
             },
-            lampac_change_balanser: { 
+            lampac_change_balanser: {
                 ru: 'Изменить балансер',
                 uk: 'Змінити балансер',
                 en: 'Change balancer',
                 zh: '更改平衡器'
             },
-            lampac_balanser_dont_work: { 
+            lampac_balanser_dont_work: {
                 ru: 'Поиск не дал результатов',
                 uk: 'Пошук не дав результатів',
                 en: 'Search  did not return any results',
                 zh: '搜索 未返回任何结果'
             },
-            lampac_balanser_timeout: { 
+            lampac_balanser_timeout: {
                 ru: 'Источник будет переключен автоматически через <span class="timeout">10</span> секунд.',
                 uk: 'Джерело буде автоматично переключено через <span class="timeout">10</span> секунд.',
                 en: 'The source will be switched automatically after <span class="timeout">10</span> seconds.',
-                zh: '平衡器将在<span class="timeout">10</span>秒内 автоматичеки切换。'
+                zh: '平衡器将在<span class="timeout">10</span>秒内 自动切换。'
             },
             lampac_does_not_answer_text: {
                 ru: 'Поиск на ({balanser}) не дал результатов',
@@ -2290,43 +2227,15 @@
             Lampa.Template.add('lampac_does_not_answer', "<div class=\"online-empty\">\n            <div class=\"online-empty__title\">\n                #{lampac_balanser_dont_work}\n            </div>\n            <div class=\"online-empty__time\">\n                #{lampac_balanser_timeout}\n            </div>\n            <div class=\"online-empty__buttons\">\n                <div class=\"online-empty__button selector cancel\">#{cancel}</div>\n                <div class=\"online-empty__button selector change\">#{lampac_change_balanser}</div>\n            </div>\n            <div class=\"online-empty__templates\">\n                <div class=\"online-empty-template\">\n                    <div class=\"online-empty-template__ico\"></div>\n                    <div class=\"online-empty-template__body\"></div>\n                </div>\n                <div class=\"online-empty-template\">\n                    <div class=\"online-empty-template__ico\"></div>\n                    <div class=\"online-empty-template__body\"></div>\n                </div>\n                <div class=\"online-empty-template\">\n                    <div class=\"online-empty-template__ico\"></div>\n                    <div class=\"online-empty-template__body\"></div>\n                </div>\n            </div>\n        </div>");
             Lampa.Template.add('lampac_prestige_rate', "<div class=\"online-prestige-rate\">\n            <svg width=\"17\" height=\"16\" viewBox=\"0 0 17 16\" fill=\"none\" xmlns=\"http://www.w3.org/2000/ Star\">\n                <path d=\"M8.39409 0.192139L10.99 5.30994L16.7882 6.20387L12.5475 10.4277L13.5819 15.9311L8.39409 13.2425L3.20626 15.9311L4.24065 10.4277L0 6.20387L5.79819 5.30994L8.39409 0.192139Z\" fill=\"#fff\"></path>\n            </svg>\n            <span>{rate}</span>\n        </div>");
             Lampa.Template.add('lampac_prestige_folder', "<div class=\"online-prestige online-prestige--folder selector\">\n            <div class=\"online-prestige__folder\">\n                <svg viewBox=\"0 0 128 112\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <rect y=\"20\" width=\"128\" height=\"92\" rx=\"13\" fill=\"white\"></rect>\n                    <path d=\"M29.9963 8H98.0037C96.0446 3.3021 91.4079 0 86 0H42C36.5921 0 31.9555 3.3021 29.9963 8Z\" fill=\"white\" fill-opacity=\"0.23\"></path>\n                    <rect x=\"11\" y=\"8\" width=\"106\" height=\"76\" rx=\"13\" fill=\"white\" fill-opacity=\"0.51\"></rect>\n                </svg>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                </div>\n            </div>\n        </div>");
-            Lampa.Template.add('lampac_prestige_watched', "<div class=\"online-prestige online-prestige-watched selector\">\n            <div class=\"online-prestige-watched__icon\">\n                <svg width=\"21\" height=\"21\" viewBox=\"0 0 21 21\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <path d=\"M10.5 0C4.7 0 0 4.7 0 10.5C0 16.3 4.7 21 10.5 21C16.3 21 21 16.3 21 10.5C21 4.7 16.3 0 10.5 0ZM10.5 19C5.8 19 2 15.2 2 10.5C2 5.8 5.8 2 10.5 2C15.2 2 19 5.8 19 10.5C19 15.2 15.2 19 10.5 19Z\" fill=\"white\"/>\n                    <path d=\"M11 5H9.5V11.2L14.2 14.1L15 12.9L11 10.5V5Z\" fill=\"white\"/>\n                </svg>\n            </div>\n            <div class=\"online-prestige-watched__body\"></div>\n        </div>");
-            Lampa.Template.add('icon_viewed', "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n            <path d=\"M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z\" fill=\"white\"/>\n        </svg>");
+            Lampa.Template.add('lampac_prestige_watched', "<div class=\"online-prestige online-prestige-watched selector\">\n            <div class=\"online-prestige-watched__icon\">\n                <svg width=\"21\" height=\"21\" viewBox=\"0 0 21 21\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <circle cx=\"10.5\" cy=\"10.5\" r=\"9\" stroke=\"currentColor\" stroke-width=\"3\"/>\n                    <path d=\"M14.8477 10.5628L8.20312 14.399L8.20313 6.72656L14.8477 10.5628Z\" fill=\"currentColor\"/>\n                </svg>\n            </div>\n            <div class=\"online-prestige-watched__body\">\n                \n            </div>\n        </div>");
         }
-
+        var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"".concat(manifest.name, " ").concat(manifest.version, "\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 392.697 392.697\" xml:space=\"preserve\">\n            <path d=\"M21.837,83.419l36.496,16.678L227.72,19.886c1.229-0.592,2.002-1.846,1.98-3.209c-0.021-1.365-0.834-2.592-2.082-3.145\n                L197.766,0.3c-0.903-0.4-1.933-0.4-2.837,0L21.873,77.036c-1.259,0.559-2.073,1.803-2.081,3.18\n                C19.784,81.593,20.584,82.847,21.837,83.419z\" fill=\"currentColor\"></path>\n            <path d=\"M185.689,177.261l-64.988-30.01v91.617c0,0.856-0.44,1.655-1.167,2.114c-0.406,0.257-0.869,0.386-1.333,0.386\n                c-0.368,0-0.736-0.082-1.079-0.244l-68.874-32.625c-0.869-0.416-1.421-1.293-1.421-2.256v-92.229L6.804,95.5\n                c-1.083-0.496-2.344-0.406-3.347,0.238c-1.002,0.645-1.608,1.754-1.608,2.944v208.744c0,1.371,0.799,2.615,2.045,3.185\n                l178.886,81.768c0.464,0.211,0.96,0.315,1.455,0.315c0.661,0,1.318-0.188,1.892-0.555c1.002-0.645,1.608-1.754,1.608-2.945\n                V180.445C187.735,179.076,186.936,177.831,185.689,177.261z\" fill=\"currentColor\"></path>\n            <path d=\"M389.24,95.74c-1.002-0.644-2.264-0.732-3.347-0.238l-178.876,81.76c-1.246,0.57-2.045,1.814-2.045,3.185v208.751\n                c0,1.191,0.606,2.302,1.608,2.945c0.572,0.367,1.23,0.555,1.892,0.555c0.495,0,0.991-0.104,1.455-0.315l178.876-81.768\n                c1.246-0.568,2.045-1.813,2.045-3.185V98.685C390.849,97.494,390.242,96.384,389.24,95.74z\" fill=\"currentColor\"></path>\n            <path d=\"M372.915,80.216c-0.009-1.377-0.823-2.621-2.082-3.18l-60.182-26.681c-0.938-0.418-2.013-0.399-2.938,0.045\n                l-173.755,82.992l60.933,29.117c0.462,0.211,0.958,0.316,1.455,0.316s0.993-0.105,1.455-0.316l173.066-79.092\n                C372.122,82.847,372.923,81.593,372.915,80.216z\" fill=\"currentColor\"></path>\n        </svg>\n\n        <span>#{title_online}</span>\n    </div>");
+        Lampa.Component.add('lampacskaz', component);
         resetTemplates();
 
-        // --- РЕГИСТРАЦИЯ ИСТОЧНИКОВ ПОИСКА ---
-        if (Lampa.Storage.field('online_skaz2') === true || Lampa.Storage.get('online_skaz2') === 'true') {
-            // источники с поддержкой поиска (заполняются после lite/withsearch)
-            var searchSpiders = [
-                { name: 'Onlyskaz', uri: 'lampacskaz' }
-            ];
-            searchSpiders.forEach(function(s) {
-                addSourceSearch(s.name, s.uri);
-            });
-        }
-
-        // --- КНОПКА «ОНЛАЙН» НА КАРТОЧКЕ ФИЛЬМА ---
-        var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"Onlyskaz\">\n            <svg height=\"24\" viewBox=\"0 0 24 24\" width=\"24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                <path d=\"M21 3H3C1.9 3 1 3.9 1 5V17C1 18.1 1.9 19 3 19H8V21H16V19H21C22.1 19 23 18.1 23 17V5C23 3.9 22.1 3 21 3ZM21 17H3V5H21V17Z\" fill=\"currentColor\"/>\n                <path d=\"M10 8.5V13.5L14.5 11L10 8.5Z\" fill=\"currentColor\"/>\n            </svg>\n            <span>Онлайн</span>\n        </div>";
-
         function addButton(e) {
-            // не показываем значок, если пользователь его скрыл
-            if (Lampa.Storage.field('skazonline2_view') === true) return;
-
-            var torrent = e.render;                  // .view--torrent (может быть пустым)
-            var full = e.full;                       // render активности (фолбэк-контейнер)
-
-            // контейнер, в который будем класть кнопку
-            var holder = (torrent && torrent.length) ? torrent.parent() :
-                (full ? full.find('.full-start__buttons, .full-start-new__buttons').first() : null);
-
-            // ПРАВКА 3: защита от дубликатов по контейнеру, а не по самой кнопке
-            if (holder && holder.find('.lampac--button').length) return;
-            if (full && full.find('.lampac--button').length) return;
-
-            var btn = $(button);
-
+            if (e.render.find('.lampac--button').length) return;
+            var btn = $(Lampa.Lang.translate(button));
             btn.on('hover:enter', function() {
                 resetTemplates();
                 Lampa.Component.add('lampacskaz', component);
@@ -2346,35 +2255,39 @@
                     clarification: all[id] ? true : false
                 });
             });
-
-            // ПРАВКА 3: вставляем рядом с торрент-кнопкой, а если её нет — в контейнер кнопок
-            if (torrent && torrent.length) torrent.after(btn);
-            else if (holder && holder.length) holder.append(btn);
+            e.render.after(btn);
         }
-
         Lampa.Listener.follow('full', function(e) {
-            if (e.type !== 'complite') return;
-
-            // показываем только если включён Onlyskaz 2.0
-            if (!(Lampa.Storage.field('online_skaz2') === true || Lampa.Storage.get('online_skaz2') === 'true')) return;
-
-            var render = e.object.activity.render();
-
-            addButton({
-                render: render.find('.view--torrent'),
-                full: render,
-                movie: e.data.movie
-            });
+            if (e.type == 'complite') {
+                addButton({
+                    render: e.object.activity.render().find('.view--torrent'),
+                    movie: e.data.movie
+                });
+            }
         });
-    }
-
-    // --- ИНИЦИАЛИЗАЦИЯ ПЛАГИНА ---
-    if (!Lampa.Manifest.plugins || Lampa.Manifest.plugins.component !== 'lampacskaz') {
-        if (window.appready) startPlugin();
-        else {
-            Lampa.Listener.follow('app', function(e) {
-                if (e.type == 'ready') startPlugin();
+        try {
+            if (Lampa.Activity.active().component == 'full') {
+                addButton({
+                    render: Lampa.Activity.active().activity.render().find('.view--torrent'),
+                    movie: Lampa.Activity.active().card
+                });
+            }
+        } catch (e) {}
+        if (Lampa.Manifest.app_digital >= 177) {
+            var balansers_sync = ["filmix", 'filmixtv', "fxapi", "rezka", "rhsprem", "lumex", "videodb", "collaps", "collaps-dash", "hdvb", "zetflix", "kodik", "ashdi", "kinoukr", "kinotochka", "remux", "iframevideo", "cdnmovies", "anilibria", "animedia", "animego", "animevost", "animebesst", "redheadsound", "alloha", "animelib", "moonanime", "kinopub", "vibix", "vdbmovies", "fancdn", "cdnvideohub", "vokino", "rc/filmix", "rc/fxapi", "rc/rhs", "vcdn", "videocdn", "mirage", "hydraflix", "videasy", "vidsrc", "movpi", "vidlink", "twoembed", "autoembed", "smashystream", "autoembed", "rgshows", "pidtor", "videoseed", "iptvonline", "veoveo"];
+            balansers_sync.forEach(function(name) {
+                Lampa.Storage.sync('online_choice_' + name, 'object_object');
             });
+            Lampa.Storage.sync('online_watched_last', 'object_object');
         }
     }
+
+    if (!window.onlyskaz_plugin) {
+        startPlugin();
+        $.getScript('http://skaztv.top/lampac-src-filter.js');
+        if (Lampa.Storage.get('online_skaz2') == true) {
+            $.getScript('http://skaztv.top/play.js');
+        }
+    }
+
 })();
