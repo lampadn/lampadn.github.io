@@ -19,25 +19,6 @@
     var CARD_OVERLAY_CACHE_VERSION = '3';
     var TYPE_LABEL_EPISODE_INFO_KEY = 'type_labels_episode_info';
     var TYPE_LABEL_EPISODE_CACHE_KEY = 'type_label_episode_cache';
-    var POSTER_METADATA_GENRES = {
-        movie: [
-            { id: 28, title: '#{filter_genre_ac}' }, { id: 12, title: '#{filter_genre_ad}' }, { id: 16, title: '#{filter_genre_mv}' },
-            { id: 35, title: '#{filter_genre_cm}' }, { id: 80, title: '#{filter_genre_cr}' }, { id: 99, title: '#{filter_genre_dc}' },
-            { id: 18, title: '#{filter_genre_dr}' }, { id: 10751, title: '#{filter_genre_fm}' }, { id: 14, title: '#{filter_genre_fe}' },
-            { id: 36, title: '#{filter_genre_hi}' }, { id: 27, title: '#{filter_genre_ho}' }, { id: 10402, title: '#{filter_genre_mu}' },
-            { id: 9648, title: '#{filter_genre_de}' }, { id: 10749, title: '#{filter_genre_md}' }, { id: 878, title: '#{filter_genre_fa}' },
-            { id: 10770, title: '#{filter_genre_tv}' }, { id: 53, title: '#{filter_genre_tr}' }, { id: 10752, title: '#{filter_genre_mi}' },
-            { id: 37, title: '#{filter_genre_ve}' }
-        ],
-        tv: [
-            { id: 10759, title: '#{filter_genre_aa}' }, { id: 16, title: '#{filter_genre_mv}' }, { id: 35, title: '#{filter_genre_cm}' },
-            { id: 80, title: '#{filter_genre_cr}' }, { id: 99, title: '#{filter_genre_dc}' }, { id: 18, title: '#{filter_genre_dr}' },
-            { id: 10751, title: '#{filter_genre_fm}' }, { id: 10762, title: '#{filter_genre_ch}' }, { id: 9648, title: '#{filter_genre_de}' },
-            { id: 10763, title: '#{filter_genre_nw}' }, { id: 10764, title: '#{filter_genre_rs}' }, { id: 10765, title: '#{filter_genre_hf}' },
-            { id: 10766, title: '#{filter_genre_op}' }, { id: 10767, title: '#{filter_genre_tc}' }, { id: 10768, title: '#{filter_genre_mp}' },
-            { id: 37, title: '#{filter_genre_ve}' }
-        ]
-    };
 
     function isTriggerOn(key, def) {
         var v = Lampa.Storage.get(key, def);
@@ -948,7 +929,6 @@
                 }
             }
             if (needFull) updateCardRating({ card: card, data: data });
-            addPosterMetadataOverlay(card);
             addTypeLabel(card);
             updated++;
         }
@@ -979,7 +959,6 @@
                     if (entries[i].isIntersecting && entries[i].target && entries[i].target.card_data && !isCardUpdatesBlocked()) {
                         updateCardRating({ card: entries[i].target, data: entries[i].target.card_data });
                         if (isQualityShowOn()) processQualityForCards([entries[i].target]);
-                        addPosterMetadataOverlay(entries[i].target);
                         addTypeLabel(entries[i].target);
                         addYearBadge(entries[i].target);
                     }
@@ -1013,7 +992,6 @@
                 var allCards = document.querySelectorAll('.card');
                 for (var k = 0; k < allCards.length; k++) {
                     if (!allCards[k].hasAttribute('data-type-label-checked')) {
-                        addPosterMetadataOverlay(allCards[k]);
                         addTypeLabel(allCards[k]);
                         addYearBadge(allCards[k]);
                         if (!isQualityShowOn()) { $(allCards[k]).find('.card__quality').remove(); allCards[k].removeAttribute('data-quality-added'); }
@@ -1451,62 +1429,21 @@
         });
     }
 
-    // ===== POSTER METADATA OVERLAY =====
-    function getPosterMetadataType(data) {
-        return data && (data.name || data.first_air_date || data.original_name || data.media_type === 'tv' || data.type === 'tv') ? 'tv' : 'movie';
-    }
-    function getPosterMetadataGenres(data) {
-        var ids = data && data.genre_ids ? data.genre_ids : [];
-        var list = POSTER_METADATA_GENRES[getPosterMetadataType(data)] || [];
-        var titles = [];
-        for (var i = 0; i < ids.length; i++) {
-            for (var j = 0; j < list.length; j++) {
-                if (list[j].id == ids[i]) {
-                    titles.push(Lampa.Utils.capitalizeFirstLetter(Lampa.Lang.translate(list[j].title)));
-                    break;
-                }
-            }
-        }
-        return titles.slice(0, 2);
-    }
-    function appendPosterMetadataGenres(container, data) {
-        var genres = getPosterMetadataGenres(data);
-        if (!genres.length) return;
-        var el = document.createElement('div');
-        el.className = 'metadata__genres';
-        el.textContent = genres.join(', ');
-        container.appendChild(el);
-    }
-    function appendPosterMetadataTitle(container, data) {
-        var title = data.title || data.name || data.original_title || data.original_name || '';
-        if (!title) return;
-        var el = document.createElement('div');
-        el.className = 'metadata__title';
-        el.textContent = title;
-        container.appendChild(el);
-    }
-    function addPosterMetadataOverlay(card) {
-        if (!card || !card.card_data || !card.card_data.id) return;
-        if ($(card).closest('.explorer, .layer--online, .select-box').length) return;
-        var view = card.querySelector && card.querySelector('.card__view');
-        if (!view) return;
-        if (card.classList && card.classList.contains('card--wide')) return;
-        markCardOverlayHost(card);
-        var old = view.querySelector('.card__metadata[data-card-overlay-metadata="1"]');
-        if (old) old.remove();
-        var metadata = document.createElement('div');
-        metadata.className = 'card__metadata';
-        metadata.setAttribute('data-card-overlay-metadata', '1');
-        appendPosterMetadataGenres(metadata, card.card_data);
-        appendPosterMetadataTitle(metadata, card.card_data);
-        view.appendChild(metadata);
-    }
-    function refreshAllPosterMetadataOverlays() {
-        var allCards = document.querySelectorAll('.card');
-        for (var i = 0; i < allCards.length; i++) addPosterMetadataOverlay(allCards[i]);
-    }
-
     // ===== TYPE LABELS =====
+    function positionHistoryIconUnderTypeLabel(card, typeLabel) {
+        var view = card && card.querySelector && card.querySelector('.card__view');
+        if (!view || !typeLabel || !typeLabel.length) return;
+        var iconsInner = view.querySelector('.card__icons-inner');
+        if (!iconsInner || !iconsInner.querySelector('.icon--history')) return;
+        markCardOverlayHost(card);
+        iconsInner.setAttribute('data-card-overlay-history-under-label', '1');
+    }
+    function resetHistoryIconPosition(card) {
+        var view = card && card.querySelector && card.querySelector('.card__view');
+        if (!view) return;
+        var iconsInner = view.querySelector('.card__icons-inner[data-card-overlay-history-under-label="1"]');
+        if (iconsInner) iconsInner.removeAttribute('data-card-overlay-history-under-label');
+    }
     function getTypeLabelEpisodeCacheKey(data) {
         return data && data.id ? 'tv_' + data.id : '';
     }
@@ -1590,9 +1527,9 @@
         if (meta.type === 'tv' || meta.card_type === 'tv' || meta.seasons || meta.number_of_seasons > 0 || meta.episodes || meta.number_of_episodes > 0 || meta.is_series) isTV = true;
         if (!isTV) { if ($(card).hasClass('card--tv') || $(card).data('type') === 'tv') isTV = true; else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|ТВ|TV)/i)) isTV = true; }
         var isPerson = $(card).hasClass('card--person') || $(card).closest('.scroll--persons, .items--persons, .crew').length > 0;
-        if (isPerson) { view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
+        if (isPerson) { resetHistoryIconPosition(card); view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
         var hasMovieTraits = $(card).find('.card__age').length > 0 || $(card).find('.card__vote').length > 0 || /\b(19|20)\d{2}\b/.test($(card).text());
-        if (!isTV && !hasMovieTraits) { view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
+        if (!isTV && !hasMovieTraits) { resetHistoryIconPosition(card); view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
         view.find('.content-label').remove();
         var lbl = view.find('.card__type[data-card-overlay-type-label="1"], .card__type').first();
         if (!lbl.length) {
@@ -1605,9 +1542,11 @@
         if (isTV) updateTypeLabelEpisodeInfo(card, lbl, meta);
         lbl.css({ backgroundColor: getTypeLabelBackground(isTV) });
         if (isTypeLabelsColoredOn()) lbl.addClass(isTV ? 'serial-label' : 'movie-label');
+        if (isTV) positionHistoryIconUnderTypeLabel(card, lbl);
+        else resetHistoryIconPosition(card);
     }
     function processAllTypeLabels() {
-        if (!isTypeLabelsShowOn()) { $('.card .content-label').remove(); return; }
+        if (!isTypeLabelsShowOn()) { $('.card').each(function () { resetHistoryIconPosition(this); }); $('.card .content-label').remove(); return; }
         $('body').attr('data-movie-labels', isTypeLabelsShowOn() ? 'on' : 'off');
         $('.card').each(function () { addTypeLabel(this); });
     }
@@ -1617,7 +1556,6 @@
         processAllTypeLabels();
     }
     function refreshAllCardOverlays() {
-        refreshAllPosterMetadataOverlays();
         refreshAllTypeLabels();
         refreshAllYearBadges();
     }
@@ -2004,12 +1942,6 @@
         });
         Lampa.SettingsApi.addParam({
             component: 'card_overlay',
-            param: { name: TYPE_LABEL_EPISODE_INFO_KEY, type: 'trigger', default: true },
-            field: { name: 'Серии в лейбле «Сериал»', description: 'Показывать последний вышедший сезон и эпизод на постере' },
-            onChange: function () { updateSettingsKeepFocus(TYPE_LABEL_EPISODE_INFO_KEY); refreshAllCardOverlays(); }
-        });
-        Lampa.SettingsApi.addParam({
-            component: 'card_overlay',
             param: { name: 'animated_reactions_in_player', type: 'trigger', default: true },
             field: { name: 'Анимированные реакции на странице фильма', description: 'Заменять иконки реакций на анимированные GIF в карточке фильма' },
             onChange: function () {
@@ -2151,7 +2083,6 @@
                         if (card && data && data.id) {
                             updateCardRating({ card: card, data: data });
                             if (isQualityShowOn()) processQualityForCards([card]);
-                            addPosterMetadataOverlay(card);
                             addTypeLabel(card);
                             addYearBadge(card);
                         }
@@ -2266,10 +2197,8 @@
             '.card .card__view{position:relative!important}' +
             '.card .card__view>.card__img{z-index:0!important}' +
             '.card .card__vote,.card .card__vote-line,.card .card__vote-separate-wrap,.card .card__vote-separate-wrap .card__vote,.card .card__quality,.card .card__type[data-card-overlay-type-label="1"],.card .content-label,.card .card__year-badge{z-index:10!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
-            '.card__metadata[data-card-overlay-metadata="1"]{position:absolute!important;bottom:0!important;left:0!important;right:0!important;padding:3.5em .75em .5em!important;color:#fff!important;display:block!important;border-radius:0 0 1em 1em!important;background:linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,.90) 25%,rgba(0,0,0,.80) 45%,rgba(0,0,0,.65) 65%,rgba(0,0,0,.40) 80%,rgba(0,0,0,0) 100%)!important;z-index:1!important;pointer-events:none!important}' +
-            '.card--wide .card__metadata[data-card-overlay-metadata="1"]{display:none!important}' +
-            '.card__metadata[data-card-overlay-metadata="1"] .metadata__genres{font-size:.75em!important;opacity:.95!important;margin-bottom:.35em!important;display:flex!important;align-items:center!important;gap:.5em!important;text-shadow:0 .0625em .1875em rgba(0,0,0,.8)!important}' +
-            '.card__metadata[data-card-overlay-metadata="1"] .metadata__title{font-size:1.15em!important;line-height:1.2!important;max-height:3.6em!important;overflow:hidden!important;text-overflow:ellipsis!important;text-shadow:0 .0625em .1875em rgba(0,0,0,.9)!important;display:-webkit-box!important;-webkit-line-clamp:3!important;-webkit-box-orient:vertical!important}' +
+            '.card__icons-inner[data-card-overlay-history-under-label="1"]{position:absolute!important;left:0!important;top:2.15em!important;right:auto!important;bottom:auto!important;z-index:10!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0.25em 0.45em!important;border-radius:0 0.75em!important;background:rgba(0,0,0,' + getOverlayAlpha() + ')!important;color:white!important;line-height:1!important;box-sizing:border-box!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
+            '.card__icons-inner[data-card-overlay-history-under-label="1"] .card__icon{position:static!important;margin:0!important;width:1em!important;height:1em!important;line-height:1!important}' +
             '.card.card-overlay-has-overlays>.card__title,.card.card-overlay-has-overlays>.card__age,.card.card-overlay-has-overlays>.card__vote{display:none!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap){display:none!important}' +
             '.card__vote,.card__vote-separate-wrap .card__vote{position:absolute!important;right:0!important;bottom:0!important;padding:0.2em 0.45em!important;border-radius:0.75em 0!important;white-space:nowrap!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
@@ -2369,7 +2298,6 @@
                 if (data && data.id) {
                     updateCardRating({ card: event.object.card, data: data });
                     if (isQualityShowOn()) processQualityForCards([event.object.card]);
-                    addPosterMetadataOverlay(event.object.card);
                     addTypeLabel(event.object.card);
                     addYearBadge(event.object.card);
                     scheduleVisibleRatingsUpdate(0);
