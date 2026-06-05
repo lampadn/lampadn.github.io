@@ -1443,8 +1443,12 @@
         try {
             var st = window.getComputedStyle(labelEl);
             if (!st || st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') return '0px';
-            var rect = labelEl.getBoundingClientRect();
-            if (!rect || rect.height <= 0) return '0px';
+            var labelHeight = labelEl.offsetHeight || 0;
+            if (!(labelHeight > 0)) {
+                var rect = labelEl.getBoundingClientRect();
+                labelHeight = rect && rect.height ? rect.height : 0;
+            }
+            if (!(labelHeight > 0)) return '0px';
             var gap = 0;
             try {
                 var ratingGapEl = view.querySelector('.card__vote-separate-wrap .card__vote:not(.visible-last):not(.visible-only):not(.card__vote--hidden)');
@@ -1455,7 +1459,7 @@
                 if (!fontSize) fontSize = parseFloat(st.fontSize) || 16;
                 gap = fontSize * 0.15;
             }
-            return (rect.height + gap) + 'px';
+            return (labelHeight + gap) + 'px';
         } catch (e2) { return '0px'; }
     }
     function setHistoryIconLabelPosition(card, iconsInner, typeLabel) {
@@ -2251,8 +2255,8 @@
             '.card .card__view{position:relative!important}' +
             '.card .card__view>.card__img{z-index:0!important}' +
             '.card .card__vote,.card .card__vote-line,.card .card__vote-separate-wrap,.card .card__vote-separate-wrap .card__vote,.card .card__quality,.card .card__type[data-card-overlay-type-label="1"],.card .content-label,.card .card__year-badge{z-index:10!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
-            '.card__icons-inner[data-card-overlay-history-under-label="1"]{z-index:10!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:auto!important;min-width:0!important;max-width:none!important;padding:0 0.45em!important;border-radius:0 0.75em 0.75em 0!important;background:rgba(0,0,0,' + getOverlayAlpha() + ')!important;color:white!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:1.4em!important;min-height:0!important;box-sizing:border-box!important;overflow:visible!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;margin:0!important;border:none!important}' +
-            '.card__icons-inner[data-card-overlay-history-under-label="1"] .card__icon{position:static!important;margin:0!important;line-height:1!important}' +
+            '.card__icons-inner[data-card-overlay-history-under-label="1"]{z-index:10!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:max-content!important;min-width:0!important;max-width:max-content!important;padding:0!important;border-radius:0 0.75em 0.75em 0!important;background:rgba(0,0,0,' + getOverlayAlpha() + ')!important;color:white!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:1.4em!important;min-height:0!important;box-sizing:border-box!important;overflow:visible!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;margin:0!important;border:none!important}' +
+            '.card__icons-inner[data-card-overlay-history-under-label="1"] .card__icon{position:static!important;margin:0!important;padding:0!important;min-width:0!important;line-height:1!important}' +
             '.card.card-overlay-has-overlays>.card__title,.card.card-overlay-has-overlays>.card__age,.card.card-overlay-has-overlays>.card__vote{display:none!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap){display:none!important}' +
             '.card__vote,.card__vote-separate-wrap .card__vote{position:absolute!important;right:0!important;bottom:0!important;padding:0.2em 0.45em!important;border-radius:0.75em 0!important;white-space:nowrap!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
