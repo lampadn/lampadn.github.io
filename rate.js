@@ -575,7 +575,7 @@
         if (!el) return;
         el.classList.remove('card__vote--hidden');
         el.style.display = '';
-        if (el.closest) refreshHistoryIconPosition(el.closest('.card'));
+        if (el.closest) updateEpisodeLabelPosition(el.closest('.card'));
     }
 
     function updateCardRatingLine(ratingLine, data) {
@@ -638,7 +638,7 @@
         ratingLine.style.background = getRatingBackgroundColor(firstRating || '0') || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
         var anyVisible = isRatingLineItemVisible(tmdbItem) || isRatingLineItemVisible(imdbItem) || isRatingLineItemVisible(kpItem) || isRatingLineItemVisible(lampaItem);
         ratingLine.style.display = anyVisible ? '' : 'none';
-        refreshHistoryIconPosition(ratingLine.closest ? ratingLine.closest('.card') : null);
+        updateEpisodeLabelPosition(ratingLine.closest ? ratingLine.closest('.card') : null);
     }
 
     function getRatingDisplayMode() { return Lampa.Storage.get('rating_display_mode', 'separate'); }
@@ -648,7 +648,7 @@
         var idStr = data.id.toString();
         if (el.dataset.movieId !== idStr) return;
         el.classList.add('card__vote--separate');
-        function refreshBR() { var c = el.closest('.card'); if (c) { fixSeparateBorderRadius(c); refreshHistoryIconPosition(c); } }
+        function refreshBR() { var c = el.closest('.card'); if (c) { fixSeparateBorderRadius(c); updateEpisodeLabelPosition(c); } }
         if (rateSource === 'tmdb') {
             var rating = getTMDBRating(data);
             if (rating !== '0.0') {
@@ -711,7 +711,7 @@
         var elements = card.querySelectorAll('.card__vote-separate-wrap [data-rate-source]');
         for (var i = 0; i < elements.length; i++) { elements[i].dataset.movieId = idStr; fillSingleRatingElement(elements[i], data, elements[i].dataset.rateSource); }
         fixSeparateBorderRadius(card);
-        refreshHistoryIconPosition(card);
+        updateEpisodeLabelPosition(card);
     }
     function fixSeparateBorderRadius(card) {
         var wrap = card.querySelector('.card__vote-separate-wrap');
@@ -730,6 +730,7 @@
             ratingElement.className = voteClass('rate--tmdb');
             ratingElement.innerHTML = '<span style="color:' + getRatingColor(tmdb) + '">' + formatRating(tmdb) + '</span><span class="source--name"></span>';
             ratingElement.style.background = getRatingBackgroundColor(tmdb) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
+            updateEpisodeLabelPosition(ratingElement.closest ? ratingElement.closest('.card') : null);
             return;
         }
         var lampaKey = (data.seasons || data.first_air_date || data.original_name) ? 'tv_' + data.id : 'movie_' + data.id;
@@ -739,6 +740,7 @@
             ratingElement.innerHTML = '<span style="color:' + getRatingColor(cachedLampa.rating) + '">' + formatRating(cachedLampa.rating) + '</span>';
             renderLampaPosterIcon(ratingElement, cachedLampa.medianReaction);
             ratingElement.style.background = getRatingBackgroundColor(cachedLampa.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
+            updateEpisodeLabelPosition(ratingElement.closest ? ratingElement.closest('.card') : null);
             return;
         }
         getLampaRating(lampaKey).then(function (result) {
@@ -748,6 +750,7 @@
                 ratingElement.innerHTML = '<span style="color:' + getRatingColor(result.rating) + '">' + formatRating(result.rating) + '</span>';
                 renderLampaPosterIcon(ratingElement, result.medianReaction);
                 ratingElement.style.background = getRatingBackgroundColor(result.rating) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
+                updateEpisodeLabelPosition(ratingElement.closest ? ratingElement.closest('.card') : null);
             } else { ratingElement.classList.add('card__vote--hidden'); }
         });
     }
@@ -756,6 +759,7 @@
         if (!parent) return;
         var list = parent.querySelectorAll('.card__vote, .card__vote-line');
         for (var i = 0; i < list.length; i++) list[i].remove();
+        updateEpisodeLabelPosition(card);
     }
 
     function updateCardRating(item) {
@@ -816,7 +820,7 @@
                 el.className = voteClass('rate--tmdb');
                 el.innerHTML = '<span style="color:' + getRatingColor(tmdb) + '">' + formatRating(tmdb) + '</span><span class="source--name"></span>';
                 el.style.background = getRatingBackgroundColor(tmdb) || ('rgba(0,0,0,' + getOverlayAlpha() + ')');
-                if (el.closest) refreshHistoryIconPosition(el.closest('.card'));
+                if (el.closest) updateEpisodeLabelPosition(el.closest('.card'));
                 return true;
             }
             return false;
@@ -871,6 +875,7 @@
         for (var i = 0; i < allCards.length; i++) {
             var card = allCards[i]; var data = card.card_data;
             if (data && data.id) updateCardRating({ card: card, data: data });
+            updateEpisodeLabelPosition(card);
         }
     };
 
@@ -934,6 +939,7 @@
             }
             if (needFull) updateCardRating({ card: card, data: data });
             addTypeLabel(card);
+            updateEpisodeLabelPosition(card);
             updated++;
         }
     }
@@ -1295,6 +1301,7 @@
             qualityContainer.style.background = getQualityBackground(resQuality);
             viewSection.appendChild(qualityContainer);
         }
+        updateEpisodeLabelPosition(itemElement);
     }
     function processQualityForCards(itemsList) {
         for (var idx = 0; idx < itemsList.length; idx++) {
@@ -1324,6 +1331,7 @@
             allCards[i].removeAttribute('data-quality-added');
             var existing = allCards[i].querySelectorAll('.card__quality');
             for (var j = 0; j < existing.length; j++) existing[j].remove();
+            updateEpisodeLabelPosition(allCards[i]);
         }
         if (isQualityShowOn()) processQualityForCards(allCards);
     }
@@ -1434,75 +1442,6 @@
     }
 
     // ===== TYPE LABELS =====
-    function getHistoryIconTypeLabelOffset(view, typeLabel, iconsInner) {
-        var labelEl = typeLabel && typeLabel.jquery ? typeLabel[0] : typeLabel;
-        if (!labelEl) {
-            try { labelEl = view.querySelector(':scope > .card__type[data-card-overlay-type-label="1"], :scope > .content-label'); } catch (e) {}
-        }
-        if (!labelEl) return '0px';
-        try {
-            var st = window.getComputedStyle(labelEl);
-            if (!st || st.display === 'none' || st.visibility === 'hidden' || st.opacity === '0') return '0px';
-            var labelHeight = labelEl.offsetHeight || 0;
-            if (!(labelHeight > 0)) {
-                var rect = labelEl.getBoundingClientRect();
-                labelHeight = rect && rect.height ? rect.height : 0;
-            }
-            if (!(labelHeight > 0)) return '0px';
-            var gap = 0;
-            try {
-                var ratingGapEl = view.querySelector('.card__vote-separate-wrap .card__vote:not(.visible-last):not(.visible-only):not(.card__vote--hidden)');
-                if (ratingGapEl) gap = parseFloat(window.getComputedStyle(ratingGapEl).marginBottom) || 0;
-            } catch (e3) {}
-            if (!(gap > 0)) {
-                var fontSize = iconsInner ? parseFloat(window.getComputedStyle(iconsInner).fontSize) : 0;
-                if (!fontSize) fontSize = parseFloat(st.fontSize) || 16;
-                gap = fontSize * 0.15;
-            }
-            return (labelHeight + gap) + 'px';
-        } catch (e2) { return '0px'; }
-    }
-    function setHistoryIconLabelPosition(card, iconsInner, typeLabel) {
-        var view = card && card.querySelector && card.querySelector('.card__view');
-        if (!view || !iconsInner) return;
-        var offset = getHistoryIconTypeLabelOffset(view, typeLabel, iconsInner);
-        iconsInner.removeAttribute('data-card-overlay-history-position');
-        iconsInner.style.setProperty('position', 'absolute', 'important');
-        iconsInner.style.setProperty('left', '0', 'important');
-        iconsInner.style.setProperty('right', 'auto', 'important');
-        iconsInner.style.setProperty('top', offset, 'important');
-        iconsInner.style.setProperty('bottom', 'auto', 'important');
-    }
-    function refreshHistoryIconPosition(card) {
-        var view = card && card.querySelector && card.querySelector('.card__view');
-        if (!view) return;
-        var iconsInner = view.querySelector('.card__icons-inner[data-card-overlay-history-under-label="1"]');
-        var typeLabel = view.querySelector('.card__type[data-card-overlay-type-label="1"], .content-label');
-        if (iconsInner) setHistoryIconLabelPosition(card, iconsInner, typeLabel);
-    }
-    function positionHistoryIconUnderTypeLabel(card, typeLabel) {
-        var view = card && card.querySelector && card.querySelector('.card__view');
-        if (!view || !typeLabel || !typeLabel.length) return;
-        var iconsInner = view.querySelector('.card__icons-inner');
-        if (!iconsInner || !iconsInner.querySelector('.icon--history')) { resetHistoryIconPosition(card); return; }
-        markCardOverlayHost(card);
-        iconsInner.setAttribute('data-card-overlay-history-under-label', '1');
-        setHistoryIconLabelPosition(card, iconsInner, typeLabel);
-    }
-    function resetHistoryIconPosition(card) {
-        var view = card && card.querySelector && card.querySelector('.card__view');
-        if (!view) return;
-        var iconsInner = view.querySelector('.card__icons-inner[data-card-overlay-history-under-label="1"]');
-        if (iconsInner) {
-            iconsInner.removeAttribute('data-card-overlay-history-under-label');
-            iconsInner.removeAttribute('data-card-overlay-history-position');
-            iconsInner.style.removeProperty('position');
-            iconsInner.style.removeProperty('right');
-            iconsInner.style.removeProperty('left');
-            iconsInner.style.removeProperty('top');
-            iconsInner.style.removeProperty('bottom');
-        }
-    }
     function getTypeLabelEpisodeCacheKey(data) {
         return data && data.id ? 'tv_' + data.id : '';
     }
@@ -1538,39 +1477,100 @@
     function getCardTmdbId(card, meta) {
         return (meta && meta.id) || $(card).data('id') || $(card).attr('data-id') || (card && card.card_data && card.card_data.id) || '';
     }
-    function applyTypeLabelText(label, text) {
-        if (!label || !label.length) return;
-        label.text(text);
+    function removeEpisodeLabel(card) {
+        var view = card && card.querySelector && card.querySelector('.card__view');
+        if (!view) return;
+        var labels = view.querySelectorAll('.card__episode-label');
+        for (var i = 0; i < labels.length; i++) labels[i].remove();
     }
-    function updateTypeLabelEpisodeInfo(card, label, meta) {
-        if (!isTypeLabelEpisodeInfoOn()) return;
+    function isVisibleOverlayElement(el) {
+        if (!el) return false;
+        try {
+            var st = window.getComputedStyle(el);
+            return !!(st && st.display !== 'none' && st.visibility !== 'hidden' && st.opacity !== '0' && el.offsetWidth > 0 && el.offsetHeight > 0);
+        } catch (e) { return false; }
+    }
+    function getVisibleDirectOverlayBox(view, isMatch) {
+        var children = view.children || [];
+        for (var i = 0; i < children.length; i++) {
+            var el = children[i];
+            if (!isMatch(el) || !isVisibleOverlayElement(el)) continue;
+            return { left: el.offsetLeft, right: el.offsetLeft + el.offsetWidth };
+        }
+        return null;
+    }
+    function updateEpisodeLabelPosition(card) {
+        var view = card && card.querySelector && card.querySelector('.card__view');
+        if (!view) return;
+        var label = view.querySelector('.card__episode-label');
+        if (!label) return;
+        try {
+            var viewWidth = view.clientWidth || view.offsetWidth;
+            var qualityBox = getVisibleDirectOverlayBox(view, function (el) { return el.classList && el.classList.contains('card__quality'); });
+            var ratingBox = getVisibleDirectOverlayBox(view, function (el) {
+                return el.classList && (el.classList.contains('card__vote--bottom') || Lampa.Storage.get('rating_position', 'bottom') === 'bottom') && ((el.classList.contains('card__vote-separate-wrap') || el.classList.contains('card__vote-line') || (el.classList.contains('card__vote') && !el.classList.contains('card__vote-separate-wrap') && !el.classList.contains('card__vote-line'))));
+            });
+            var leftEdge = qualityBox ? qualityBox.right : 0;
+            var rightEdge = ratingBox ? ratingBox.left : viewWidth;
+            if (rightEdge <= leftEdge) {
+                leftEdge = 0;
+                rightEdge = viewWidth;
+            }
+            var center = (leftEdge + rightEdge) / 2;
+            label.style.setProperty('left', center + 'px', 'important');
+            label.style.setProperty('transform', 'translateX(-50%)', 'important');
+        } catch (e2) {
+            label.style.setProperty('left', '50%', 'important');
+            label.style.setProperty('transform', 'translateX(-50%)', 'important');
+        }
+    }
+    function applyEpisodeLabelText(card, text) {
+        if (!text) { removeEpisodeLabel(card); return; }
+        var view = card && card.querySelector && card.querySelector('.card__view');
+        if (!view) return;
+        markCardOverlayHost(card);
+        var label = view.querySelector('.card__episode-label');
+        if (!label) {
+            label = document.createElement('div');
+            label.className = 'card__episode-label';
+            view.appendChild(label);
+        }
+        label.textContent = text;
+        label.style.backgroundColor = getTypeLabelBackground(true);
+        label.classList.remove('movie-label', 'serial-label');
+        if (isTypeLabelsColoredOn()) label.classList.add('serial-label');
+        updateEpisodeLabelPosition(card);
+    }
+    function updateTypeLabelEpisodeInfo(card, meta) {
+        if (!isTypeLabelEpisodeInfoOn()) { removeEpisodeLabel(card); return; }
         var tmdbId = getCardTmdbId(card, meta);
-        if (!tmdbId) return;
+        if (!tmdbId) { removeEpisodeLabel(card); return; }
         var cacheKey = getTypeLabelEpisodeCacheKey({ id: tmdbId });
         var metaEpisodeText = formatTypeLabelEpisodeText(meta && meta.last_episode_to_air);
         if (metaEpisodeText) {
             setTypeLabelEpisodeCache(cacheKey, metaEpisodeText);
-            applyTypeLabelText(label, 'Сериал ' + metaEpisodeText);
+            applyEpisodeLabelText(card, metaEpisodeText);
             return;
         }
         var cached = getTypeLabelEpisodeCache(cacheKey);
         if (cached && cached.text) {
-            applyTypeLabelText(label, 'Сериал ' + cached.text);
+            applyEpisodeLabelText(card, cached.text);
             return;
         }
+        removeEpisodeLabel(card);
         Lampa.Network.silent(
             Lampa.TMDB.api('tv/' + tmdbId + '?api_key=' + Lampa.TMDB.key()),
             function (tvInfo) {
                 var episodeText = formatTypeLabelEpisodeText(tvInfo && tvInfo.last_episode_to_air);
                 if (!episodeText) return;
                 setTypeLabelEpisodeCache(cacheKey, episodeText);
-                if (label && label.length && label.closest('body').length) applyTypeLabelText(label, 'Сериал ' + episodeText);
+                if (card && document.body.contains(card)) applyEpisodeLabelText(card, episodeText);
             }
         );
     }
     function addTypeLabel(card) {
-        if (!isTypeLabelsShowOn()) { resetHistoryIconPosition(card); return; }
-        if ($(card).closest('.explorer, .layer--online, .select-box').length) { resetHistoryIconPosition(card); $(card).find('.content-label').remove(); return; }
+        if (!isTypeLabelsShowOn()) { removeEpisodeLabel(card); return; }
+        if ($(card).closest('.explorer, .layer--online, .select-box').length) { removeEpisodeLabel(card); $(card).find('.content-label').remove(); return; }
         var view = $(card).find('.card__view');
         if (!view.length) return;
         markCardOverlayHost(card);
@@ -1586,9 +1586,9 @@
         if (meta.type === 'tv' || meta.card_type === 'tv' || meta.seasons || meta.number_of_seasons > 0 || meta.episodes || meta.number_of_episodes > 0 || meta.is_series) isTV = true;
         if (!isTV) { if ($(card).hasClass('card--tv') || $(card).data('type') === 'tv') isTV = true; else if ($(card).find('.card__type, .card__temp').text().match(/(сезон|серия|эпизод|ТВ|TV)/i)) isTV = true; }
         var isPerson = $(card).hasClass('card--person') || $(card).closest('.scroll--persons, .items--persons, .crew').length > 0;
-        if (isPerson) { resetHistoryIconPosition(card); view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
+        if (isPerson) { removeEpisodeLabel(card); view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
         var hasMovieTraits = $(card).find('.card__age').length > 0 || $(card).find('.card__vote').length > 0 || /\b(19|20)\d{2}\b/.test($(card).text());
-        if (!isTV && !hasMovieTraits) { resetHistoryIconPosition(card); view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
+        if (!isTV && !hasMovieTraits) { removeEpisodeLabel(card); view.find('.content-label').remove(); view.find('.card__type[data-card-overlay-type-label="1"]').remove(); return; }
         view.find('.content-label').remove();
         var lbl = view.find('.card__type[data-card-overlay-type-label="1"], .card__type').first();
         if (!lbl.length) {
@@ -1598,20 +1598,22 @@
         lbl.attr('data-card-overlay-type-label', '1').show();
         lbl.removeClass('serial-label movie-label');
         lbl.text(isTV ? 'Сериал' : 'Фильм');
-        if (isTV) updateTypeLabelEpisodeInfo(card, lbl, meta);
+        if (isTV) updateTypeLabelEpisodeInfo(card, meta);
+        else removeEpisodeLabel(card);
         lbl.css({ backgroundColor: getTypeLabelBackground(isTV) });
         if (isTypeLabelsColoredOn()) lbl.addClass(isTV ? 'serial-label' : 'movie-label');
-        positionHistoryIconUnderTypeLabel(card, lbl);
     }
     function processAllTypeLabels() {
-        if (!isTypeLabelsShowOn()) { $('.card').each(function () { resetHistoryIconPosition(this); }); $('.card .content-label').remove(); return; }
+        if (!isTypeLabelsShowOn()) { $('.card').each(function () { removeEpisodeLabel(this); }); $('.card .content-label').remove(); return; }
         $('body').attr('data-movie-labels', isTypeLabelsShowOn() ? 'on' : 'off');
         $('.card').each(function () { addTypeLabel(this); });
     }
     function refreshAllTypeLabels() {
         $('.card .content-label').remove();
         $('.card .card__type[data-card-overlay-type-label="1"]').remove();
+        $('.card .card__episode-label').remove();
         processAllTypeLabels();
+        $('.card').each(function () { updateEpisodeLabelPosition(this); });
     }
     function refreshAllCardOverlays() {
         refreshAllTypeLabels();
@@ -2254,9 +2256,7 @@
             '[data-name="rating_modal_open"] .settings-param__value,[data-name="rating_modal_open"] .settings-param__control,[data-name="rating_modal_open"] input[type="checkbox"],[data-name="clear_ratings_cache"] .settings-param__value,[data-name="clear_ratings_cache"] .settings-param__control,[data-name="clear_ratings_cache"] input[type="checkbox"],[data-name="clear_quality_cache"] .settings-param__value,[data-name="clear_quality_cache"] .settings-param__control,[data-name="clear_quality_cache"] input[type="checkbox"]{display:none!important}' +
             '.card .card__view{position:relative!important}' +
             '.card .card__view>.card__img{z-index:0!important}' +
-            '.card .card__vote,.card .card__vote-line,.card .card__vote-separate-wrap,.card .card__vote-separate-wrap .card__vote,.card .card__quality,.card .card__type[data-card-overlay-type-label="1"],.card .content-label,.card .card__year-badge{z-index:10!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
-            '.card__icons-inner[data-card-overlay-history-under-label="1"]{z-index:10!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;width:max-content!important;min-width:0!important;max-width:max-content!important;padding:0!important;border-radius:0 0.75em 0.75em 0!important;background:rgba(0,0,0,' + getOverlayAlpha() + ')!important;color:white!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:1.4em!important;min-height:0!important;box-sizing:border-box!important;overflow:visible!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;margin:0!important;border:none!important}' +
-            '.card__icons-inner[data-card-overlay-history-under-label="1"] .card__icon{position:static!important;margin:0!important;padding:0!important;min-width:0!important;line-height:1!important}' +
+            '.card .card__vote,.card .card__vote-line,.card .card__vote-separate-wrap,.card .card__vote-separate-wrap .card__vote,.card .card__quality,.card .card__type[data-card-overlay-type-label="1"],.card .content-label,.card .card__episode-label,.card .card__year-badge{z-index:10!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
             '.card.card-overlay-has-overlays>.card__title,.card.card-overlay-has-overlays>.card__age,.card.card-overlay-has-overlays>.card__vote{display:none!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap){display:none!important}' +
             '.card__vote,.card__vote-separate-wrap .card__vote{position:absolute!important;right:0!important;bottom:0!important;padding:0.2em 0.45em!important;border-radius:0.75em 0!important;white-space:nowrap!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
@@ -2307,6 +2307,7 @@
             '.rate--imdb .source--name{background-image:url("data:image/svg+xml,' + detailImdbSvgCss + '")}' +
             '@media (max-width:480px) and (orientation:portrait){.full-start-new__rate.rate--lampa,.full-start__rate.rate--lampa{min-width:0!important}body:not([data-lampa-icon-on]) .full-start-new__rate.rate--lampa,body:not([data-lampa-icon-on]) .full-start__rate.rate--lampa{min-width:0!important}}' +
             '.card__quality{position:absolute!important;left:0!important;bottom:0!important;padding:0.25em 0.45em!important;border-radius:0 0.75em!important;color:white!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;white-space:nowrap!important}' +
+            '.card__episode-label{position:absolute!important;left:50%!important;right:auto!important;bottom:0!important;top:auto!important;transform:translateX(-50%)!important;color:white!important;padding:0.2em 0.45em!important;border-radius:0.75em 0.75em 0 0!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:auto!important;z-index:10!important;white-space:nowrap!important;box-sizing:border-box!important;margin:0!important;border:none!important}' +
             '.content-label,.card__type[data-card-overlay-type-label="1"]{position:absolute!important;left:0!important;top:0!important;color:white!important;padding:0.25em 0.45em!important;border-radius:0.75em 0!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;display:flex!important;align-items:center!important;justify-content:center!important}' +
             '.full-start-new__rate-line .full-start__status,.full-start-new__rate-line .full-start__pg:not(.hide),.full-start-new__meta-line .full-start__status,.full-start-new__meta-line .full-start__pg:not(.hide){border-radius:0.3em!important;padding:0.2em 0.4em!important;display:inline-block!important;line-height:1!important;white-space:nowrap!important}' +
             'body.colored-elements-on .full-start__pg.age-kids{background:#2ecc71!important;color:white!important}' +
