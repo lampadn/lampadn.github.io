@@ -2257,7 +2257,7 @@
             '.card .card__view{position:relative!important}' +
             '.card .card__view>.card__img{z-index:0!important}' +
             '.card .card__vote,.card .card__vote-line,.card .card__vote-separate-wrap,.card .card__vote-separate-wrap .card__vote,.card .card__quality,.card .card__type[data-card-overlay-type-label="1"],.card .content-label,.card .card__episode-label,.card .card__year-badge{z-index:10!important;opacity:1!important;-webkit-filter:none!important;filter:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}' +
-            '.card.card-overlay-has-overlays>.card__title,.card.card-overlay-has-overlays>.card__age,.card.card-overlay-has-overlays>.card__vote{display:none!important}' +
+            '.card.card-overlay-has-overlays>.card__age,.card.card-overlay-has-overlays>.card__vote{display:none!important}' +
             '.card__view > .card__vote:not(.card__vote--top):not(.card__vote--bottom):not(.card__vote-line):not(.card__vote-separate-wrap){display:none!important}' +
             '.card__vote,.card__vote-separate-wrap .card__vote{position:absolute!important;right:0!important;bottom:0!important;padding:0.2em 0.45em!important;border-radius:0.75em 0!important;white-space:nowrap!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:auto!important;border:none!important;margin:0!important}' +
             '.card__vote-separate-wrap .card__vote{position:static!important;margin:0!important}' +
