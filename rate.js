@@ -1415,9 +1415,11 @@
             return !el.closest('.full-start-new__rate, .full-start__rate').length;
         }).first();
         var quality = render.find('.full-start__status.qualview-quality').first();
+        var seasonInfoDetails = render.find('.season-info-details-label').first();
         var metaItems = [];
         if (age.length) metaItems.push(age);
         if (nativeStatus.length) metaItems.push(nativeStatus);
+        if (seasonInfoDetails.length) metaItems.push(seasonInfoDetails);
         if (quality.length) metaItems.push(quality);
         if (!metaItems.length) {
             rateLine.siblings('.full-start-new__meta-line').remove();
