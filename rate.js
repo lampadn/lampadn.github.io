@@ -1506,6 +1506,15 @@
         if (!view) return;
         var label = view.querySelector('.card__episode-label');
         if (!label) return;
+        if (isEpisodeLabelUnderType()) {
+            label.style.setProperty('left', '0', 'important');
+            label.style.setProperty('right', 'auto', 'important');
+            label.style.setProperty('top', 'calc(0.25em + 1.1em + 0.25em)', 'important');
+            label.style.setProperty('bottom', 'auto', 'important');
+            label.style.setProperty('transform', 'none', 'important');
+            label.style.setProperty('border-radius', '0 0.75em', 'important');
+            return;
+        }
         try {
             var viewWidth = view.clientWidth || view.offsetWidth;
             var qualityBox = getVisibleDirectOverlayBox(view, function (el) { return el.classList && el.classList.contains('card__quality'); });
@@ -1520,10 +1529,18 @@
             }
             var center = (leftEdge + rightEdge) / 2;
             label.style.setProperty('left', center + 'px', 'important');
+            label.style.setProperty('right', 'auto', 'important');
+            label.style.setProperty('top', 'auto', 'important');
+            label.style.setProperty('bottom', '0', 'important');
             label.style.setProperty('transform', 'translateX(-50%)', 'important');
+            label.style.setProperty('border-radius', '0.75em 0.75em 0 0', 'important');
         } catch (e2) {
             label.style.setProperty('left', '50%', 'important');
+            label.style.setProperty('right', 'auto', 'important');
+            label.style.setProperty('top', 'auto', 'important');
+            label.style.setProperty('bottom', '0', 'important');
             label.style.setProperty('transform', 'translateX(-50%)', 'important');
+            label.style.setProperty('border-radius', '0.75em 0.75em 0 0', 'important');
         }
     }
     function applyEpisodeLabelText(card, text) {
@@ -1644,6 +1661,9 @@
     function getSeasonInfoDetailsPosition() {
         var pos = Lampa.Storage.get('seasons_info_details_position', seasonInfoSettings.details_position || 'bottom');
         return pos === 'under-type-label' ? 'under-type-label' : 'bottom';
+    }
+    function isEpisodeLabelUnderType() {
+        return getSeasonInfoDetailsPosition() === 'under-type-label';
     }
     function ensureSeasonInfoDetailLabel(render) {
         var metaLine = ensureDetailMetaLine(render);
@@ -2466,8 +2486,6 @@
                     }
                 }
                 if (render && event.data.movie) {
-                    var detailPoster = $(render).find('.full-start-new__poster');
-                    addTypeLabelToDetail(detailPoster, event.data.movie);
                     if (isQualityShowOn()) loadQualityForDetail(event.data.movie, render);
                     applyDetailRatingIcons(render);
                     moveDetailMetaToSecondLine(render);
