@@ -1710,23 +1710,28 @@
                 var pos = positions[seasonInfoSettings.label_position] || positions['top-right'];
                 info.css($.extend({ position: 'absolute', backgroundColor: bgColor, color: 'white', padding: '0.25em 0.45em', fontSize: '1.1em', zIndex: 10, whiteSpace: 'nowrap', lineHeight: '1', boxShadow: 'none' }, pos));
                 setTimeout(function () {
-                    var poster = $(data.object.activity.render()).find('.full-start-new__poster');
-                    if (poster.length) poster.css('position', 'relative').append(info);
-                    metaLine = ensureDetailMetaLine(data.object.activity.render());
+                    var render = data.object.activity.render();
+                    var detailsPosition = getSeasonInfoDetailsPosition();
+                    var poster = $(render).find('.full-start-new__poster');
+                    if (poster.length) {
+                        poster.find('.season-info-label').remove();
+                        if (detailsPosition === 'bottom') poster.css('position', 'relative').append(info);
+                    }
+                    metaLine = ensureDetailMetaLine(render);
                     if (metaLine.length) {
                         metaLine.find('.season-info-details-label').remove();
                         metaLine.find('.season-info-status').remove();
-                        var nativeStatus = $(data.object.activity.render()).find('.full-start__status').filter(function () {
+                        var nativeStatus = $(render).find('.full-start__status').filter(function () {
                             var el = $(this);
                             if (el.hasClass('qualview-quality')) return false;
                             return !el.closest('.full-start-new__rate, .full-start__rate, .full-start-new__meta-line').length;
                         }).first();
                         if (nativeStatus.length) nativeStatus.addClass('season-info-status');
                         else if (isMobilePortrait()) metaLine.append(statusLabel);
-                        if (getSeasonInfoDetailsPosition() === 'under-type-label') {
-                            ensureSeasonInfoDetailLabel(data.object.activity.render()).text(txt);
+                        if (detailsPosition === 'under-type-label') {
+                            ensureSeasonInfoDetailLabel(render).text(txt);
                         }
-                        moveDetailMetaToSecondLine(data.object.activity.render());
+                        moveDetailMetaToSecondLine(render);
                     }
                 }, 100);
             }
@@ -2455,6 +2460,7 @@
 
         seasonInfoSettings.seasons_info_mode = Lampa.Storage.get('seasons_info_mode', 'none');
         seasonInfoSettings.label_position = Lampa.Storage.get('label_position', 'top-right');
+        seasonInfoSettings.details_position = Lampa.Storage.get('seasons_info_details_position', 'bottom');
         addSeasonInfo();
 
 
