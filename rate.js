@@ -1415,11 +1415,9 @@
             return !el.closest('.full-start-new__rate, .full-start__rate').length;
         }).first();
         var quality = render.find('.full-start__status.qualview-quality').first();
-        var seasonInfoDetails = render.find('.season-info-details-label').first();
         var metaItems = [];
         if (age.length) metaItems.push(age);
         if (nativeStatus.length) metaItems.push(nativeStatus);
-        if (seasonInfoDetails.length) metaItems.push(seasonInfoDetails);
         if (quality.length) metaItems.push(quality);
         if (!metaItems.length) {
             rateLine.siblings('.full-start-new__meta-line').remove();
@@ -1509,10 +1507,10 @@
         if (isEpisodeLabelUnderType()) {
             label.style.setProperty('left', '0', 'important');
             label.style.setProperty('right', 'auto', 'important');
-            label.style.setProperty('top', 'calc(0.25em + 1.1em + 0.25em)', 'important');
+            label.style.setProperty('top', 'calc(0.25em + 1.1em + 0.35em)', 'important');
             label.style.setProperty('bottom', 'auto', 'important');
             label.style.setProperty('transform', 'none', 'important');
-            label.style.setProperty('border-radius', '0 0.75em', 'important');
+            label.style.setProperty('border-radius', '0 0.75em 0.75em 0', 'important');
             return;
         }
         try {
@@ -1665,43 +1663,6 @@
     function isEpisodeLabelUnderType() {
         return getSeasonInfoDetailsPosition() === 'under-type-label';
     }
-    function ensureSeasonInfoDetailLabel(render) {
-        var metaLine = ensureDetailMetaLine(render);
-        if (!metaLine.length) return metaLine;
-        var infoLabel = metaLine.find('.season-info-details-label');
-        if (!infoLabel.length) {
-            infoLabel = $('<div class="full-start-new__rate full-start__rate season-info-details-label"></div>');
-            var typeLabel = metaLine.find('.full-start__status').not('.qualview-quality').not('.season-info-status').filter(function () {
-                var text = ($(this).text() || '').trim();
-                return text === 'Сериал' || text === 'Фильм';
-            }).first();
-            if (typeLabel.length) typeLabel.after(infoLabel);
-            else metaLine.append(infoLabel);
-        }
-        return infoLabel;
-    }
-    function ensureSeasonInfoUnderTypeLabel(poster, movie, text) {
-        if (!poster || !poster.length || !movie) return $();
-        addTypeLabelToDetail(poster, movie);
-        poster.find('.season-info-under-type-label').remove();
-        var typeLabel = poster.find('.content-label').first();
-        if (!typeLabel.length) return $();
-        var infoLabel = $('<div class="season-info-under-type-label"></div>').text(text);
-        infoLabel.css({
-            position: 'absolute',
-            left: '0',
-            top: 'calc(0.25em + 1.1em + 0.25em)',
-            color: 'white',
-            padding: '0.25em 0.45em',
-            borderRadius: '0 0.75em',
-            fontSize: '1.1em',
-            zIndex: 10,
-            lineHeight: 1,
-            backgroundColor: 'rgba(0,0,0,' + getOverlayAlpha() + ')'
-        });
-        poster.append(infoLabel);
-        return infoLabel;
-    }
     function addSeasonInfo() {
         Lampa.Listener.follow('full', function (data) {
             if (data.type === 'complite' && data.data.movie.number_of_seasons) {
@@ -1753,16 +1714,13 @@
                 info.css($.extend({ position: 'absolute', backgroundColor: bgColor, color: 'white', padding: '0.25em 0.45em', fontSize: '1.1em', zIndex: 10, whiteSpace: 'nowrap', lineHeight: '1', boxShadow: 'none' }, pos));
                 setTimeout(function () {
                     var render = data.object.activity.render();
-                    var detailsPosition = getSeasonInfoDetailsPosition();
                     var poster = $(render).find('.full-start-new__poster');
                     if (poster.length) {
-                        poster.find('.season-info-label, .season-info-under-type-label').remove();
-                        if (detailsPosition === 'bottom') poster.css('position', 'relative').append(info);
-                        else if (detailsPosition === 'under-type-label') ensureSeasonInfoUnderTypeLabel(poster, movie, txt);
+                        poster.find('.season-info-label').remove();
+                        poster.css('position', 'relative').append(info);
                     }
                     metaLine = ensureDetailMetaLine(render);
                     if (metaLine.length) {
-                        metaLine.find('.season-info-details-label').remove();
                         metaLine.find('.season-info-status').remove();
                         var nativeStatus = $(render).find('.full-start__status').filter(function () {
                             var el = $(this);
@@ -2384,7 +2342,7 @@
             '.rate--imdb .source--name{background-image:url("data:image/svg+xml,' + detailImdbSvgCss + '")}' +
             '@media (max-width:480px) and (orientation:portrait){.full-start-new__rate.rate--lampa,.full-start__rate.rate--lampa{min-width:0!important}body:not([data-lampa-icon-on]) .full-start-new__rate.rate--lampa,body:not([data-lampa-icon-on]) .full-start__rate.rate--lampa{min-width:0!important}}' +
             '.card__quality{position:absolute!important;left:0!important;bottom:0!important;padding:0.25em 0.45em!important;border-radius:0 0.75em!important;color:white!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;white-space:nowrap!important}' +
-            '.card__episode-label{position:absolute!important;left:50%!important;right:auto!important;bottom:0!important;top:auto!important;transform:translateX(-50%)!important;color:white!important;padding:0.2em 0.45em!important;border-radius:0.75em 0.75em 0 0!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:600!important;line-height:1!important;height:auto!important;z-index:10!important;white-space:nowrap!important;box-sizing:border-box!important;margin:0!important;border:none!important}' +
+            '.card__episode-label{position:absolute!important;left:50%!important;right:auto!important;bottom:0!important;top:auto!important;transform:translateX(-50%)!important;color:white!important;padding:0.25em 0.45em!important;border-radius:0.75em 0.75em 0 0!important;font-size:var(--rating-font-size,1.1em)!important;font-weight:400!important;line-height:1!important;height:auto!important;z-index:10!important;white-space:nowrap!important;box-sizing:border-box!important;margin:0!important;border:none!important}' +
             '.content-label,.card__type[data-card-overlay-type-label="1"]{position:absolute!important;left:0!important;top:0!important;color:white!important;padding:0.25em 0.45em!important;border-radius:0.75em 0!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;display:flex!important;align-items:center!important;justify-content:center!important}' +
             '.full-start-new__rate-line .full-start__status,.full-start-new__rate-line .full-start__pg:not(.hide),.full-start-new__meta-line .full-start__status,.full-start-new__meta-line .full-start__pg:not(.hide){border-radius:0.3em!important;padding:0.2em 0.4em!important;display:inline-block!important;line-height:1!important;white-space:nowrap!important}' +
             'body.colored-elements-on .full-start__pg.age-kids{background:#2ecc71!important;color:white!important}' +
@@ -2404,7 +2362,6 @@
             '.full-start__pg.hide,.full-start__pg.nr{display:none!important}' +
             '.full-start-new__meta-line{display:none!important}' +
             '.season-info-label{position:absolute!important;color:#fff!important;padding:0.25em 0.45em!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;white-space:nowrap!important}' +
-            '.season-info-under-type-label{position:absolute!important;left:0!important;color:#fff!important;padding:0.25em 0.45em!important;border-radius:0 0.75em!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;white-space:nowrap!important}' +
             '@media (max-width:480px) and (orientation:portrait){.full-start-new__rate-line{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;align-content:center!important;gap:0.35em!important;width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;text-align:center!important}.full-start-new__rate-line>*{margin:0!important}.full-start-new__rate-line .full-start-new__rate:not(.hide):not([style*="display: none"]),.full-start-new__rate-line .full-start__rate:not(.hide):not([style*="display: none"]){display:inline-flex;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;margin:0!important}.full-start-new__rate-line .full-start-new__rate.hide,.full-start-new__rate-line .full-start__rate.hide,.full-start-new__rate-line .full-start-new__rate[style*="display: none"],.full-start-new__rate-line .full-start__rate[style*="display: none"]{display:none!important}.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="1"]{max-width:9em!important}.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="2"]{max-width:18em!important}.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="3"],.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="4"]{max-width:100%!important}.full-start-new__meta-line{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;gap:0.5em!important;width:100%!important;line-height:1!important;font-size:1em!important;margin-top:0.3em!important}.full-start-new__meta-line .full-start__status,.full-start-new__meta-line .full-start__pg{margin:0!important;display:inline-flex!important;align-items:center!important;line-height:1!important;white-space:nowrap!important}.full-start-new__details{margin-top:0.3em!important;display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:0.1em!important}.full-start-new__reactions{justify-content:center!important}.full-start-new__buttons{justify-content:center!important;text-align:center!important}.full-start-new__right,.full-start__right{text-align:center!important}.full-start-new__right h1,.full-start__right h1,.full-start-new__right .name,.full-start__right .name,.full-start__name{text-align:center!important;width:100%!important}.season-info-label{display:none!important}}' +
             'body[data-movie-labels="on"] .card--tv .card__type:not([data-card-overlay-type-label="1"]){display:none!important}';
         document.head.appendChild(style);
