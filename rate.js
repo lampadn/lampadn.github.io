@@ -3,7 +3,7 @@
 
     var ANIMATED_REACTIONS_BASE_URL = 'https://amikdn.github.io/img';
     var SVG_REACTIONS_BASE_URL = 'https://cubnotrip.top/img/reactions';
-    var DETAIL_STAR_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="110" height="104" viewBox="0 0 110 104" fill="none"><path d="M81.6744 103.11C98.5682 93.7234 110 75.6967 110 55C110 24.6243 85.3757 0 55 0C24.6243 0 0 24.6243 0 55C0 75.6967 11.4318 93.7234 28.3255 103.11C14.8869 94.3724 6 79.224 6 62C6 34.938 27.938 13 55 13C82.062 13 104 34.938 104 62C104 79.224 95.1131 94.3725 81.6744 103.11Z" fill="white"/><path d="M92.9546 80.0076C95.5485 74.5501 97 68.4446 97 62C97 38.804 78.196 20 55 20C31.804 20 13 38.804 13 62C13 68.4446 14.4515 74.5501 17.0454 80.0076C16.3618 77.1161 16 74.1003 16 71C16 49.4609 33.4609 32 55 32C76.5391 32 94 49.4609 94 71C94 74.1003 93.6382 77.1161 92.9546 80.0076Z" fill="white"/><path d="M55 89C69.3594 89 81 77.3594 81 63C81 57.9297 79.5486 53.1983 77.0387 49.1987C82.579 54.7989 86 62.5 86 71C86 88.1208 72.1208 102 55 102C37.8792 102 24 88.1208 24 71C24 62.5 27.421 54.7989 32.9613 49.1987C30.4514 53.1983 29 57.9297 29 63C29 77.3594 40.6406 89 55 89Z" fill="white"/><path d="M73 63C73 72.9411 64.9411 81 55 81C45.0589 81 37 72.9411 37 63C37 53.0589 45.0589 45 55 45C64.9411 45 73 53.0589 73 63Z" fill="white"/></svg>';
+    var DETAIL_LAMPA_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="110" height="104" viewBox="0 0 110 104" fill="none"><path d="M81.6744 103.11C98.5682 93.7234 110 75.6967 110 55C110 24.6243 85.3757 0 55 0C24.6243 0 0 24.6243 0 55C0 75.6967 11.4318 93.7234 28.3255 103.11C14.8869 94.3724 6 79.224 6 62C6 34.938 27.938 13 55 13C82.062 13 104 34.938 104 62C104 79.224 95.1131 94.3725 81.6744 103.11Z" fill="white"/><path d="M92.9546 80.0076C95.5485 74.5501 97 68.4446 97 62C97 38.804 78.196 20 55 20C31.804 20 13 38.804 13 62C13 68.4446 14.4515 74.5501 17.0454 80.0076C16.3618 77.1161 16 74.1003 16 71C16 49.4609 33.4609 32 55 32C76.5391 32 94 49.4609 94 71C94 74.1003 93.6382 77.1161 92.9546 80.0076Z" fill="white"/><path d="M55 89C69.3594 89 81 77.3594 81 63C81 57.9297 79.5486 53.1983 77.0387 49.1987C82.579 54.7989 86 62.5 86 71C86 88.1208 72.1208 102 55 102C37.8792 102 24 88.1208 24 71C24 62.5 27.421 54.7989 32.9613 49.1987C30.4514 53.1983 29 57.9297 29 63C29 77.3594 40.6406 89 55 89Z" fill="white"/><path d="M73 63C73 72.9411 64.9411 81 55 81C45.0589 81 37 72.9411 37 63C37 53.0589 45.0589 45 55 45C64.9411 45 73 53.0589 73 63Z" fill="white"/></svg>';
     var DETAIL_TMDB_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150"><defs><linearGradient id="cardOverlayTmdbGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#90cea1"/><stop offset="56%" stop-color="#3cbec9"/><stop offset="100%" stop-color="#00b3e5"/></linearGradient><style>.card-overlay-tmdb-text{font-weight:bold;fill:url(#cardOverlayTmdbGrad);text-anchor:start;dominant-baseline:middle;textLength:150;lengthAdjust:spacingAndGlyphs;font-size:70px;}</style></defs><text class="card-overlay-tmdb-text" x="0" y="50" textLength="150" lengthAdjust="spacingAndGlyphs">TM</text><text class="card-overlay-tmdb-text" x="0" y="120" textLength="150" lengthAdjust="spacingAndGlyphs">DB</text></svg>';
     var DETAIL_IMDB_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.88"><g><path fill="#F5C518" d="M18.43,0h86.02c10.18,0,18.43,8.25,18.43,18.43v86.02c0,10.18-8.25,18.43-18.43,18.43H18.43C8.25,122.88,0,114.63,0,104.45l0-86.02C0,8.25,8.25,0,18.43,0z"/><path fill="#000" d="M24.96,78.72V44.16h-9.6v34.56H24.96z M45.36,44.16L43.2,60.24L42,51.6l-1.2-7.44h-12v34.56h8.16v-22.8l3.36,22.8h6l3.12-23.28v23.28h8.16V44.16H45.36z M61.44,78.72V44.16h14.88c3.6,0,6.24,2.64,6.24,6v22.56c0,3.36-2.64,6-6.24,6H61.44z M72.72,50.4l-2.16-0.24v22.56c1.2,0,2.16-0.24,2.4-0.72c0.48-0.48,0.48-1.92,0.48-4.32V54.24v-2.88L72.72,50.4z M100.56,52.8h0.72c3.36,0,6.24,2.64,6.24,6v13.92c0,3.36-2.88,6-6.24,6h-0.72c-1.92,0-3.84-0.96-5.04-2.64l-0.48,2.16H86.4V44.16h9.12V55.2C96.72,53.76,98.64,52.8,100.56,52.8z M98.64,69.6v-8.16L98.4,58.8c-0.24-0.48-0.96-0.72-1.44-0.72c-0.48,0-1.2,0.24-1.44,0.72v13.68c0.24,0.48,0.96,0.72,1.44,0.72c0.48,0,1.44-0.24,1.44-0.72L98.64,69.6z"/></g></svg>';
     var DETAIL_KP_SVG = '<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="cardOverlayKpMask" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="300" height="300"><circle cx="150" cy="150" r="150" fill="white"/></mask><g mask="url(#cardOverlayKpMask)"><circle cx="150" cy="150" r="150" fill="black"/><path d="M300 45L145.26 127.827L225.9 45H181.2L126.3 121.203V45H89.9999V255H126.3V178.92L181.2 255H225.9L147.354 174.777L300 255V216L160.776 160.146L300 169.5V130.5L161.658 139.494L300 84V45Z" fill="url(#cardOverlayKpGradient)"/></g><defs><radialGradient id="cardOverlayKpGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(89.9999 45) rotate(45) scale(296.985)"><stop offset="0.5" stop-color="#FF5500"/><stop offset="1" stop-color="#BBFF00"/></radialGradient></defs></svg>';
@@ -139,7 +139,7 @@
 
     var _lampaIconDataUrl = '';
     function getLampaIconDataUrl() {
-        if (!_lampaIconDataUrl) _lampaIconDataUrl = 'data:image/svg+xml,' + encodeURIComponent(DETAIL_STAR_SVG).replace(/'/g, '%27').replace(/"/g, '%22');
+        if (!_lampaIconDataUrl) _lampaIconDataUrl = 'data:image/svg+xml,' + encodeURIComponent(DETAIL_LAMPA_SVG).replace(/'/g, '%27').replace(/"/g, '%22');
         return _lampaIconDataUrl;
     }
     function getLampaPosterIconMode() {
@@ -1048,7 +1048,7 @@
         if (className === 'rate--tmdb') return DETAIL_TMDB_SVG;
         if (className === 'rate--imdb') return DETAIL_IMDB_SVG;
         if (className === 'rate--kp') return DETAIL_KP_SVG;
-        if (className === 'rate--lampa') return DETAIL_STAR_SVG;
+        if (className === 'rate--lampa') return DETAIL_LAMPA_SVG;
         return '';
     }
     function applyDetailRatingIcons(render) {
@@ -1660,6 +1660,28 @@
         }
         return infoLabel;
     }
+    function ensureSeasonInfoUnderTypeLabel(poster, movie, text) {
+        if (!poster || !poster.length || !movie) return $();
+        addTypeLabelToDetail(poster, movie);
+        poster.find('.season-info-under-type-label').remove();
+        var typeLabel = poster.find('.content-label').first();
+        if (!typeLabel.length) return $();
+        var infoLabel = $('<div class="season-info-under-type-label"></div>').text(text);
+        infoLabel.css({
+            position: 'absolute',
+            left: '0',
+            top: 'calc(0.25em + 1.1em + 0.25em)',
+            color: 'white',
+            padding: '0.25em 0.45em',
+            borderRadius: '0 0.75em',
+            fontSize: '1.1em',
+            zIndex: 10,
+            lineHeight: 1,
+            backgroundColor: 'rgba(0,0,0,' + getOverlayAlpha() + ')'
+        });
+        poster.append(infoLabel);
+        return infoLabel;
+    }
     function addSeasonInfo() {
         Lampa.Listener.follow('full', function (data) {
             if (data.type === 'complite' && data.data.movie.number_of_seasons) {
@@ -1714,8 +1736,9 @@
                     var detailsPosition = getSeasonInfoDetailsPosition();
                     var poster = $(render).find('.full-start-new__poster');
                     if (poster.length) {
-                        poster.find('.season-info-label').remove();
+                        poster.find('.season-info-label, .season-info-under-type-label').remove();
                         if (detailsPosition === 'bottom') poster.css('position', 'relative').append(info);
+                        else if (detailsPosition === 'under-type-label') ensureSeasonInfoUnderTypeLabel(poster, movie, txt);
                     }
                     metaLine = ensureDetailMetaLine(render);
                     if (metaLine.length) {
@@ -1728,9 +1751,6 @@
                         }).first();
                         if (nativeStatus.length) nativeStatus.addClass('season-info-status');
                         else if (isMobilePortrait()) metaLine.append(statusLabel);
-                        if (detailsPosition === 'under-type-label') {
-                            ensureSeasonInfoDetailLabel(render).text(txt);
-                        }
                         moveDetailMetaToSecondLine(render);
                     }
                 }, 100);
@@ -2364,6 +2384,7 @@
             '.full-start__pg.hide,.full-start__pg.nr{display:none!important}' +
             '.full-start-new__meta-line{display:none!important}' +
             '.season-info-label{position:absolute!important;color:#fff!important;padding:0.25em 0.45em!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;white-space:nowrap!important}' +
+            '.season-info-under-type-label{position:absolute!important;left:0!important;color:#fff!important;padding:0.25em 0.45em!important;border-radius:0 0.75em!important;font-size:1.1em!important;line-height:1!important;z-index:10!important;white-space:nowrap!important}' +
             '@media (max-width:480px) and (orientation:portrait){.full-start-new__rate-line{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;align-content:center!important;gap:0.35em!important;width:100%!important;max-width:100%!important;margin-left:auto!important;margin-right:auto!important;text-align:center!important}.full-start-new__rate-line>*{margin:0!important}.full-start-new__rate-line .full-start-new__rate:not(.hide):not([style*="display: none"]),.full-start-new__rate-line .full-start__rate:not(.hide):not([style*="display: none"]){display:inline-flex;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;margin:0!important}.full-start-new__rate-line .full-start-new__rate.hide,.full-start-new__rate-line .full-start__rate.hide,.full-start-new__rate-line .full-start-new__rate[style*="display: none"],.full-start-new__rate-line .full-start__rate[style*="display: none"]{display:none!important}.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="1"]{max-width:9em!important}.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="2"]{max-width:18em!important}.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="3"],.full-start-new__rate-line.card-overlay-mobile-rate-line[data-card-overlay-rating-count="4"]{max-width:100%!important}.full-start-new__meta-line{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:center!important;gap:0.5em!important;width:100%!important;line-height:1!important;font-size:1em!important;margin-top:0.3em!important}.full-start-new__meta-line .full-start__status,.full-start-new__meta-line .full-start__pg{margin:0!important;display:inline-flex!important;align-items:center!important;line-height:1!important;white-space:nowrap!important}.full-start-new__details{margin-top:0.3em!important;display:flex!important;flex-wrap:wrap!important;justify-content:center!important;gap:0.1em!important}.full-start-new__reactions{justify-content:center!important}.full-start-new__buttons{justify-content:center!important;text-align:center!important}.full-start-new__right,.full-start__right{text-align:center!important}.full-start-new__right h1,.full-start__right h1,.full-start-new__right .name,.full-start__right .name,.full-start__name{text-align:center!important;width:100%!important}.season-info-label{display:none!important}}' +
             'body[data-movie-labels="on"] .card--tv .card__type:not([data-card-overlay-type-label="1"]){display:none!important}';
         document.head.appendChild(style);
@@ -2445,6 +2466,8 @@
                     }
                 }
                 if (render && event.data.movie) {
+                    var detailPoster = $(render).find('.full-start-new__poster');
+                    addTypeLabelToDetail(detailPoster, event.data.movie);
                     if (isQualityShowOn()) loadQualityForDetail(event.data.movie, render);
                     applyDetailRatingIcons(render);
                     moveDetailMetaToSecondLine(render);
