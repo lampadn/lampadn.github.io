@@ -1636,8 +1636,28 @@
     // ===== SEASONS INFO =====
     var seasonInfoSettings = {
         seasons_info_mode: 'none',
-        label_position: 'top-right'
+        label_position: 'top-right',
+        details_position: 'bottom'
     };
+    function getSeasonInfoDetailsPosition() {
+        var pos = Lampa.Storage.get('seasons_info_details_position', seasonInfoSettings.details_position || 'bottom');
+        return pos === 'under-type-label' ? 'under-type-label' : 'bottom';
+    }
+    function ensureSeasonInfoDetailLabel(render) {
+        var metaLine = ensureDetailMetaLine(render);
+        if (!metaLine.length) return metaLine;
+        var infoLabel = metaLine.find('.season-info-details-label');
+        if (!infoLabel.length) {
+            infoLabel = $('<div class="full-start-new__rate full-start__rate season-info-details-label"></div>');
+            var typeLabel = metaLine.find('.full-start__status').not('.qualview-quality').not('.season-info-status').filter(function () {
+                var text = ($(this).text() || '').trim();
+                return text === 'Сериал' || text === 'Фильм';
+            }).first();
+            if (typeLabel.length) typeLabel.after(infoLabel);
+            else metaLine.append(infoLabel);
+        }
+        return infoLabel;
+    }
     function addSeasonInfo() {
         Lampa.Listener.follow('full', function (data) {
             if (data.type === 'complite' && data.data.movie.number_of_seasons) {
@@ -1692,6 +1712,7 @@
                     if (poster.length) poster.css('position', 'relative').append(info);
                     metaLine = ensureDetailMetaLine(data.object.activity.render());
                     if (metaLine.length) {
+                        metaLine.find('.season-info-details-label').remove();
                         metaLine.find('.season-info-status').remove();
                         var nativeStatus = $(data.object.activity.render()).find('.full-start__status').filter(function () {
                             var el = $(this);
@@ -1700,6 +1721,9 @@
                         }).first();
                         if (nativeStatus.length) nativeStatus.addClass('season-info-status');
                         else if (isMobilePortrait()) metaLine.append(statusLabel);
+                        if (getSeasonInfoDetailsPosition() === 'under-type-label') {
+                            ensureSeasonInfoDetailLabel(data.object.activity.render()).text(txt);
+                        }
                         moveDetailMetaToSecondLine(data.object.activity.render());
                     }
                 }, 100);
@@ -1770,6 +1794,7 @@
             var POSITION_LABELS = { top: 'Сверху справа', bottom: 'Снизу справа' };
             var DISPLAY_MODE_LABELS = { single: 'Одно окно', separate: 'Каждый в отдельном окне' };
             var LAMPA_POSTER_ICON_LABELS = { reaction: 'Реакция', lamp: 'Иконка Lampa' };
+            var SEASON_INFO_DETAILS_POSITION_LABELS = { bottom: 'Внизу постера', 'under-type-label': 'Под лейблом «Сериал»' };
             var modal = $('<div class="comodal"></div>');
             modal.on('click mousedown touchstart', function (e) { e.stopPropagation(); });
             function isMouseEvent(e) { return e && (e.pointerType === 'mouse' || (e.clientX !== undefined && e.clientY !== undefined)); }
@@ -1845,6 +1870,7 @@
             var rowTypeLabelsShow = addTriggerRow('Показывать «Фильм»/«Сериал»', 'type_labels_show', true);
             var rowTypeLabelsColored = addTriggerRow('Цветные лейблы типа', 'type_labels_colored', false);
             var rowTypeLabelsEpisodeInfo = addTriggerRow('Серии в лейбле «Сериал»', TYPE_LABEL_EPISODE_INFO_KEY, true);
+            var rowSeasonInfoDetailsPosition = addCycleRow('Позиция сезонов и серий', 'seasons_info_details_position', SEASON_INFO_DETAILS_POSITION_LABELS, 'bottom');
 
             modal.append($('<div class="comodal__divider"></div>'));
             modal.append($('<div class="comodal__section">API</div>'));
@@ -1872,6 +1898,7 @@
                 Lampa.Storage.set('rating_scale', '100'); Lampa.Storage.set('rating_kp_api_key', '');
                 Lampa.Storage.set('quality_show', 'true'); Lampa.Storage.set('quality_colored', 'false');
                 Lampa.Storage.set('type_labels_show', 'true'); Lampa.Storage.set('type_labels_colored', 'false'); Lampa.Storage.set(TYPE_LABEL_EPISODE_INFO_KEY, 'true');
+                Lampa.Storage.set('seasons_info_details_position', 'bottom');
                 rowSource.updateVal(SOURCE_LABELS.all); rowDisplayMode.updateVal(DISPLAY_MODE_LABELS.separate);
                 rowPosition.updateVal(POSITION_LABELS.bottom); rowColored.updateVal('Выкл'); rowColoredWin.updateVal('Выкл');
                 rowAnimated.updateVal('Выкл'); rowLampaPosterIcon.updateVal(LAMPA_POSTER_ICON_LABELS.reaction); rowShowTmdb.updateVal('Вкл'); rowShowImdb.updateVal('Вкл');
@@ -1879,6 +1906,7 @@
                 rowOpacity.updateVal('40%'); rowScale.updateVal('100%'); rowKpKey.updateVal(kpApiKeyRowText());
                 rowQualityShow.updateVal('Вкл'); rowQualityColored.updateVal('Выкл');
                 rowTypeLabelsShow.updateVal('Вкл'); rowTypeLabelsColored.updateVal('Выкл'); rowTypeLabelsEpisodeInfo.updateVal('Вкл');
+                rowSeasonInfoDetailsPosition.updateVal(SEASON_INFO_DETAILS_POSITION_LABELS.bottom);
                 scheduleSettingsRefresh(50);
                 try { Lampa.Noty.show('Настройки сброшены'); } catch (e) {}
             }
@@ -1912,6 +1940,8 @@
         for (var i = 0; i < keys.length; i++) { var v = Lampa.Storage.get(keys[i], undefined); if (v === '1' || v === 1) Lampa.Storage.set(keys[i], 'true'); else if (v === '0' || v === 0) Lampa.Storage.set(keys[i], 'false'); }
         var lampaPosterIconMode = Lampa.Storage.get('lampa_poster_icon_mode', 'reaction');
         if (lampaPosterIconMode !== 'reaction' && lampaPosterIconMode !== 'lamp') Lampa.Storage.set('lampa_poster_icon_mode', 'reaction');
+        var seasonInfoDetailsPosition = Lampa.Storage.get('seasons_info_details_position', 'bottom');
+        if (seasonInfoDetailsPosition !== 'bottom' && seasonInfoDetailsPosition !== 'under-type-label') Lampa.Storage.set('seasons_info_details_position', 'bottom');
     }
     function closeModalSafe() {
         try { if (typeof Lampa.Modal !== 'undefined' && Lampa.Modal.close) Lampa.Modal.close(); } catch (e) {}
