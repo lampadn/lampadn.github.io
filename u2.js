@@ -68,18 +68,12 @@
                 { email: decodeHidden('c29sbmNlLS12LS1rZXBrZUB5YW5kZXgucnU='), uid: decodeHidden('Zm9ydDMxaGc=') },
                 { email: decodeHidden('YWZlbmtpbnNlcmdlakBnbWFpbC5jb20='), uid: decodeHidden('MTEwMg==') },
                 { email: decodeHidden('Y29ya2luaWdvckBnbWFpbC5jb20='), uid: decodeHidden('MTEwMQ==') },
-                { email: decodeHidden('YWxleC1fOTJfLV9AbWFpbC5ydQ=='), uid: decodeHidden('ZGV2M2V2em8=') },
-                { email: decodeHidden('YWxleF9maXNAcmFtYmxlci5ydQ=='), uid: decodeHidden('cDc5YWpqeWo=') },
-                { email: decodeHidden('aXRkZWxlZ2F0QGdtYWlsLmNvbQ=='), uid: decodeHidden('aHp1anlybTE=') },
-                { email: decodeHidden('YS52LmZlbGlrc0BnbWFpbC5jb20='), uid: decodeHidden('cmpuOTd0ZnA=') },
-                { email: decodeHidden('cnVkbml0b3RvQGdtYWlsLmNvbQ=='), uid: decodeHidden('ZGVxZGdyN3k=') },
-                { email: decodeHidden('aW10ZXNleUBnbWFpbC5jb20='), uid: decodeHidden('cWQ1YnA2Mm8=') }
+                { email: decodeHidden('YWxleF9maXNAcmFtYmxlci5ydQ=='), uid: decodeHidden('cDc5YWpqeWo=') }
             ],
             currentIndex: 0,
             getHost: function() { return randomUrl; },
             getSubtitle: function() {
-                var acc = this.accounts[this.currentIndex] || this.accounts[0] || { email: '' };
-                return acc.email ? randomUrl + ' [' + acc.email + ']' : randomUrl;
+                return randomUrl;
             },
             auth: function(url, cfg) {
                 var acc = cfg.accounts[cfg.currentIndex] || cfg.accounts[0];
@@ -98,11 +92,14 @@
         Lampa.Storage.set('connection_source', connection_source);
     }
 
+    function getSkazAccountTitle(index) {
+        return 'Аккаунт ' + (index + 1);
+    }
+
     function getSkazAccountItems() {
         return SERVER_CONFIG.skaz.accounts.map(function(account, index) {
             return {
-                title: account.email,
-                subtitle: account.uid,
+                title: getSkazAccountTitle(index),
                 selected: SERVER_CONFIG.skaz.currentIndex === index,
                 index: index,
                 accountIndex: index
@@ -1392,7 +1389,7 @@
             });
             select.push({
                 title: 'Аккаунт Skaz',
-                subtitle: (getCurrentSkazAccount() || {}).email || '',
+                subtitle: getSkazAccountTitle(SERVER_CONFIG.skaz.currentIndex),
                 items: getSkazAccountItems(),
                 stype: 'account'
             });
@@ -2068,7 +2065,7 @@
                     values: (function() {
                         var values = {};
                         SERVER_CONFIG.skaz.accounts.forEach(function(account, index) {
-                            values[String(index)] = account.email;
+                            values[String(index)] = getSkazAccountTitle(index);
                         });
                         return values;
                     })(),
