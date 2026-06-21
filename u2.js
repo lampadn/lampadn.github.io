@@ -7,51 +7,9 @@
         }
     }
 
-    function encodeHidden(input) {
-        try {
-            return btoa(unescape(encodeURIComponent(input)));
-        } catch (e) {
-            return btoa(input);
-        }
-    }
-
     function pickRandomIndex(list) {
         return list && list.length ? Math.floor(Math.random() * list.length) : 0;
     }
-
-    function parseSkazAccountsCsv(csv) {
-        if (!csv) return [];
-        var lines = csv.split(/\r?\n/).slice(1);
-        var accounts = [];
-        lines.forEach(function(line) {
-            var trimmed = (line || '').trim();
-            if (!trimmed) return;
-            var parts = trimmed.split(/\s+/);
-            if (parts.length < 2) return;
-            accounts.push({
-                email: parts[0],
-                uid: parts[1]
-            });
-        });
-        return accounts;
-    }
-
-    var SKAZ_ACCOUNTS_CSV = [
-        '   email:             unic_id:    lampac_unic_id:   sisi_unic_id:   skaz_detected',
-        'alex-_92_-_@mail.ru   dev3evzo       dev3evzo         zmkhbym6,        True',
-        'alex_fis@rambler.ru   p79ajjyj       p79ajjyj         u6winvjs,        True',
-        'itdelegat@gmail.com   hzujyrm1       hzujyrm1         rccpz0wm,        True',
-        'a.v.feliks@gmail.com  rjn97tfp       rjn97tfp         zlbre4na,        True',
-        'rudnitoto@gmail.com   deqdgr7y       deqdgr7y         ippuejmo,        True',
-        'imtesey@gmail.com     qd5bp62o       qd5bp62o         yscpvfgk,        True'
-    ].join('\n');
-
-    var SKAZ_ACCOUNTS = parseSkazAccountsCsv(SKAZ_ACCOUNTS_CSV).map(function(account) {
-        return {
-            email: decodeHidden(encodeHidden(account.email)),
-            uid: decodeHidden(encodeHidden(account.uid))
-        };
-    });
 
     // ПАТЧ: единый хелпер для заголовков запросов (вместо 10 инлайн-копий)
     function kitHeaders() {
@@ -103,7 +61,20 @@
     var SERVER_CONFIG = {
         skaz: {
             label: 'Skaz',
-            accounts: SKAZ_ACCOUNTS,
+            accounts: [
+                { email: decodeHidden('bmF6YS0tLXJvdjZAZ21haWwuY29t'), uid: decodeHidden('cm5lbXR2ajM=') },
+                { email: decodeHidden('Y2VudHQwNEBnbWFpbC5jb20='), uid: decodeHidden('Znh6') },
+                { email: decodeHidden('dW5pb252b2luQG1haWwucnU='), uid: decodeHidden('ZnJlaWQ1cQ==') },
+                { email: decodeHidden('c29sbmNlLS12LS1rZXBrZUB5YW5kZXgucnU='), uid: decodeHidden('Zm9ydDMxaGc=') },
+                { email: decodeHidden('YWZlbmtpbnNlcmdlakBnbWFpbC5jb20='), uid: decodeHidden('MTEwMg==') },
+                { email: decodeHidden('Y29ya2luaWdvckBnbWFpbC5jb20='), uid: decodeHidden('MTEwMQ==') },
+                { email: decodeHidden('YWxleC1fOTJfLV9AbWFpbC5ydQ=='), uid: decodeHidden('ZGV2M2V2em8=') },
+                { email: decodeHidden('YWxleF9maXNAcmFtYmxlci5ydQ=='), uid: decodeHidden('cDc5YWpqeWo=') },
+                { email: decodeHidden('aXRkZWxlZ2F0QGdtYWlsLmNvbQ=='), uid: decodeHidden('aHp1anlybTE=') },
+                { email: decodeHidden('YS52LmZlbGlrc0BnbWFpbC5jb20='), uid: decodeHidden('cmpuOTd0ZnA=') },
+                { email: decodeHidden('cnVkbml0b3RvQGdtYWlsLmNvbQ=='), uid: decodeHidden('ZGVxZGdyN3k=') },
+                { email: decodeHidden('aW10ZXNleUBnbWFpbC5jb20='), uid: decodeHidden('cWQ1YnA2Mm8=') }
+            ],
             currentIndex: 0,
             getHost: function() { return randomUrl; },
             getSubtitle: function() {
