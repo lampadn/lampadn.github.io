@@ -1,5 +1,397 @@
 [
     {
+        "base_url": "http://213.5.54.43:8888",
+        "full_check_url": "http://213.5.54.43:8888/?card=1084242&media=movie&source=cub",
+        "ip": "213.5.54.43",
+        "port": 8888,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.conovora.site:443",
+        "full_check_url": "https://lampa.conovora.site:443/?card=1084242&media=movie&source=cub",
+        "ip": "213.21.6.216",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://195.209.215.229:443",
+        "full_check_url": "https://195.209.215.229:443/?card=1084242&media=movie&source=cub",
+        "ip": "195.209.215.229",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://colomar.com.ar:443",
+        "full_check_url": "https://colomar.com.ar:443/?card=1084242&media=movie&source=cub",
+        "ip": "207.38.88.204",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://usvds7000x20.startdedicated.com:443",
+        "full_check_url": "https://usvds7000x20.startdedicated.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "207.38.88.204",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://207.38.88.204:443",
+        "full_check_url": "https://207.38.88.204:443/?card=1084242&media=movie&source=cub",
+        "ip": "207.38.88.204",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://207.38.88.204:8080",
+        "full_check_url": "http://207.38.88.204:8080/?card=1084242&media=movie&source=cub",
+        "ip": "207.38.88.204",
+        "port": 8080,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://mx.smotret24.ru:80",
+        "full_check_url": "http://mx.smotret24.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "195.200.17.189",
+        "port": 80,
+        "country": "GB",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://195.200.17.189:80",
+        "full_check_url": "http://195.200.17.189:80/?card=1084242&media=movie&source=cub",
+        "ip": "195.200.17.189",
+        "port": 80,
+        "country": "GB",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://194.87.54.153:443",
+        "full_check_url": "https://194.87.54.153:443/?card=1084242&media=movie&source=cub",
+        "ip": "194.87.54.153",
+        "port": 443,
+        "country": "CZ",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lm.khamidullin.pro:443",
+        "full_check_url": "https://lm.khamidullin.pro:443/?card=1084242&media=movie&source=cub",
+        "ip": "194.87.54.153",
+        "port": 443,
+        "country": "CZ",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://194.147.115.232:80",
+        "full_check_url": "http://194.147.115.232:80/?card=1084242&media=movie&source=cub",
+        "ip": "194.147.115.232",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://178.159.212.74:80",
+        "full_check_url": "http://178.159.212.74:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.159.212.74",
+        "port": 80,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://mx.showy.pro:80",
+        "full_check_url": "http://mx.showy.pro:80/?card=1084242&media=movie&source=cub",
+        "ip": "185.121.235.124",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://185.121.235.124:80",
+        "full_check_url": "http://185.121.235.124:80/?card=1084242&media=movie&source=cub",
+        "ip": "185.121.235.124",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://178.49.43.91:8888",
+        "full_check_url": "http://178.49.43.91:8888/?card=1084242&media=movie&source=cub",
+        "ip": "178.49.43.91",
+        "port": 8888,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://188.137.240.108:443",
+        "full_check_url": "https://188.137.240.108:443/?card=1084242&media=movie&source=cub",
+        "ip": "188.137.240.108",
+        "port": 443,
+        "country": "BH",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://hell88.ooguy.com:443",
+        "full_check_url": "https://hell88.ooguy.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "188.137.240.108",
+        "port": 443,
+        "country": "BH",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://178.20.46.95:80",
+        "full_check_url": "http://178.20.46.95:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.46.95",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.cubic.cam:80",
+        "full_check_url": "http://www.cubic.cam:80/?card=1084242&media=movie&source=cub",
+        "ip": "172.67.177.231",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://altq.ru:443",
+        "full_check_url": "https://altq.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "185.42.14.55",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.mbhrp.com:443",
+        "full_check_url": "https://lampa.mbhrp.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "172.67.188.206",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://cubic.cam:80",
+        "full_check_url": "http://cubic.cam:80/?card=1084242&media=movie&source=cub",
+        "ip": "144.91.107.223",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://150.230.22.208:8080",
+        "full_check_url": "http://150.230.22.208:8080/?card=1084242&media=movie&source=cub",
+        "ip": "150.230.22.208",
+        "port": 8080,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://307407.xyz:443",
+        "full_check_url": "https://307407.xyz:443/?card=1084242&media=movie&source=cub",
+        "ip": "130.12.171.227",
+        "port": 443,
+        "country": null,
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://130.12.171.227:443",
+        "full_check_url": "https://130.12.171.227:443/?card=1084242&media=movie&source=cub",
+        "ip": "130.12.171.227",
+        "port": 443,
+        "country": null,
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://www.cubic.cam:443",
+        "full_check_url": "https://www.cubic.cam:443/?card=1084242&media=movie&source=cub",
+        "ip": "104.21.59.131",
+        "port": 443,
+        "country": null,
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://109.122.199.75:80",
+        "full_check_url": "http://109.122.199.75:80/?card=1084242&media=movie&source=cub",
+        "ip": "109.122.199.75",
+        "port": 80,
+        "country": "IR",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://93.183.127.43:443",
+        "full_check_url": "https://93.183.127.43:443/?card=1084242&media=movie&source=cub",
+        "ip": "93.183.127.43",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampac.ilich.xyz:443",
+        "full_check_url": "https://lampac.ilich.xyz:443/?card=1084242&media=movie&source=cub",
+        "ip": "93.183.127.43",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://95.31.245.45:8080",
+        "full_check_url": "http://95.31.245.45:8080/?card=1084242&media=movie&source=cub",
+        "ip": "95.31.245.45",
+        "port": 8080,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://94.249.239.53:443",
+        "full_check_url": "https://94.249.239.53:443/?card=1084242&media=movie&source=cub",
+        "ip": "94.249.239.53",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lam.astrabit.ru:443",
+        "full_check_url": "https://lam.astrabit.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "94.249.239.53",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://www.sushireutov.ru:443",
+        "full_check_url": "https://www.sushireutov.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "87.120.187.8",
+        "port": 443,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://87.120.187.8:443",
+        "full_check_url": "https://87.120.187.8:443/?card=1084242&media=movie&source=cub",
+        "ip": "87.120.187.8",
+        "port": 443,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://sushireutov.ru:443",
+        "full_check_url": "https://sushireutov.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "87.120.187.8",
+        "port": 443,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://91.184.248.102:443",
+        "full_check_url": "https://91.184.248.102:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.184.248.102",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://84.32.22.96:80",
+        "full_check_url": "http://84.32.22.96:80/?card=1084242&media=movie&source=cub",
+        "ip": "84.32.22.96",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://83.238.210.132:50000",
+        "full_check_url": "http://83.238.210.132:50000/?card=1084242&media=movie&source=cub",
+        "ip": "83.238.210.132",
+        "port": 50000,
+        "country": "PL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://89.22.238.118:80",
+        "full_check_url": "http://89.22.238.118:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.22.238.118",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://89.22.238.118:8443",
+        "full_check_url": "http://89.22.238.118:8443/?card=1084242&media=movie&source=cub",
+        "ip": "89.22.238.118",
+        "port": 8443,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://akaflist.ru:443",
+        "full_check_url": "https://akaflist.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "83.228.196.206",
+        "port": 443,
+        "country": "CH",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://80.242.57.200:80",
+        "full_check_url": "http://80.242.57.200:80/?card=1084242&media=movie&source=cub",
+        "ip": "80.242.57.200",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://83.167.30.227:80",
+        "full_check_url": "http://83.167.30.227:80/?card=1084242&media=movie&source=cub",
+        "ip": "83.167.30.227",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.lampa1.ru:80",
+        "full_check_url": "http://www.lampa1.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "83.167.30.227",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.tornet1.ru:80",
+        "full_check_url": "http://www.tornet1.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "83.167.30.227",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa1.ru:80",
+        "full_check_url": "http://lampa1.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "83.167.30.227",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.top:443",
+        "full_check_url": "https://lampa.top:443/?card=1084242&media=movie&source=cub",
+        "ip": "89.34.230.16",
+        "port": 443,
+        "country": "RO",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://81.94.151.81:80",
+        "full_check_url": "http://81.94.151.81:80/?card=1084242&media=movie&source=cub",
+        "ip": "81.94.151.81",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
         "base_url": "http://77.73.67.27:80",
         "full_check_url": "http://77.73.67.27:80/?card=1084242&media=movie&source=cub",
         "ip": "77.73.67.27",
@@ -32,6 +424,38 @@
         "status": "not_checked"
     },
     {
+        "base_url": "https://vipkino.lampac999.ru:443",
+        "full_check_url": "https://vipkino.lampac999.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "89.107.10.27",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://89.107.10.27:443",
+        "full_check_url": "https://89.107.10.27:443/?card=1084242&media=movie&source=cub",
+        "ip": "89.107.10.27",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.788105.xyz:443",
+        "full_check_url": "https://lampa.788105.xyz:443/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.213",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://89.106.89.66:80",
+        "full_check_url": "http://89.106.89.66:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.66",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
         "base_url": "https://79.76.108.154:443",
         "full_check_url": "https://79.76.108.154:443/?card=1084242&media=movie&source=cub",
         "ip": "79.76.108.154",
@@ -45,6 +469,14 @@
         "ip": "78.153.6.253",
         "port": 443,
         "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://62.60.151.63:8080",
+        "full_check_url": "http://62.60.151.63:8080/?card=1084242&media=movie&source=cub",
+        "ip": "62.60.151.63",
+        "port": 8080,
+        "country": "IR",
         "status": "not_checked"
     },
     {
@@ -72,6 +504,110 @@
         "status": "not_checked"
     },
     {
+        "base_url": "http://47.245.104.83:80",
+        "full_check_url": "http://47.245.104.83:80/?card=1084242&media=movie&source=cub",
+        "ip": "47.245.104.83",
+        "port": 80,
+        "country": "SG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://45.148.117.208:443",
+        "full_check_url": "https://45.148.117.208:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.148.117.208",
+        "port": 443,
+        "country": "CH",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://kino.kalinovy.ru:443",
+        "full_check_url": "https://kino.kalinovy.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.148.117.208",
+        "port": 443,
+        "country": "CH",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://kino.kalinovy.ru:80",
+        "full_check_url": "http://kino.kalinovy.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "45.148.117.208",
+        "port": 80,
+        "country": "CH",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://www.ogara.ru:443",
+        "full_check_url": "https://www.ogara.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://mail.b8x.ru:443",
+        "full_check_url": "https://mail.b8x.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://www.gurunet.ru:443",
+        "full_check_url": "https://www.gurunet.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://gurunet.ru:443",
+        "full_check_url": "https://gurunet.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampac.b8x.ru:443",
+        "full_check_url": "https://lampac.b8x.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://45.144.52.182:8443",
+        "full_check_url": "https://45.144.52.182:8443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 8443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://45.144.52.182:443",
+        "full_check_url": "https://45.144.52.182:443/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.52.182",
+        "port": 443,
+        "country": "SI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.lampa-ua.top:80",
+        "full_check_url": "http://www.lampa-ua.top:80/?card=1084242&media=movie&source=cub",
+        "ip": "45.141.118.224",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://46.149.185.253:80",
+        "full_check_url": "http://46.149.185.253:80/?card=1084242&media=movie&source=cub",
+        "ip": "46.149.185.253",
+        "port": 80,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
         "base_url": "http://31.76.81.87:80",
         "full_check_url": "http://31.76.81.87:80/?card=1084242&media=movie&source=cub",
         "ip": "31.76.81.87",
@@ -96,363 +632,819 @@
         "status": "not_checked"
     },
     {
-        "base_url": "https://213.21.6.216:443",
-        "full_check_url": "https://213.21.6.216:443/?card=1084242&media=movie&source=cub",
-        "ip": "213.21.6.216",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa.conovora.site:443",
-        "full_check_url": "https://lampa.conovora.site:443/?card=1084242&media=movie&source=cub",
-        "ip": "213.21.6.216",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://usvds7000x20.startdedicated.com:443",
-        "full_check_url": "https://usvds7000x20.startdedicated.com:443/?card=1084242&media=movie&source=cub",
-        "ip": "207.38.88.204",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://colomar.com.ar:443",
-        "full_check_url": "https://colomar.com.ar:443/?card=1084242&media=movie&source=cub",
-        "ip": "207.38.88.204",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://207.38.88.204:443",
-        "full_check_url": "https://207.38.88.204:443/?card=1084242&media=movie&source=cub",
-        "ip": "207.38.88.204",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://207.38.88.204:8080",
-        "full_check_url": "http://207.38.88.204:8080/?card=1084242&media=movie&source=cub",
-        "ip": "207.38.88.204",
-        "port": 8080,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://194.147.115.232:80",
-        "full_check_url": "http://194.147.115.232:80/?card=1084242&media=movie&source=cub",
-        "ip": "194.147.115.232",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://hell88.ooguy.com:443",
-        "full_check_url": "https://hell88.ooguy.com:443/?card=1084242&media=movie&source=cub",
-        "ip": "188.137.240.108",
-        "port": 443,
-        "country": "BH",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://188.137.240.108:443",
-        "full_check_url": "https://188.137.240.108:443/?card=1084242&media=movie&source=cub",
-        "ip": "188.137.240.108",
-        "port": 443,
-        "country": "BH",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://tube.pp.ua:443",
-        "full_check_url": "https://tube.pp.ua:443/?card=1084242&media=movie&source=cub",
-        "ip": "178.136.101.238",
-        "port": 443,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://altq.ru:443",
-        "full_check_url": "https://altq.ru:443/?card=1084242&media=movie&source=cub",
-        "ip": "185.42.14.55",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.byskaz.ru:80",
-        "full_check_url": "http://lampa.byskaz.ru:80/?card=1084242&media=movie&source=cub",
-        "ip": "80.242.57.200",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://185.184.120.200:80",
-        "full_check_url": "http://185.184.120.200:80/?card=1084242&media=movie&source=cub",
-        "ip": "185.184.120.200",
-        "port": 80,
-        "country": "GB",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://178.20.46.95:80",
-        "full_check_url": "http://178.20.46.95:80/?card=1084242&media=movie&source=cub",
-        "ip": "178.20.46.95",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://178.49.43.91:8888",
-        "full_check_url": "http://178.49.43.91:8888/?card=1084242&media=movie&source=cub",
-        "ip": "178.49.43.91",
-        "port": 8888,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://www.cubic.cam:443",
-        "full_check_url": "https://www.cubic.cam:443/?card=1084242&media=movie&source=cub",
-        "ip": "172.67.177.231",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://www.cubic.cam:80",
-        "full_check_url": "http://www.cubic.cam:80/?card=1084242&media=movie&source=cub",
-        "ip": "172.67.177.231",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://cubic.cam:80",
-        "full_check_url": "http://cubic.cam:80/?card=1084242&media=movie&source=cub",
-        "ip": "144.91.107.223",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://150.230.22.208:8080",
-        "full_check_url": "http://150.230.22.208:8080/?card=1084242&media=movie&source=cub",
-        "ip": "150.230.22.208",
-        "port": 8080,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://130.12.171.227:443",
-        "full_check_url": "https://130.12.171.227:443/?card=1084242&media=movie&source=cub",
-        "ip": "130.12.171.227",
-        "port": 443,
-        "country": null,
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://307407.xyz:443",
-        "full_check_url": "https://307407.xyz:443/?card=1084242&media=movie&source=cub",
-        "ip": "130.12.171.227",
-        "port": 443,
-        "country": null,
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://positron.click:443",
-        "full_check_url": "https://positron.click:443/?card=1084242&media=movie&source=cub",
-        "ip": "141.11.62.241",
-        "port": 443,
-        "country": "FR",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://ustattkokoh.duckdns.org:443",
-        "full_check_url": "https://ustattkokoh.duckdns.org:443/?card=1084242&media=movie&source=cub",
-        "ip": "109.122.198.184",
-        "port": 443,
-        "country": "FR",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://109.122.198.184:443",
-        "full_check_url": "https://109.122.198.184:443/?card=1084242&media=movie&source=cub",
-        "ip": "109.122.198.184",
-        "port": 443,
-        "country": "FR",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://109.122.199.75:80",
-        "full_check_url": "http://109.122.199.75:80/?card=1084242&media=movie&source=cub",
-        "ip": "109.122.199.75",
-        "port": 80,
-        "country": "IR",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa.mbhrp.com:443",
-        "full_check_url": "https://lampa.mbhrp.com:443/?card=1084242&media=movie&source=cub",
-        "ip": "104.21.8.230",
-        "port": 443,
-        "country": null,
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://84.32.22.96:80",
-        "full_check_url": "http://84.32.22.96:80/?card=1084242&media=movie&source=cub",
-        "ip": "84.32.22.96",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampac.nynok.uz:443",
-        "full_check_url": "https://lampac.nynok.uz:443/?card=1084242&media=movie&source=cub",
-        "ip": "94.158.50.33",
-        "port": 443,
-        "country": "UZ",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://94.249.239.53:443",
-        "full_check_url": "https://94.249.239.53:443/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.239.53",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lam.astrabit.ru:443",
-        "full_check_url": "https://lam.astrabit.ru:443/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.239.53",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://kokohk.duckdns.org:443",
-        "full_check_url": "https://kokohk.duckdns.org:443/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.66",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.106.89.66:80",
-        "full_check_url": "http://89.106.89.66:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.66",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://kokohk.duckdns.org:80",
-        "full_check_url": "http://kokohk.duckdns.org:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.66",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.22.238.118:80",
-        "full_check_url": "http://89.22.238.118:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.22.238.118",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.22.238.118:8443",
-        "full_check_url": "http://89.22.238.118:8443/?card=1084242&media=movie&source=cub",
-        "ip": "89.22.238.118",
-        "port": 8443,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://www.sushireutov.ru:443",
-        "full_check_url": "https://www.sushireutov.ru:443/?card=1084242&media=movie&source=cub",
-        "ip": "87.120.187.8",
-        "port": 443,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://87.120.187.8:443",
-        "full_check_url": "https://87.120.187.8:443/?card=1084242&media=movie&source=cub",
-        "ip": "87.120.187.8",
-        "port": 443,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://sushireutov.ru:443",
-        "full_check_url": "https://sushireutov.ru:443/?card=1084242&media=movie&source=cub",
-        "ip": "87.120.187.8",
-        "port": 443,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://80.242.57.200:80",
-        "full_check_url": "http://80.242.57.200:80/?card=1084242&media=movie&source=cub",
-        "ip": "80.242.57.200",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://84.201.170.191:80",
-        "full_check_url": "http://84.201.170.191:80/?card=1084242&media=movie&source=cub",
-        "ip": "84.201.170.191",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://83.238.210.132:50000",
-        "full_check_url": "http://83.238.210.132:50000/?card=1084242&media=movie&source=cub",
-        "ip": "83.238.210.132",
-        "port": 50000,
-        "country": "PL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://47.245.104.83:80",
-        "full_check_url": "http://47.245.104.83:80/?card=1084242&media=movie&source=cub",
-        "ip": "47.245.104.83",
-        "port": 80,
-        "country": "SG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://46.149.185.253:80",
-        "full_check_url": "http://46.149.185.253:80/?card=1084242&media=movie&source=cub",
-        "ip": "46.149.185.253",
-        "port": 80,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa.azharkov.ru:443",
-        "full_check_url": "https://lampa.azharkov.ru:443/?card=1084242&media=movie&source=cub",
-        "ip": "5.61.88.24",
-        "port": 443,
-        "country": "FI",
-        "status": "not_checked"
-    },
-    {
         "base_url": "http://lampa.azharkov.ru:80",
         "full_check_url": "http://lampa.azharkov.ru:80/?card=1084242&media=movie&source=cub",
         "ip": "5.61.88.24",
         "port": 80,
         "country": "FI",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://213.21.11.4:443",
+        "full_check_url": "https://213.21.11.4:443/?card=1084242&media=movie&source=cub",
+        "ip": "213.21.11.4",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.failnotfound.ru:443",
+        "full_check_url": "https://lampa.failnotfound.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "213.21.11.4",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://213.174.5.119:443",
+        "full_check_url": "https://213.174.5.119:443/?card=1084242&media=movie&source=cub",
+        "ip": "213.174.5.119",
+        "port": 443,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://212.73.134.159:443",
+        "full_check_url": "https://212.73.134.159:443/?card=1084242&media=movie&source=cub",
+        "ip": "212.73.134.159",
+        "port": 443,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://la.bami7up.su:443",
+        "full_check_url": "https://la.bami7up.su:443/?card=1084242&media=movie&source=cub",
+        "ip": "194.87.29.120",
+        "port": 443,
+        "country": "CZ",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://212.67.14.143:443",
+        "full_check_url": "https://212.67.14.143:443/?card=1084242&media=movie&source=cub",
+        "ip": "212.67.14.143",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://212.113.99.41:443",
+        "full_check_url": "https://212.113.99.41:443/?card=1084242&media=movie&source=cub",
+        "ip": "212.113.99.41",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://v159442.hosted-by-vdsina.com:80",
+        "full_check_url": "http://v159442.hosted-by-vdsina.com:80/?card=1084242&media=movie&source=cub",
+        "ip": "212.111.82.62",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://212.111.82.62:80",
+        "full_check_url": "http://212.111.82.62:80/?card=1084242&media=movie&source=cub",
+        "ip": "212.111.82.62",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://212.111.81.180:8081",
+        "full_check_url": "http://212.111.81.180:8081/?card=1084242&media=movie&source=cub",
+        "ip": "212.111.81.180",
+        "port": 8081,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://213.165.42.243:10443",
+        "full_check_url": "https://213.165.42.243:10443/?card=1084242&media=movie&source=cub",
+        "ip": "213.165.42.243",
+        "port": 10443,
+        "country": "LB",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://213.165.42.243:8091",
+        "full_check_url": "http://213.165.42.243:8091/?card=1084242&media=movie&source=cub",
+        "ip": "213.165.42.243",
+        "port": 8091,
+        "country": "LB",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://213.165.217.212:4443",
+        "full_check_url": "https://213.165.217.212:4443/?card=1084242&media=movie&source=cub",
+        "ip": "213.165.217.212",
+        "port": 4443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://tv.vpn-vecher.com:443",
+        "full_check_url": "https://tv.vpn-vecher.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "213.165.217.212",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://212.34.151.5:80",
+        "full_check_url": "http://212.34.151.5:80/?card=1084242&media=movie&source=cub",
+        "ip": "212.34.151.5",
+        "port": 80,
+        "country": "ES",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://v208418.hosted-by-vdsina.com:80",
+        "full_check_url": "http://v208418.hosted-by-vdsina.com:80/?card=1084242&media=movie&source=cub",
+        "ip": "212.34.151.5",
+        "port": 80,
+        "country": "ES",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://212.34.147.53:80",
+        "full_check_url": "http://212.34.147.53:80/?card=1084242&media=movie&source=cub",
+        "ip": "212.34.147.53",
+        "port": 80,
+        "country": "ES",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://194.226.49.43:80",
+        "full_check_url": "http://194.226.49.43:80/?card=1084242&media=movie&source=cub",
+        "ip": "194.226.49.43",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://193.233.254.48:8080",
+        "full_check_url": "http://193.233.254.48:8080/?card=1084242&media=movie&source=cub",
+        "ip": "193.233.254.48",
+        "port": 8080,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://tube.pp.ua:80",
+        "full_check_url": "http://tube.pp.ua:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.136.101.238",
+        "port": 80,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://193.68.89.206:8080",
+        "full_check_url": "http://193.68.89.206:8080/?card=1084242&media=movie&source=cub",
+        "ip": "193.68.89.206",
+        "port": 8080,
+        "country": "LV",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://193.124.129.166:80",
+        "full_check_url": "http://193.124.129.166:80/?card=1084242&media=movie&source=cub",
+        "ip": "193.124.129.166",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://185.8.125.38:80",
+        "full_check_url": "http://185.8.125.38:80/?card=1084242&media=movie&source=cub",
+        "ip": "185.8.125.38",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://bylampa.online:80",
+        "full_check_url": "http://bylampa.online:80/?card=1084242&media=movie&source=cub",
+        "ip": "185.199.110.153",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://bylampa.online:443",
+        "full_check_url": "https://bylampa.online:443/?card=1084242&media=movie&source=cub",
+        "ip": "185.199.110.153",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://188.225.75.241:8080",
+        "full_check_url": "http://188.225.75.241:8080/?card=1084242&media=movie&source=cub",
+        "ip": "188.225.75.241",
+        "port": 8080,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://ab2024.ru:443",
+        "full_check_url": "https://ab2024.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://abmsx.tech:443",
+        "full_check_url": "https://abmsx.tech:443/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://donmax.cc:443",
+        "full_check_url": "https://donmax.cc:443/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://178.20.44.134:443",
+        "full_check_url": "https://178.20.44.134:443/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://178.20.44.134:80",
+        "full_check_url": "http://178.20.44.134:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://akter-black.com:443",
+        "full_check_url": "https://akter-black.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://akter-black.com:80",
+        "full_check_url": "http://akter-black.com:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://abmsx.tech:80",
+        "full_check_url": "http://abmsx.tech:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://ab2024.ru:80",
+        "full_check_url": "http://ab2024.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://donmax.cc:80",
+        "full_check_url": "http://donmax.cc:80/?card=1084242&media=movie&source=cub",
+        "ip": "178.20.44.134",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa.mx:80",
+        "full_check_url": "http://lampa.mx:80/?card=1084242&media=movie&source=cub",
+        "ip": "188.114.96.11",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.itesystem.net:443",
+        "full_check_url": "https://lampa.itesystem.net:443/?card=1084242&media=movie&source=cub",
+        "ip": "178.250.157.139",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://185.71.219.165:443",
+        "full_check_url": "https://185.71.219.165:443/?card=1084242&media=movie&source=cub",
+        "ip": "185.71.219.165",
+        "port": 443,
+        "country": "CY",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://185.245.106.86:443",
+        "full_check_url": "https://185.245.106.86:443/?card=1084242&media=movie&source=cub",
+        "ip": "185.245.106.86",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://www.lampa-tv.ru:443",
+        "full_check_url": "https://www.lampa-tv.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "185.245.106.86",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa-tv.ru:443",
+        "full_check_url": "https://lampa-tv.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "185.245.106.86",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa-vida.com:443",
+        "full_check_url": "https://lampa-vida.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "172.67.153.205",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa-vida.com:80",
+        "full_check_url": "http://lampa-vida.com:80/?card=1084242&media=movie&source=cub",
+        "ip": "172.67.153.205",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://173.249.25.91:80",
+        "full_check_url": "http://173.249.25.91:80/?card=1084242&media=movie&source=cub",
+        "ip": "173.249.25.91",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://144.31.184.105:443",
+        "full_check_url": "https://144.31.184.105:443/?card=1084242&media=movie&source=cub",
+        "ip": "144.31.184.105",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://144.31.171.122:8000",
+        "full_check_url": "http://144.31.171.122:8000/?card=1084242&media=movie&source=cub",
+        "ip": "144.31.171.122",
+        "port": 8000,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://144.31.155.141:3000",
+        "full_check_url": "http://144.31.155.141:3000/?card=1084242&media=movie&source=cub",
+        "ip": "144.31.155.141",
+        "port": 3000,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://144.31.112.22:80",
+        "full_check_url": "http://144.31.112.22:80/?card=1084242&media=movie&source=cub",
+        "ip": "144.31.112.22",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://youkino.top:443",
+        "full_check_url": "https://youkino.top:443/?card=1084242&media=movie&source=cub",
+        "ip": "138.124.35.8",
+        "port": 443,
+        "country": "NO",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampaca.duckdns.org:80/lampa-main/index.html",
+        "full_check_url": "http://lampaca.duckdns.org:80/lampa-main/index.html/?card=1084242&media=movie&source=cub",
+        "ip": "150.241.94.1",
+        "port": 80,
+        "country": "ES",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://150.241.116.154:80",
+        "full_check_url": "http://150.241.116.154:80/?card=1084242&media=movie&source=cub",
+        "ip": "150.241.116.154",
+        "port": 80,
+        "country": "ES",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.pl.ua:443",
+        "full_check_url": "https://lampa.pl.ua:443/?card=1084242&media=movie&source=cub",
+        "ip": "134.249.74.76",
+        "port": 443,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://134.249.74.76:80",
+        "full_check_url": "http://134.249.74.76:80/?card=1084242&media=movie&source=cub",
+        "ip": "134.249.74.76",
+        "port": 80,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa.pl.ua:80",
+        "full_check_url": "http://lampa.pl.ua:80/?card=1084242&media=movie&source=cub",
+        "ip": "134.249.74.76",
+        "port": 80,
+        "country": "UA",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://vizhu.top:443",
+        "full_check_url": "https://vizhu.top:443/?card=1084242&media=movie&source=cub",
+        "ip": "109.205.56.75",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://109.199.115.31:8443",
+        "full_check_url": "https://109.199.115.31:8443/?card=1084242&media=movie&source=cub",
+        "ip": "109.199.115.31",
+        "port": 8443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://109.120.140.110:80",
+        "full_check_url": "http://109.120.140.110:80/?card=1084242&media=movie&source=cub",
+        "ip": "109.120.140.110",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://91.108.237.249:80",
+        "full_check_url": "http://91.108.237.249:80/?card=1084242&media=movie&source=cub",
+        "ip": "91.108.237.249",
+        "port": 80,
+        "country": "AU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://www.lampa.vip:443",
+        "full_check_url": "https://www.lampa.vip:443/?card=1084242&media=movie&source=cub",
+        "ip": "108.165.164.151",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.vip:443",
+        "full_check_url": "https://lampa.vip:443/?card=1084242&media=movie&source=cub",
+        "ip": "108.165.164.151",
+        "port": 443,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://108.165.164.194:80",
+        "full_check_url": "http://108.165.164.194:80/?card=1084242&media=movie&source=cub",
+        "ip": "108.165.164.194",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa.vip:80",
+        "full_check_url": "http://lampa.vip:80/?card=1084242&media=movie&source=cub",
+        "ip": "108.165.164.151",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.lampa.vip:80",
+        "full_check_url": "http://www.lampa.vip:80/?card=1084242&media=movie&source=cub",
+        "ip": "108.165.164.151",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://obed.usepro.ru:443",
+        "full_check_url": "https://obed.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://mail.evacuatorvladimir.ru:443",
+        "full_check_url": "https://mail.evacuatorvladimir.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://zabbix.usepro.ru:443",
+        "full_check_url": "https://zabbix.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://13april.usepro.ru:443",
+        "full_check_url": "https://13april.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://mysql-is.usepro.ru:443",
+        "full_check_url": "https://mysql-is.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://nasos.usepro.ru:443",
+        "full_check_url": "https://nasos.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://calc.usepro.ru:443",
+        "full_check_url": "https://calc.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://il.usepro.ru:443",
+        "full_check_url": "https://il.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://dev.usepro.ru:443",
+        "full_check_url": "https://dev.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://ns.usepro.ru:443",
+        "full_check_url": "https://ns.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://is.usepro.ru:443",
+        "full_check_url": "https://is.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://91.107.126.98:443",
+        "full_check_url": "https://91.107.126.98:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://eskiz.usepro.ru:443",
+        "full_check_url": "https://eskiz.usepro.ru:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.107.126.98",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://87.242.119.132:8080",
+        "full_check_url": "http://87.242.119.132:8080/?card=1084242&media=movie&source=cub",
+        "ip": "87.242.119.132",
+        "port": 8080,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://onlymodels.icu:443",
+        "full_check_url": "https://onlymodels.icu:443/?card=1084242&media=movie&source=cub",
+        "ip": "104.21.8.14",
+        "port": 443,
+        "country": null,
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://rancor1223.duckdns.org:443",
+        "full_check_url": "https://rancor1223.duckdns.org:443/?card=1084242&media=movie&source=cub",
+        "ip": "95.85.254.128",
+        "port": 443,
+        "country": "CZ",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://95.85.254.128:443",
+        "full_check_url": "https://95.85.254.128:443/?card=1084242&media=movie&source=cub",
+        "ip": "95.85.254.128",
+        "port": 443,
+        "country": "CZ",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://zrovid.com:443",
+        "full_check_url": "https://zrovid.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "95.81.118.173",
+        "port": 443,
+        "country": "IR",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://myzone.fans:443",
+        "full_check_url": "https://myzone.fans:443/?card=1084242&media=movie&source=cub",
+        "ip": "104.21.22.153",
+        "port": 443,
+        "country": null,
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://94.125.102.63:80",
+        "full_check_url": "http://94.125.102.63:80/?card=1084242&media=movie&source=cub",
+        "ip": "94.125.102.63",
+        "port": 80,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.app:443",
+        "full_check_url": "https://lampa.app:443/?card=1084242&media=movie&source=cub",
+        "ip": "94.253.94.150",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa.app:80",
+        "full_check_url": "http://lampa.app:80/?card=1084242&media=movie&source=cub",
+        "ip": "94.253.94.150",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lexandros.mooo.com:443",
+        "full_check_url": "https://lexandros.mooo.com:443/?card=1084242&media=movie&source=cub",
+        "ip": "94.249.203.17",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://94.249.203.17:443",
+        "full_check_url": "https://94.249.203.17:443/?card=1084242&media=movie&source=cub",
+        "ip": "94.249.203.17",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://94.249.203.17:8443",
+        "full_check_url": "https://94.249.203.17:8443/?card=1084242&media=movie&source=cub",
+        "ip": "94.249.203.17",
+        "port": 8443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://87.121.89.183:8081",
+        "full_check_url": "http://87.121.89.183:8081/?card=1084242&media=movie&source=cub",
+        "ip": "87.121.89.183",
+        "port": 8081,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://87.120.165.211:443",
+        "full_check_url": "https://87.120.165.211:443/?card=1084242&media=movie&source=cub",
+        "ip": "87.120.165.211",
+        "port": 443,
+        "country": "BG",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://94.183.186.237:443",
+        "full_check_url": "https://94.183.186.237:443/?card=1084242&media=movie&source=cub",
+        "ip": "94.183.186.237",
+        "port": 443,
+        "country": "IR",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampa.quartz.pw:443",
+        "full_check_url": "https://lampa.quartz.pw:443/?card=1084242&media=movie&source=cub",
+        "ip": "88.201.248.134",
+        "port": 443,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.tims.click:80",
+        "full_check_url": "http://www.tims.click:80/?card=1084242&media=movie&source=cub",
+        "ip": "91.211.251.97",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://www.lampa.click:80",
+        "full_check_url": "http://www.lampa.click:80/?card=1084242&media=movie&source=cub",
+        "ip": "91.211.251.97",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://kinoxa.click:80",
+        "full_check_url": "http://kinoxa.click:80/?card=1084242&media=movie&source=cub",
+        "ip": "91.211.251.97",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa.click:80",
+        "full_check_url": "http://lampa.click:80/?card=1084242&media=movie&source=cub",
+        "ip": "91.211.251.97",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://91.201.112.36:443",
+        "full_check_url": "https://91.201.112.36:443/?card=1084242&media=movie&source=cub",
+        "ip": "91.201.112.36",
+        "port": 443,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://rout.my.to:80",
+        "full_check_url": "http://rout.my.to:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.22.225.70",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://gelyk2.ru:80",
+        "full_check_url": "http://gelyk2.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.22.225.70",
+        "port": 80,
+        "country": "NL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://89.22.225.70:80",
+        "full_check_url": "http://89.22.225.70:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.22.225.70",
+        "port": 80,
+        "country": "NL",
         "status": "not_checked"
     },
     {
@@ -464,10 +1456,66 @@
         "status": "not_checked"
     },
     {
+        "base_url": "http://89.125.81.183:8888",
+        "full_check_url": "http://89.125.81.183:8888/?card=1084242&media=movie&source=cub",
+        "ip": "89.125.81.183",
+        "port": 8888,
+        "country": "IE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://lampac.fun:443",
+        "full_check_url": "https://lampac.fun:443/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.139",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "https://89.106.89.139:443",
+        "full_check_url": "https://89.106.89.139:443/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.139",
+        "port": 443,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://89.106.89.86:80",
+        "full_check_url": "http://89.106.89.86:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.86",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampac.fun:80",
+        "full_check_url": "http://lampac.fun:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.139",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://89.106.89.139:80",
+        "full_check_url": "http://89.106.89.139:80/?card=1084242&media=movie&source=cub",
+        "ip": "89.106.89.139",
+        "port": 80,
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
         "base_url": "http://79.111.12.166:8080",
         "full_check_url": "http://79.111.12.166:8080/?card=1084242&media=movie&source=cub",
         "ip": "79.111.12.166",
         "port": 8080,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://80.93.60.113:8088",
+        "full_check_url": "http://80.93.60.113:8088/?card=1084242&media=movie&source=cub",
+        "ip": "80.93.60.113",
+        "port": 8088,
         "country": "RU",
         "status": "not_checked"
     },
@@ -536,675 +1584,59 @@
         "status": "not_checked"
     },
     {
-        "base_url": "http://64.188.66.87:80",
-        "full_check_url": "http://64.188.66.87:80/?card=1084242&media=movie&source=cub",
-        "ip": "64.188.66.87",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://212.73.134.159:443",
-        "full_check_url": "https://212.73.134.159:443/?card=1084242&media=movie&source=cub",
-        "ip": "212.73.134.159",
-        "port": 443,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://212.113.99.41:443",
-        "full_check_url": "https://212.113.99.41:443/?card=1084242&media=movie&source=cub",
-        "ip": "212.113.99.41",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://213.21.11.4:443",
-        "full_check_url": "https://213.21.11.4:443/?card=1084242&media=movie&source=cub",
-        "ip": "213.21.11.4",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa.failnotfound.ru:443",
-        "full_check_url": "https://lampa.failnotfound.ru:443/?card=1084242&media=movie&source=cub",
-        "ip": "213.21.11.4",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://212.192.214.65:443",
-        "full_check_url": "https://212.192.214.65:443/?card=1084242&media=movie&source=cub",
-        "ip": "212.192.214.65",
-        "port": 443,
-        "country": "GB",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://213.165.217.212:90",
-        "full_check_url": "https://213.165.217.212:90/?card=1084242&media=movie&source=cub",
-        "ip": "213.165.217.212",
-        "port": 90,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://193.68.89.206:8080",
-        "full_check_url": "http://193.68.89.206:8080/?card=1084242&media=movie&source=cub",
-        "ip": "193.68.89.206",
+        "base_url": "http://45.144.55.222:8080",
+        "full_check_url": "http://45.144.55.222:8080/?card=1084242&media=movie&source=cub",
+        "ip": "45.144.55.222",
         "port": 8080,
-        "country": "LV",
+        "country": "SI",
         "status": "not_checked"
     },
     {
-        "base_url": "https://213.165.42.243:10443",
-        "full_check_url": "https://213.165.42.243:10443/?card=1084242&media=movie&source=cub",
-        "ip": "213.165.42.243",
-        "port": 10443,
-        "country": "LB",
+        "base_url": "http://45.140.167.226:80",
+        "full_check_url": "http://45.140.167.226:80/?card=1084242&media=movie&source=cub",
+        "ip": "45.140.167.226",
+        "port": 80,
+        "country": "CZ",
         "status": "not_checked"
     },
     {
-        "base_url": "http://213.165.42.243:8091",
-        "full_check_url": "http://213.165.42.243:8091/?card=1084242&media=movie&source=cub",
-        "ip": "213.165.42.243",
-        "port": 8091,
-        "country": "LB",
+        "base_url": "http://dealripper.com:80",
+        "full_check_url": "http://dealripper.com:80/?card=1084242&media=movie&source=cub",
+        "ip": "57.128.253.133",
+        "port": 80,
+        "country": "FR",
         "status": "not_checked"
     },
     {
-        "base_url": "https://213.165.217.212:4443",
-        "full_check_url": "https://213.165.217.212:4443/?card=1084242&media=movie&source=cub",
-        "ip": "213.165.217.212",
-        "port": 4443,
-        "country": "RU",
+        "base_url": "http://57.128.253.133:80",
+        "full_check_url": "http://57.128.253.133:80/?card=1084242&media=movie&source=cub",
+        "ip": "57.128.253.133",
+        "port": 80,
+        "country": "FR",
         "status": "not_checked"
     },
     {
-        "base_url": "https://tv.vpn-vecher.com:443",
-        "full_check_url": "https://tv.vpn-vecher.com:443/?card=1084242&media=movie&source=cub",
-        "ip": "213.165.217.212",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://194.226.49.43:80",
-        "full_check_url": "http://194.226.49.43:80/?card=1084242&media=movie&source=cub",
-        "ip": "194.226.49.43",
+        "base_url": "http://1557573-cg12631.twc1.net:80",
+        "full_check_url": "http://1557573-cg12631.twc1.net:80/?card=1084242&media=movie&source=cub",
+        "ip": "81.200.146.247",
         "port": 80,
         "country": "RU",
         "status": "not_checked"
     },
     {
-        "base_url": "http://arkmv.ru:80",
-        "full_check_url": "http://arkmv.ru:80/?card=1084242&media=movie&source=cub",
-        "ip": "194.226.49.43",
+        "base_url": "http://1263403-cm53381.tw1.ru:80",
+        "full_check_url": "http://1263403-cm53381.tw1.ru:80/?card=1084242&media=movie&source=cub",
+        "ip": "81.200.146.247",
         "port": 80,
         "country": "RU",
         "status": "not_checked"
     },
     {
-        "base_url": "http://176.115.151.66:3000",
-        "full_check_url": "http://176.115.151.66:3000/?card=1084242&media=movie&source=cub",
-        "ip": "176.115.151.66",
-        "port": 3000,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.mx:80",
-        "full_check_url": "http://lampa.mx:80/?card=1084242&media=movie&source=cub",
-        "ip": "188.114.97.0",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://185.124.228.48:8080",
-        "full_check_url": "http://185.124.228.48:8080/?card=1084242&media=movie&source=cub",
-        "ip": "185.124.228.48",
-        "port": 8080,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://bylampa.online:80",
-        "full_check_url": "http://bylampa.online:80/?card=1084242&media=movie&source=cub",
-        "ip": "185.199.110.153",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://178.104.109.52:80",
-        "full_check_url": "http://178.104.109.52:80/?card=1084242&media=movie&source=cub",
-        "ip": "178.104.109.52",
-        "port": 80,
-        "country": "GB",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://178.20.44.134:443",
-        "full_check_url": "https://178.20.44.134:443/?card=1084242&media=movie&source=cub",
-        "ip": "178.20.44.134",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://donmax.cc:443",
-        "full_check_url": "https://donmax.cc:443/?card=1084242&media=movie&source=cub",
-        "ip": "178.20.44.134",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://abmsx.tech:443",
-        "full_check_url": "https://abmsx.tech:443/?card=1084242&media=movie&source=cub",
-        "ip": "178.20.44.134",
-        "port": 443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://donmax.cc:80",
-        "full_check_url": "http://donmax.cc:80/?card=1084242&media=movie&source=cub",
-        "ip": "178.20.44.134",
+        "base_url": "http://81.200.146.247:80",
+        "full_check_url": "http://81.200.146.247:80/?card=1084242&media=movie&source=cub",
+        "ip": "81.200.146.247",
         "port": 80,
         "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://akter-black.com:80",
-        "full_check_url": "http://akter-black.com:80/?card=1084242&media=movie&source=cub",
-        "ip": "178.20.44.134",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://bylampa.online:443",
-        "full_check_url": "https://bylampa.online:443/?card=1084242&media=movie&source=cub",
-        "ip": "185.199.108.153",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://134.249.74.76:443",
-        "full_check_url": "https://134.249.74.76:443/?card=1084242&media=movie&source=cub",
-        "ip": "134.249.74.76",
-        "port": 443,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa.pl.ua:443",
-        "full_check_url": "https://lampa.pl.ua:443/?card=1084242&media=movie&source=cub",
-        "ip": "134.249.74.76",
-        "port": 443,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://134.249.74.76:80",
-        "full_check_url": "http://134.249.74.76:80/?card=1084242&media=movie&source=cub",
-        "ip": "134.249.74.76",
-        "port": 80,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.pl.ua:80",
-        "full_check_url": "http://lampa.pl.ua:80/?card=1084242&media=movie&source=cub",
-        "ip": "134.249.74.76",
-        "port": 80,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://173.249.25.91:80",
-        "full_check_url": "http://173.249.25.91:80/?card=1084242&media=movie&source=cub",
-        "ip": "173.249.25.91",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa-vida.com:80",
-        "full_check_url": "http://lampa-vida.com:80/?card=1084242&media=movie&source=cub",
-        "ip": "172.67.153.205",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://195.3.221.227:80",
-        "full_check_url": "http://195.3.221.227:80/?card=1084242&media=movie&source=cub",
-        "ip": "195.3.221.227",
-        "port": 80,
-        "country": "PL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://157.22.187.111:443",
-        "full_check_url": "https://157.22.187.111:443/?card=1084242&media=movie&source=cub",
-        "ip": "157.22.187.111",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://157.22.187.111:80",
-        "full_check_url": "http://157.22.187.111:80/?card=1084242&media=movie&source=cub",
-        "ip": "157.22.187.111",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampaca.duckdns.org:80",
-        "full_check_url": "http://lampaca.duckdns.org:80/?card=1084242&media=movie&source=cub",
-        "ip": "150.241.94.1",
-        "port": 80,
-        "country": "ES",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://150.241.116.154:80",
-        "full_check_url": "http://150.241.116.154:80/?card=1084242&media=movie&source=cub",
-        "ip": "150.241.116.154",
-        "port": 80,
-        "country": "ES",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://146.103.100.95:80",
-        "full_check_url": "http://146.103.100.95:80/?card=1084242&media=movie&source=cub",
-        "ip": "146.103.100.95",
-        "port": 80,
-        "country": "BE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://144.31.184.105:443",
-        "full_check_url": "https://144.31.184.105:443/?card=1084242&media=movie&source=cub",
-        "ip": "144.31.184.105",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://wedminglass.ddns.net:443",
-        "full_check_url": "https://wedminglass.ddns.net:443/?card=1084242&media=movie&source=cub",
-        "ip": "144.31.184.105",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://144.31.168.6:443",
-        "full_check_url": "https://144.31.168.6:443/?card=1084242&media=movie&source=cub",
-        "ip": "144.31.168.6",
-        "port": 443,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://144.31.171.122:8000",
-        "full_check_url": "http://144.31.171.122:8000/?card=1084242&media=movie&source=cub",
-        "ip": "144.31.171.122",
-        "port": 8000,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://youkino.top:443",
-        "full_check_url": "https://youkino.top:443/?card=1084242&media=movie&source=cub",
-        "ip": "138.124.35.8",
-        "port": 443,
-        "country": "NO",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://130.49.219.53:80",
-        "full_check_url": "http://130.49.219.53:80/?card=1084242&media=movie&source=cub",
-        "ip": "130.49.219.53",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://130.49.219.45:80",
-        "full_check_url": "http://130.49.219.45:80/?card=1084242&media=movie&source=cub",
-        "ip": "130.49.219.45",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://ns2.myyydns.top:80",
-        "full_check_url": "http://ns2.myyydns.top:80/?card=1084242&media=movie&source=cub",
-        "ip": "130.49.219.45",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.run:80",
-        "full_check_url": "http://lampa.run:80/?card=1084242&media=movie&source=cub",
-        "ip": "130.49.219.53",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://smotret24.ru:80",
-        "full_check_url": "http://smotret24.ru:80/?card=1084242&media=movie&source=cub",
-        "ip": "130.49.219.50",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://130.49.219.50:80",
-        "full_check_url": "http://130.49.219.50:80/?card=1084242&media=movie&source=cub",
-        "ip": "130.49.219.50",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://www.lampa.vip:80",
-        "full_check_url": "http://www.lampa.vip:80/?card=1084242&media=movie&source=cub",
-        "ip": "108.165.164.151",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://108.165.164.194:80",
-        "full_check_url": "http://108.165.164.194:80/?card=1084242&media=movie&source=cub",
-        "ip": "108.165.164.194",
-        "port": 80,
-        "country": "US",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa-vida.com:443",
-        "full_check_url": "https://lampa-vida.com:443/?card=1084242&media=movie&source=cub",
-        "ip": "104.21.90.76",
-        "port": 443,
-        "country": null,
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://91.238.104.107:443",
-        "full_check_url": "https://91.238.104.107:443/?card=1084242&media=movie&source=cub",
-        "ip": "91.238.104.107",
-        "port": 443,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://91.238.104.253:80",
-        "full_check_url": "http://91.238.104.253:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.238.104.253",
-        "port": 80,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://bwa.pp.ua:443",
-        "full_check_url": "https://bwa.pp.ua:443/?card=1084242&media=movie&source=cub",
-        "ip": "91.238.104.107",
-        "port": 443,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://91.238.105.82:80",
-        "full_check_url": "http://91.238.105.82:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.238.105.82",
-        "port": 80,
-        "country": "UA",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://94.125.102.63:80",
-        "full_check_url": "http://94.125.102.63:80/?card=1084242&media=movie&source=cub",
-        "ip": "94.125.102.63",
-        "port": 80,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.125.81.183:8888",
-        "full_check_url": "http://89.125.81.183:8888/?card=1084242&media=movie&source=cub",
-        "ip": "89.125.81.183",
-        "port": 8888,
-        "country": "IE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://91.108.237.249:80",
-        "full_check_url": "http://91.108.237.249:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.108.237.249",
-        "port": 80,
-        "country": "AU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://tr.my.to:80",
-        "full_check_url": "http://tr.my.to:80/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.239.58",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://94.249.239.58:80",
-        "full_check_url": "http://94.249.239.58:80/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.239.58",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lexandros.mooo.com:443",
-        "full_check_url": "https://lexandros.mooo.com:443/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.203.17",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://94.249.203.17:443",
-        "full_check_url": "https://94.249.203.17:443/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.203.17",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://94.249.203.17:8443",
-        "full_check_url": "https://94.249.203.17:8443/?card=1084242&media=movie&source=cub",
-        "ip": "94.249.203.17",
-        "port": 8443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://89.106.89.58:443",
-        "full_check_url": "https://89.106.89.58:443/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.58",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://sdlampac.fun:443",
-        "full_check_url": "https://sdlampac.fun:443/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.58",
-        "port": 443,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://sdlampac.fun:80",
-        "full_check_url": "http://sdlampac.fun:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.58",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.106.89.139:80",
-        "full_check_url": "http://89.106.89.139:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.139",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampac.fun:80",
-        "full_check_url": "http://lampac.fun:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.106.89.139",
-        "port": 80,
-        "country": "DE",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://94.183.186.237:443",
-        "full_check_url": "https://94.183.186.237:443/?card=1084242&media=movie&source=cub",
-        "ip": "94.183.186.237",
-        "port": 443,
-        "country": "IR",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.22.237.236:80",
-        "full_check_url": "http://89.22.237.236:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.22.237.236",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://89.22.225.70:80",
-        "full_check_url": "http://89.22.225.70:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.22.225.70",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://gelyk2.ru:80",
-        "full_check_url": "http://gelyk2.ru:80/?card=1084242&media=movie&source=cub",
-        "ip": "89.22.225.70",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://www.lampa.click:80",
-        "full_check_url": "http://www.lampa.click:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.211.251.97",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://tims.click:80",
-        "full_check_url": "http://tims.click:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.211.251.97",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://www.tims.click:80",
-        "full_check_url": "http://www.tims.click:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.211.251.97",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.click:80",
-        "full_check_url": "http://lampa.click:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.211.251.97",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://kinoxa.click:80",
-        "full_check_url": "http://kinoxa.click:80/?card=1084242&media=movie&source=cub",
-        "ip": "91.211.251.97",
-        "port": 80,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://87.121.89.183:80",
-        "full_check_url": "http://87.121.89.183:80/?card=1084242&media=movie&source=cub",
-        "ip": "87.121.89.183",
-        "port": 80,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.shizahd.pro:80",
-        "full_check_url": "http://lampa.shizahd.pro:80/?card=1084242&media=movie&source=cub",
-        "ip": "87.121.89.183",
-        "port": 80,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://87.121.89.183:8081",
-        "full_check_url": "http://87.121.89.183:8081/?card=1084242&media=movie&source=cub",
-        "ip": "87.121.89.183",
-        "port": 8081,
-        "country": "BG",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://91.201.112.36:443",
-        "full_check_url": "https://91.201.112.36:443/?card=1084242&media=movie&source=cub",
-        "ip": "91.201.112.36",
-        "port": 443,
-        "country": "NL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://87.242.119.132:8080",
-        "full_check_url": "http://87.242.119.132:8080/?card=1084242&media=movie&source=cub",
-        "ip": "87.242.119.132",
-        "port": 8080,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://85.192.24.75:8443",
-        "full_check_url": "http://85.192.24.75:8443/?card=1084242&media=movie&source=cub",
-        "ip": "85.192.24.75",
-        "port": 8443,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lisklamp.isplevel.pro:443/lampa-main/index.html",
-        "full_check_url": "https://lisklamp.isplevel.pro:443/lampa-main/index.html/?card=1084242&media=movie&source=cub",
-        "ip": "45.128.148.189",
-        "port": 443,
-        "country": "UA",
         "status": "not_checked"
     },
     {
@@ -1216,19 +1648,43 @@
         "status": "not_checked"
     },
     {
-        "base_url": "https://62.113.106.95:443",
-        "full_check_url": "https://62.113.106.95:443/?card=1084242&media=movie&source=cub",
-        "ip": "62.113.106.95",
+        "base_url": "https://lisklamp.isplevel.pro:443/lampa-main/index.html",
+        "full_check_url": "https://lisklamp.isplevel.pro:443/lampa-main/index.html/?card=1084242&media=movie&source=cub",
+        "ip": "45.128.148.189",
         "port": 443,
-        "country": "RU",
+        "country": "UA",
         "status": "not_checked"
     },
     {
-        "base_url": "https://37.221.67.187:443",
-        "full_check_url": "https://37.221.67.187:443/?card=1084242&media=movie&source=cub",
-        "ip": "37.221.67.187",
+        "base_url": "https://62.171.183.51:443",
+        "full_check_url": "https://62.171.183.51:443/?card=1084242&media=movie&source=cub",
+        "ip": "62.171.183.51",
         "port": 443,
-        "country": "RU",
+        "country": "DE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://64.188.66.87:80",
+        "full_check_url": "http://64.188.66.87:80/?card=1084242&media=movie&source=cub",
+        "ip": "64.188.66.87",
+        "port": 80,
+        "country": "US",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://51.20.214.6:8080",
+        "full_check_url": "http://51.20.214.6:8080/?card=1084242&media=movie&source=cub",
+        "ip": "51.20.214.6",
+        "port": 8080,
+        "country": "SE",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://51.254.138.60:8081",
+        "full_check_url": "http://51.254.138.60:8081/?card=1084242&media=movie&source=cub",
+        "ip": "51.254.138.60",
+        "port": 8081,
+        "country": "FR",
         "status": "not_checked"
     },
     {
@@ -1237,14 +1693,6 @@
         "ip": "51.83.187.182",
         "port": 443,
         "country": "PL",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://krojiuk.online:80",
-        "full_check_url": "http://krojiuk.online:80/?card=1084242&media=movie&source=cub",
-        "ip": "46.226.165.103",
-        "port": 80,
-        "country": "RU",
         "status": "not_checked"
     },
     {
@@ -1264,6 +1712,14 @@
         "status": "not_checked"
     },
     {
+        "base_url": "http://krojiuk.online:80",
+        "full_check_url": "http://krojiuk.online:80/?card=1084242&media=movie&source=cub",
+        "ip": "46.226.165.103",
+        "port": 80,
+        "country": "RU",
+        "status": "not_checked"
+    },
+    {
         "base_url": "http://46.226.165.103:80",
         "full_check_url": "http://46.226.165.103:80/?card=1084242&media=movie&source=cub",
         "ip": "46.226.165.103",
@@ -1272,19 +1728,19 @@
         "status": "not_checked"
     },
     {
-        "base_url": "https://46.187.69.249:9120",
-        "full_check_url": "https://46.187.69.249:9120/?card=1084242&media=movie&source=cub",
-        "ip": "46.187.69.249",
-        "port": 9120,
+        "base_url": "https://aviamovie.online:443",
+        "full_check_url": "https://aviamovie.online:443/?card=1084242&media=movie&source=cub",
+        "ip": "46.17.45.60",
+        "port": 443,
         "country": "RU",
         "status": "not_checked"
     },
     {
-        "base_url": "https://5.181.202.251:443",
-        "full_check_url": "https://5.181.202.251:443/?card=1084242&media=movie&source=cub",
-        "ip": "5.181.202.251",
-        "port": 443,
-        "country": "NL",
+        "base_url": "https://37.232.222.113:9120",
+        "full_check_url": "https://37.232.222.113:9120/?card=1084242&media=movie&source=cub",
+        "ip": "37.232.222.113",
+        "port": 9120,
+        "country": "RU",
         "status": "not_checked"
     },
     {
@@ -1296,27 +1752,11 @@
         "status": "not_checked"
     },
     {
-        "base_url": "http://5.8.64.55:80",
-        "full_check_url": "http://5.8.64.55:80/?card=1084242&media=movie&source=cub",
-        "ip": "5.8.64.55",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampakan.ru:80",
-        "full_check_url": "http://lampakan.ru:80/?card=1084242&media=movie&source=cub",
-        "ip": "5.8.64.55",
-        "port": 80,
-        "country": "RU",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://1263403-cm53381.tw1.ru:80",
-        "full_check_url": "http://1263403-cm53381.tw1.ru:80/?card=1084242&media=movie&source=cub",
-        "ip": "81.200.146.247",
-        "port": 80,
-        "country": "RU",
+        "base_url": "https://www.tv4u.sbs:443",
+        "full_check_url": "https://www.tv4u.sbs:443/?card=1084242&media=movie&source=cub",
+        "ip": "5.161.69.225",
+        "port": 443,
+        "country": "US",
         "status": "not_checked"
     },
     {
@@ -1328,34 +1768,42 @@
         "status": "not_checked"
     },
     {
-        "base_url": "https://185.238.191.252:443/lampa-main/index.html",
-        "full_check_url": "https://185.238.191.252:443/lampa-main/index.html/?card=1084242&media=movie&source=cub",
-        "ip": "185.238.191.252",
-        "port": 443,
-        "country": "CH",
+        "base_url": "http://194.87.86.194:3000",
+        "full_check_url": "http://194.87.86.194:3000/?card=1084242&media=movie&source=cub",
+        "ip": "194.87.86.194",
+        "port": 3000,
+        "country": "US",
         "status": "not_checked"
     },
     {
-        "base_url": "http://185.238.191.252:80/lampa-main/index.html",
-        "full_check_url": "http://185.238.191.252:80/lampa-main/index.html/?card=1084242&media=movie&source=cub",
-        "ip": "185.238.191.252",
+        "base_url": "http://185.8.213.34:3000",
+        "full_check_url": "http://185.8.213.34:3000/?card=1084242&media=movie&source=cub",
+        "ip": "185.8.213.34",
+        "port": 3000,
+        "country": "UZ",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://185.151.245.217:3000",
+        "full_check_url": "http://185.151.245.217:3000/?card=1084242&media=movie&source=cub",
+        "ip": "185.151.245.217",
+        "port": 3000,
+        "country": "PL",
+        "status": "not_checked"
+    },
+    {
+        "base_url": "http://lampa.mrsiwan.info:80",
+        "full_check_url": "http://lampa.mrsiwan.info:80/?card=1084242&media=movie&source=cub",
+        "ip": "185.151.245.217",
         "port": 80,
-        "country": "CH",
+        "country": "PL",
         "status": "not_checked"
     },
     {
-        "base_url": "http://vod.amigo.by:80",
-        "full_check_url": "http://vod.amigo.by:80/?card=1084242&media=movie&source=cub",
-        "ip": "185.128.203.31",
-        "port": 80,
-        "country": "BY",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "http://lampa.stream:80",
-        "full_check_url": "http://lampa.stream:80/?card=1084242&media=movie&source=cub",
+        "base_url": "https://lampa.stream:443",
+        "full_check_url": "https://lampa.stream:443/?card=1084242&media=movie&source=cub",
         "ip": "172.67.173.114",
-        "port": 80,
+        "port": 443,
         "country": "US",
         "status": "not_checked"
     },
@@ -1384,27 +1832,11 @@
         "status": "not_checked"
     },
     {
-        "base_url": "http://95.81.103.58:80",
-        "full_check_url": "http://95.81.103.58:80/?card=1084242&media=movie&source=cub",
-        "ip": "95.81.103.58",
-        "port": 80,
-        "country": "IR",
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://dlglmobile.digital:443/lampa-main/index.html",
-        "full_check_url": "https://dlglmobile.digital:443/lampa-main/index.html/?card=1084242&media=movie&source=cub",
-        "ip": "104.21.79.57",
+        "base_url": "https://lampa.greenserver.tk:443",
+        "full_check_url": "https://lampa.greenserver.tk:443/?card=1084242&media=movie&source=cub",
+        "ip": "88.151.187.133",
         "port": 443,
-        "country": null,
-        "status": "not_checked"
-    },
-    {
-        "base_url": "https://lampa.stream:443",
-        "full_check_url": "https://lampa.stream:443/?card=1084242&media=movie&source=cub",
-        "ip": "104.21.55.219",
-        "port": 443,
-        "country": null,
+        "country": "RU",
         "status": "not_checked"
     }
 ]
