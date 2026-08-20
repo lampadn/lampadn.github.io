@@ -1137,8 +1137,34 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-card__thumb{width:7em;height:4.4em}',
     '.nova-chip{max-width:16em}',
     '}',
+    'body.nova-focus-ring .nova-btn.focus,body.nova-focus-ring .nova-chip.focus,body.nova-focus-ring .nova-card.focus,body.nova-focus-ring .nova-group.focus{background:rgba(255,255,255,.16)!important;color:#fff!important;-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
+    'body.nova-focus-ring .nova-btn--main{background:rgba(255,255,255,.16);color:#fff;-webkit-box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5);box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5)}',
+    'body.nova-focus-ring .nova-chip.focus .nova-chip__badge{background:rgba(255,255,255,.2)!important;color:#fff!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--body{background:rgba(255,255,255,.2)!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--body .time-line>div{background:#fff!important}',
+    'body.nova-focus-ring .nova-card--slim.focus .nova-card__line{background:rgba(255,255,255,.2)!important}',
+    'body.nova-focus-ring .nova-card--slim.focus .nova-card__line .time-line>div{background:#fff!important}',
+    'body.nova-focus-ring .nova__list--grid .nova-card.focus{background:none!important;color:inherit!important;-webkit-box-shadow:none!important;box-shadow:none!important}',
+    'body.nova-focus-ring .nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .12em #fff!important;box-shadow:0 0 0 .12em #fff!important}',
+    'body.nova-focus-ring .nova-chip--active.focus,body.nova-focus-ring .nova-group--open.focus{-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
     '</style>'
   ].join('');
+
+  function novaFocusRing() {
+    try {
+      return Lampa.Storage.get('nova_focus_style', 'ring') !== 'fill';
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function novaApplyFocusStyle() {
+    try {
+      var body = $('body');
+      if (novaFocusRing()) body.addClass('nova-focus-ring');
+      else body.removeClass('nova-focus-ring');
+    } catch (e) {}
+  }
 
   function component(object) {
     var network = new Network();
@@ -5487,6 +5513,30 @@ Lampa.SettingsApi.addParam({
         en: 'Grid',
         zh: '网格'
       },
+      nova_focus_name: {
+        ru: 'Выделение',
+        uk: 'Виділення',
+        en: 'Highlight style',
+        zh: '高亮样式'
+      },
+      nova_focus_descr: {
+        ru: 'Чем подсвечивать выбранную кнопку, серию или озвучку',
+        uk: 'Чим підсвічувати вибрану кнопку, серію або озвучення',
+        en: 'How the focused button, episode or voice is highlighted',
+        zh: '如何高亮所选按钮、剧集或配音'
+      },
+      nova_focus_ring: {
+        ru: 'Ободок',
+        uk: 'Обідок',
+        en: 'Outline',
+        zh: '描边'
+      },
+      nova_focus_fill: {
+        ru: 'Белая заливка',
+        uk: 'Біла заливка',
+        en: 'White fill',
+        zh: '白色填充'
+      },
       nova_hero_art_name: {
         ru: 'Шапка с кадром',
         uk: 'Шапка з кадром',
@@ -5636,6 +5686,26 @@ Lampa.SettingsApi.addParam({
     Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
+        name: 'nova_focus_style',
+        type: 'select',
+        values: {
+          ring: Lampa.Lang.translate('nova_focus_ring'),
+          fill: Lampa.Lang.translate('nova_focus_fill')
+        },
+        "default": 'ring'
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_focus_name'),
+        description: Lampa.Lang.translate('nova_focus_descr')
+      },
+      onChange: function () {
+        novaApplyFocusStyle();
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
         name: 'nova_hero',
         type: 'trigger',
         "default": true
@@ -5741,6 +5811,7 @@ Lampa.SettingsApi.addParam({
 
     $('body').append(Lampa.Template.get('lampac_css', {}, true));
     $('body').append(NovaUI.css);
+    novaApplyFocusStyle();
 
     function resetTemplates() {
       Lampa.Template.add('lampac_prestige_full', "<div class=\"online-prestige online-prestige--full selector\">\n            <div class=\"online-prestige__img\">\n                <img alt=\"\">\n                <div class=\"online-prestige__loader\"></div>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__timeline\"></div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                    <div class=\"online-prestige__quality\">{quality}</div>\n                </div>\n            </div>\n        </div>");
