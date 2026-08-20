@@ -120,7 +120,6 @@ var randomUrl = vybor[randomIndex];
   var ONLINE_CACHE_TTL = 5 * 60 * 1000;
   var _pm_a = 'con', _pm_b = 'tinue', _pm_c = '_play';
 
-
   function _markMedia(el, isSeries) {
     if (!el) return;
     el.isonline = true;
@@ -485,8 +484,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   NovaUI.PROBE_TIMEOUT = 7000;
   NovaUI.PROBE_PARALLEL = 2;
-  NovaUI.PROBE_LIMIT = 26;
-  NovaUI.PROBE_BUDGET = 45000;
+  NovaUI.PROBE_LIMIT = 12;
+  NovaUI.PROBE_BUDGET = 20000;
   NovaUI.PROBE_TTL_OK = 21600000;
   NovaUI.PROBE_TTL_EMPTY = 1800000;
   NovaUI.PROBE_DELAY = 1500;
@@ -677,7 +676,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return /^xvideocdn/i.test(key || '') && /ultra|60\s*\/?\s*120|60fps/i.test(title || '');
   };
 
-
   NovaUI.serverDenial = function(answer) {
     if (!answer || typeof answer !== 'object') return null;
     var denied = !!(answer.accsdb || answer.blocked || answer.error ||
@@ -698,7 +696,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     if (typeof error.status === 'number') return error.status === 0 || error.status >= 500;
     return false;
   };
-
 
   NovaUI.providerName = function(url) {
     var path = String(url || '').split('?')[0].split('#')[0];
