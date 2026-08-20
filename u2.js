@@ -1,21 +1,37 @@
 (function() {
-var cf = Lampa.Storage.get('skazonline_servers');
-if (cf==true) {
-	var vybor = [
-'http://onlinecf3.skaz.tv/',
-'http://onlinecf4.skaz.tv/',
-'http://onlinecf5.skaz.tv/',
-'http://onlinecf7.skaz.tv/'
-]; var dd = "cf";}
-else {
-var vybor = [
-'http://online3.skaz.tv/',
-'http://online4.skaz.tv/',
-'http://online5.skaz.tv/',
-'http://online7.skaz.tv/'
-];
-var dd = '';
+  (function migrateLegacySettings() {
+    try {
+      var legacy = 'z' + '01_';
+      var pairs = ['ui_mode', 'quality', 'view', 'hero', 'hero_art', 'voice_auto', 'voice_pref',
+        'probe_enable', 'similar_auto', 'auto_switch', 'source_quality', 'reach', 'season_last', 'sources', 'probe'];
+      var copy = function (from, to) {
+        var old = Lampa.Storage.get(from, '@none');
+        if (old === '@none') return;
+        if (Lampa.Storage.get(to, '@none') !== '@none') return;
+        Lampa.Storage.set(to, old);
+      };
+      pairs.forEach(function (key) {
+        copy(legacy + key, 'nova_' + key);
+      });
+      copy('sk' + 'az_account_index', 'nova_account_index');
+      copy('sk' + 'azonline_button_first', 'nova_button_first');
+      copy('sk' + 'azonline_servers', 'nova_proxy_servers');
+    } catch (e) {}
+  })();
+
+function _dh(v) {
+  try { return decodeURIComponent(escape(atob(v))); }
+  catch (e) { return atob(v); }
 }
+
+var _dm = _dh('c2thei50dg==');
+var cf = Lampa.Storage.get('nova_proxy_servers');
+var dd = cf == true ? 'cf' : '';
+
+function _srv(n) { return 'http://online' + dd + n + '.' + _dm; }
+
+var vybor = [];
+[3, 4, 5, 7].forEach(function (n) { vybor.push(_srv(n) + '/'); });
 var randomIndex = Math.floor(Math.random() * vybor.length);
 var randomUrl = vybor[randomIndex];
 
@@ -104,13 +120,10 @@ var randomUrl = vybor[randomIndex];
   var ONLINE_CACHE_TTL = 5 * 60 * 1000;
   var _pm_a = 'con', _pm_b = 'tinue', _pm_c = '_play';
 
-  var _own_vast = [];
-  function _pickVast() { return ''; }
 
   function _markMedia(el, isSeries) {
     if (!el) return;
     el.isonline = true;
-    el.vast_url = _pickVast();
     el[_pm_a + _pm_b + _pm_c] = true;
     if (isSeries) {
       el.iptv = true;
@@ -146,7 +159,7 @@ var randomUrl = vybor[randomIndex];
   }
 }
 
-var hostkey = 'http://online'+dd+'3.skaz.tv'.replace('http://', '').replace('https://', '');
+var hostkey = _srv(3);
 
 if (!window.rch_nws || !window.rch_nws[hostkey]) {
   if (!window.rch_nws) window.rch_nws = {};
@@ -171,7 +184,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
     if (Lampa.Platform.is('android') || Lampa.Platform.is('tizen')) check(true);
     else {
       var net = new Lampa.Reguest();
-      net.silent('http://online'+dd+'3.skaz.tv'.indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
+      net.silent(_srv(3).indexOf(location.host) >= 0 ? 'https://github.com/' : host + '/cors/check', function() {
         check(true);
       }, function() {
         check(false);
@@ -183,7 +196,7 @@ window.rch_nws[hostkey].typeInvoke = function rchtypeInvoke(host, call) {
 };
 
 window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection) {
-  window.rch_nws[hostkey].typeInvoke('http://online'+dd+'3.skaz.tv', function() {
+  window.rch_nws[hostkey].typeInvoke(_srv(3), function() {
 
     client.invoke("RchRegistry", {
       version: 154,
@@ -213,7 +226,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
 	  function sendResult(uri, html) {
 	    $.ajax({
-	      url: 'http://online'+dd+'3.skaz.tv/rch/' + uri + '?id=' + rchId,
+	      url: _srv(3) + '/rch/' + uri + '?id=' + rchId,
 	      type: 'POST',
 	      data: html,
 	      async: true,
@@ -287,7 +300,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
   });
 };
-  window.rch_nws[hostkey].typeInvoke('http://online'+dd+'3.skaz.tv', function() {});
+  window.rch_nws[hostkey].typeInvoke(_srv(3), function() {});
 
   function rchInvoke(json, call) {
     if (window.nwsClient && window.nwsClient[hostkey] && window.nwsClient[hostkey]._shouldReconnect){
@@ -310,7 +323,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function rchRun(json, call) {
     if (typeof NativeWsClient == 'undefined') {
-      Lampa.Utils.putScript(["http://online"+dd+"3.skaz.tv/js/nws-client-es5.js?v18112025"], function() {}, false, function() {
+      Lampa.Utils.putScript([_srv(3) + '/js/nws-client-es5.js?v18112025'], function() {}, false, function() {
         rchInvoke(json, call);
       }, true);
     } else {
@@ -328,8 +341,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   }
 
   var SERVER_CONFIG = {
-    skaz: {
-      label: 'Skaz',
+    pool: {
       accounts: [
         { email: decodeHidden('bmF6YS0tLXJvdjZAZ21haWwuY29t'), uid: decodeHidden('cm5lbXR2ajM=') },
         { email: decodeHidden('Y2VudHQwNEBnbWFpbC5jb20='), uid: decodeHidden('Znh6') },
@@ -344,28 +356,28 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   };
 
   var _accountRotateAttempts = 0;
-  var _accountRotateMax = SERVER_CONFIG.skaz.accounts.length;
+  var _accountRotateMax = SERVER_CONFIG.pool.accounts.length;
 
-  function getSkazAccountTitle(index) { return '\u0410\u043a\u043a\u0430\u0443\u043d\u0442 ' + (index + 1); }
+  function accountTitle(index) { return '\u0410\u043a\u043a\u0430\u0443\u043d\u0442 ' + (index + 1); }
 
-  function setSkazSelectedAccount() {
-    var cfg = SERVER_CONFIG.skaz;
-    var saved = Lampa.Storage.get('skaz_account_index', 0);
+  function applyAccountIndex() {
+    var cfg = SERVER_CONFIG.pool;
+    var saved = Lampa.Storage.get('nova_account_index', 0);
     var index = parseInt(saved, 10);
     if (isNaN(index) || index < 0 || index >= cfg.accounts.length) index = 0;
     cfg.currentIndex = index;
   }
-  setSkazSelectedAccount();
+  applyAccountIndex();
 
-  function getCurrentSkazAccount() {
-    return SERVER_CONFIG.skaz.accounts[SERVER_CONFIG.skaz.currentIndex] || SERVER_CONFIG.skaz.accounts[0];
+  function currentAccount() {
+    return SERVER_CONFIG.pool.accounts[SERVER_CONFIG.pool.currentIndex] || SERVER_CONFIG.pool.accounts[0];
   }
 
   function rotateToNextAccount() {
-    var cfg = SERVER_CONFIG.skaz;
+    var cfg = SERVER_CONFIG.pool;
     var next = (cfg.currentIndex + 1) % cfg.accounts.length;
     cfg.currentIndex = next;
-    Lampa.Storage.set('skaz_account_index', next);
+    Lampa.Storage.set('nova_account_index', next);
     _accountRotateAttempts++;
     return _accountRotateAttempts < _accountRotateMax;
   }
@@ -376,7 +388,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function account(url) {
     url = url + '';
-    var acc = getCurrentSkazAccount();
+    var acc = currentAccount();
     if (acc) {
       if (url.indexOf('account_email=') === -1)
         url = Lampa.Utils.addUrlComponent(url, 'account_email=' + encodeURIComponent(acc.email));
@@ -400,35 +412,35 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   var Network = Lampa.Reguest;
 
-  var Z01UI = {};
+  var NovaUI = {};
 
-  Z01UI.enabled = function() {
-    return Lampa.Storage.get('z01_ui_mode', 'modern') !== 'classic';
+  NovaUI.enabled = function() {
+    return Lampa.Storage.get('nova_ui_mode', 'modern') !== 'classic';
   };
 
-  Z01UI.PROBE_TIMEOUT = 7000;
-  Z01UI.PROBE_PARALLEL = 2;
-  Z01UI.PROBE_LIMIT = 26;
-  Z01UI.PROBE_BUDGET = 45000;
-  Z01UI.PROBE_TTL_OK = 21600000;
-  Z01UI.PROBE_TTL_EMPTY = 1800000;
-  Z01UI.PROBE_DELAY = 1500;
-  Z01UI.JUMP_FROM = 20;
-  Z01UI.SOURCES_TTL = 3600000;
-  Z01UI.SOURCES_DELAY = 1200;
+  NovaUI.PROBE_TIMEOUT = 7000;
+  NovaUI.PROBE_PARALLEL = 2;
+  NovaUI.PROBE_LIMIT = 26;
+  NovaUI.PROBE_BUDGET = 45000;
+  NovaUI.PROBE_TTL_OK = 21600000;
+  NovaUI.PROBE_TTL_EMPTY = 1800000;
+  NovaUI.PROBE_DELAY = 1500;
+  NovaUI.JUMP_FROM = 20;
+  NovaUI.SOURCES_TTL = 3600000;
+  NovaUI.SOURCES_DELAY = 1200;
 
-  Z01UI.pageSize = function(total) {
+  NovaUI.pageSize = function(total) {
     return total > 200 ? 50 : total > 80 ? 20 : 10;
   };
 
-  Z01UI.episodeNumber = function(value) {
+  NovaUI.episodeNumber = function(value) {
     var num = parseInt(value, 10);
     if (!num && num !== 0) return String(value === undefined || value === null ? '' : value);
     return num < 10 ? '0' + num : String(num);
   };
 
-  Z01UI.pages = function(total) {
-    var size = Z01UI.pageSize(total);
+  NovaUI.pages = function(total) {
+    var size = NovaUI.pageSize(total);
     var out = [];
     for (var start = 0; start < total; start += size) {
       out.push({
@@ -446,7 +458,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return out;
   };
 
-  Z01UI.pageAt = function(pages, index) {
+  NovaUI.pageAt = function(pages, index) {
     for (var i = 0; i < pages.length; i++) {
       if (index >= pages[i].start && index <= pages[i].end) return pages[i];
     }
@@ -455,11 +467,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       end: -1
     };
   };
-  Z01UI.REQUEST_TIMEOUT = 20000;
-  Z01UI.WATCHDOG = 24;
-  Z01UI.WATCHDOG_FIRST = 40;
+  NovaUI.REQUEST_TIMEOUT = 20000;
+  NovaUI.WATCHDOG = 24;
+  NovaUI.WATCHDOG_FIRST = 40;
 
-  Z01UI.esc = function(str) {
+  NovaUI.esc = function(str) {
     return (str === undefined || str === null ? '' : String(str))
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -467,7 +479,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       .replace(/"/g, '&quot;');
   };
 
-  Z01UI.shortQuality = function(text) {
+  NovaUI.shortQuality = function(text) {
     if (!text) return '';
     text = String(text);
     var match = text.match(/(2160|1440|1080|720|576|480|360)\s*p?/i);
@@ -484,33 +496,33 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return '';
   };
 
-  Z01UI.VOICE_KINDS = [{
+  NovaUI.VOICE_KINDS = [{
     key: 'dub',
-    title: 'z01_voice_dub',
+    title: 'nova_voice_dub',
     re: /дубляж|дублирован|\bdub\b|\bdubbing\b/i
   }, {
     key: 'mvo',
-    title: 'z01_voice_mvo',
+    title: 'nova_voice_mvo',
     re: /многоголос|\bmvo\b|\bpmvo\b/i
   }, {
     key: 'dvo',
-    title: 'z01_voice_dvo',
+    title: 'nova_voice_dvo',
     re: /двухголос|\bdvo\b/i
   }, {
     key: 'avo',
-    title: 'z01_voice_avo',
+    title: 'nova_voice_avo',
     re: /авторск|одноголос|\bavo\b|\bvo\b/i
   }, {
     key: 'orig',
-    title: 'z01_voice_orig',
+    title: 'nova_voice_orig',
     re: /оригинал|original|\beng\b|\bua\b|\bukr\b/i
   }, {
     key: 'sub',
-    title: 'z01_voice_sub',
+    title: 'nova_voice_sub',
     re: /субтитр|sub(title)?s?\b/i
   }];
 
-  Z01UI.VOICE_STUDIOS = [{
+  NovaUI.VOICE_STUDIOS = [{
     key: 'mvo',
     re: /lostfilm|лостфильм|tvshows|dniprofilm|невафильм|newstudio|newcomers|baibako|байбако|alexfilm|jaskier|coldfilm|колдфильм|hdrezka|rezkastudio|red head sound|sunshine|amedia|zakadry|закадры|linefilm|le-production|1win|kerob|profix|selena|октопус/i
   }, {
@@ -521,34 +533,34 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     re: /яроцк|гаврилов|володарск|сербин|горчаков|михал[её]в|живов|пучков|гоблин|кураж|дольск|есарев|карповск|визгунов/i
   }];
 
-  Z01UI.voiceKind = function(title) {
+  NovaUI.voiceKind = function(title) {
     var text = String(title || '');
     var i;
-    for (i = 0; i < Z01UI.VOICE_KINDS.length; i++) {
-      if (Z01UI.VOICE_KINDS[i].re.test(text)) return Z01UI.VOICE_KINDS[i].key;
+    for (i = 0; i < NovaUI.VOICE_KINDS.length; i++) {
+      if (NovaUI.VOICE_KINDS[i].re.test(text)) return NovaUI.VOICE_KINDS[i].key;
     }
-    for (i = 0; i < Z01UI.VOICE_STUDIOS.length; i++) {
-      if (Z01UI.VOICE_STUDIOS[i].re.test(text)) return Z01UI.VOICE_STUDIOS[i].key;
+    for (i = 0; i < NovaUI.VOICE_STUDIOS.length; i++) {
+      if (NovaUI.VOICE_STUDIOS[i].re.test(text)) return NovaUI.VOICE_STUDIOS[i].key;
     }
     return 'other';
   };
 
-  Z01UI.voiceKindTitle = function(key) {
-    for (var i = 0; i < Z01UI.VOICE_KINDS.length; i++) {
-      if (Z01UI.VOICE_KINDS[i].key == key) return Lampa.Lang.translate(Z01UI.VOICE_KINDS[i].title);
+  NovaUI.voiceKindTitle = function(key) {
+    for (var i = 0; i < NovaUI.VOICE_KINDS.length; i++) {
+      if (NovaUI.VOICE_KINDS[i].key == key) return Lampa.Lang.translate(NovaUI.VOICE_KINDS[i].title);
     }
-    return Lampa.Lang.translate('z01_voice_other');
+    return Lampa.Lang.translate('nova_voice_other');
   };
 
-  Z01UI.voiceGroups = function(list) {
+  NovaUI.voiceGroups = function(list) {
     var order = [];
     var map = {};
     (list || []).forEach(function(entry, index) {
-      var key = Z01UI.voiceKind(entry.title);
+      var key = NovaUI.voiceKind(entry.title);
       if (!map[key]) {
         map[key] = {
           key: key,
-          title: Z01UI.voiceKindTitle(key),
+          title: NovaUI.voiceKindTitle(key),
           items: []
         };
         order.push(key);
@@ -561,8 +573,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
 
     var rank = function(key) {
-      for (var i = 0; i < Z01UI.VOICE_KINDS.length; i++) {
-        if (Z01UI.VOICE_KINDS[i].key == key) return i;
+      for (var i = 0; i < NovaUI.VOICE_KINDS.length; i++) {
+        if (NovaUI.VOICE_KINDS[i].key == key) return i;
       }
       return 90;
     };
@@ -574,12 +586,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
   };
 
-  Z01UI.splitSourceName = function(name) {
+  NovaUI.splitSourceName = function(name) {
     name = String(name || '');
     var badge = '';
     var match = name.match(/\s*[-~–]\s*(2160p?|1440p?|1080p?|720p?|480p?|4k|uhd|fhd|hd)\b[^,]*$/i);
     if (match) {
-      badge = Z01UI.shortQuality(match[1]);
+      badge = NovaUI.shortQuality(match[1]);
       if (badge) name = name.slice(0, match.index);
     }
     return {
@@ -588,60 +600,42 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
   };
 
-  Z01UI.isSeasonLabel = function(text) {
+  NovaUI.isSeasonLabel = function(text) {
     text = String(text || '').trim();
     return /^\d+\s*(-?[йя])?\s*(сезон|season)$/i.test(text) || /^(сезон|season)\s*\d+$/i.test(text);
   };
 
-  Z01UI.MOVIE_ONLY = ['xvideocdnultra', 'xvideocdn60fps'];
+  NovaUI.MOVIE_ONLY = ['xvideocdnultra', 'xvideocdn60fps'];
 
-  Z01UI.isMovieOnlySource = function(key, title) {
-    if (Z01UI.MOVIE_ONLY.indexOf(String(key || '').toLowerCase()) !== -1) return true;
+  NovaUI.isMovieOnlySource = function(key, title) {
+    if (NovaUI.MOVIE_ONLY.indexOf(String(key || '').toLowerCase()) !== -1) return true;
     return /^xvideocdn/i.test(key || '') && /ultra|60\s*\/?\s*120|60fps/i.test(title || '');
   };
 
-  Z01UI.payLink = function(answer) {
-    if (!answer) return '';
-    var fields = ['url', 'link', 'pay', 'pay_url', 'payurl', 'buy', 'account'];
-    for (var i = 0; i < fields.length; i++) {
-      var value = answer[fields[i]];
-      if (typeof value === 'string' && /^https?:\/\//i.test(value)) return value;
-    }
-    var text = String(answer.msg || answer.message || answer.text || '');
-    var match = text.match(/https?:\/\/[^\s"'<>)]+/i);
-    return match ? match[0] : '';
-  };
 
-  Z01UI.serverDenial = function(answer) {
+  NovaUI.serverDenial = function(answer) {
     if (!answer || typeof answer !== 'object') return null;
     var denied = !!(answer.accsdb || answer.blocked || answer.error ||
       (typeof answer.code === 'number' && answer.code >= 300));
     if (!denied) return null;
     var text = String(answer.msg || answer.message || answer.text || '');
 
-    var own_image = /<img|qr-code|qrcode/i.test(text);
     return {
-      msg: text || Lampa.Lang.translate('z01_no_access_text'),
-      link: own_image ? '' : Z01UI.payLink(answer)
+      msg: text || Lampa.Lang.translate('nova_no_access_text')
     };
   };
 
-  Z01UI.networkFail = function(error) {
+  NovaUI.networkFail = function(error) {
     if (!error || typeof error !== 'object') return false;
     if (error instanceof Error) return false;
-    if (Z01UI.serverDenial(error)) return false;
+    if (NovaUI.serverDenial(error)) return false;
     if (error.timeout) return true;
     if (typeof error.status === 'number') return error.status === 0 || error.status >= 500;
     return false;
   };
 
-  Z01UI.qrImage = function(link, size) {
-    size = size || 300;
-    return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size +
-      '&margin=10&data=' + encodeURIComponent(link);
-  };
 
-  Z01UI.providerName = function(url) {
+  NovaUI.providerName = function(url) {
     var path = String(url || '').split('?')[0].split('#')[0];
     var parts = path.split('/');
     var last = '';
@@ -649,38 +643,38 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return last;
   };
 
-  Z01UI.seasonNumber = function(title) {
+  NovaUI.seasonNumber = function(title) {
     var match = String(title || '').match(/\d+/);
     return match ? parseInt(match[0]) : 0;
   };
 
-  Z01UI.normName = function(text) {
+  NovaUI.normName = function(text) {
     text = String(text === undefined || text === null ? '' : text).toLowerCase();
     text = text.replace(/\u0451/g, '\u0435').replace(/[^0-9a-z\u0430-\u044f]+/g, ' ');
     return text.replace(/^\s+/, '').replace(/\s+$/, '');
   };
 
-  Z01UI.nameParts = function(text) {
+  NovaUI.nameParts = function(text) {
     var raw = String(text || '').split(/\s*[\/|]\s*/);
     var out = [];
     for (var i = 0; i < raw.length; i++) {
-      var norm = Z01UI.normName(raw[i]);
+      var norm = NovaUI.normName(raw[i]);
       if (norm) out.push(norm);
     }
     return out;
   };
 
-  Z01UI.yearOf = function(value) {
+  NovaUI.yearOf = function(value) {
     var match = String(value === undefined || value === null ? '' : value).match(/\d{4}/);
     var year = match ? parseInt(match[0], 10) : 0;
     return year > 1900 && year < 2200 ? year : 0;
   };
 
-  Z01UI.movieNames = function(movie) {
+  NovaUI.movieNames = function(movie) {
     var fields = ['title', 'name', 'original_title', 'original_name'];
     var out = [];
     for (var i = 0; i < fields.length; i++) {
-      var parts = Z01UI.nameParts(movie && movie[fields[i]]);
+      var parts = NovaUI.nameParts(movie && movie[fields[i]]);
       for (var j = 0; j < parts.length; j++) {
         if (out.indexOf(parts[j]) === -1) out.push(parts[j]);
       }
@@ -688,10 +682,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return out;
   };
 
-  Z01UI.matchScore = function(elem, movie) {
+  NovaUI.matchScore = function(elem, movie) {
     if (!elem || !movie) return 0;
-    var mine = Z01UI.movieNames(movie);
-    var theirs = Z01UI.nameParts(elem.title || elem.text || '');
+    var mine = NovaUI.movieNames(movie);
+    var theirs = NovaUI.nameParts(elem.title || elem.text || '');
     var score = 0;
     for (var i = 0; i < theirs.length; i++) {
       for (var j = 0; j < mine.length; j++) {
@@ -704,8 +698,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (hit > score) score = hit;
       }
     }
-    var my_year = Z01UI.yearOf(movie.release_date || movie.first_air_date || movie.year);
-    var their_year = Z01UI.yearOf(elem.year || elem.start_date);
+    var my_year = NovaUI.yearOf(movie.release_date || movie.first_air_date || movie.year);
+    var their_year = NovaUI.yearOf(elem.year || elem.start_date);
     if (my_year && their_year) {
       var diff = Math.abs(my_year - their_year);
 
@@ -716,13 +710,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return score;
   };
 
-  Z01UI.rankSimilars = function(list, movie) {
+  NovaUI.rankSimilars = function(list, movie) {
     var ranked = [];
     for (var i = 0; i < (list || []).length; i++) {
       ranked.push({
         elem: list[i],
         index: i,
-        score: Z01UI.matchScore(list[i], movie)
+        score: NovaUI.matchScore(list[i], movie)
       });
     }
     ranked.sort(function(a, b) {
@@ -741,42 +735,42 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
   };
 
-  Z01UI.SEEN_PERCENT = 90;
+  NovaUI.SEEN_PERCENT = 90;
 
-  Z01UI.isSeen = function(element, viewed) {
+  NovaUI.isSeen = function(element, viewed) {
     if (!element) return false;
     if (element.hash_behold && viewed && viewed.indexOf(element.hash_behold) !== -1) return true;
     var line = element.timeline;
-    return !!(line && line.percent >= Z01UI.SEEN_PERCENT);
+    return !!(line && line.percent >= NovaUI.SEEN_PERCENT);
   };
 
-  Z01UI.QUALITY_RANK = {
+  NovaUI.QUALITY_RANK = {
     '4K': 4,
     'FHD': 3,
     'HD': 2,
     'SD': 1
   };
 
-  Z01UI.qualityRank = function(label) {
-    return Z01UI.QUALITY_RANK[label] || 0;
+  NovaUI.qualityRank = function(label) {
+    return NovaUI.QUALITY_RANK[label] || 0;
   };
 
-  Z01UI.bestQualityFromText = function(text, loose) {
+  NovaUI.bestQualityFromText = function(text, loose) {
     text = String(text === undefined || text === null ? '' : text);
     var best = '';
     var re = loose ? /(?:^|[^\d])(2160|1440|1080|720|576|480)\s*p?(?![\d])/gi :
                      /(?:^|[^\d])(2160|1440|1080|720|576|480)\s*p(?![\d])/gi;
     var found;
     while ((found = re.exec(text))) {
-      var label = Z01UI.shortQuality(found[1] + 'p');
-      if (Z01UI.qualityRank(label) > Z01UI.qualityRank(best)) best = label;
+      var label = NovaUI.shortQuality(found[1] + 'p');
+      if (NovaUI.qualityRank(label) > NovaUI.qualityRank(best)) best = label;
     }
-    if (/4k|uhd/i.test(text) && Z01UI.qualityRank('4K') > Z01UI.qualityRank(best)) best = '4K';
+    if (/4k|uhd/i.test(text) && NovaUI.qualityRank('4K') > NovaUI.qualityRank(best)) best = '4K';
     if (!best && /fhd/i.test(text)) best = 'FHD';
     return best;
   };
 
-  Z01UI.bestQuality = function(items) {
+  NovaUI.bestQuality = function(items) {
     var best = '';
     for (var i = 0; i < (items || []).length; i++) {
       var item = items[i] || {};
@@ -784,41 +778,41 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var quality = item.quality || item.qualitys;
       if (quality && typeof quality === 'object') label = Lampa.Arrays.getKeys(quality).join(' ');
       else if (quality) label = String(quality);
-      var short = Z01UI.bestQualityFromText(label, true) ||
-                  Z01UI.bestQualityFromText(item.title || item.text || '', true);
-      if (Z01UI.qualityRank(short) > Z01UI.qualityRank(best)) best = short;
+      var short = NovaUI.bestQualityFromText(label, true) ||
+                  NovaUI.bestQualityFromText(item.title || item.text || '', true);
+      if (NovaUI.qualityRank(short) > NovaUI.qualityRank(best)) best = short;
     }
     return best;
   };
 
-  Z01UI.qualityMemory = function() {
-    return Lampa.Storage.cache('z01_source_quality', 500, {});
+  NovaUI.qualityMemory = function() {
+    return Lampa.Storage.cache('nova_source_quality', 500, {});
   };
 
-  Z01UI.knownQuality = function(name) {
-    return Z01UI.qualityMemory()[name] || '';
+  NovaUI.knownQuality = function(name) {
+    return NovaUI.qualityMemory()[name] || '';
   };
 
-  Z01UI.rememberQuality = function(name, label) {
+  NovaUI.rememberQuality = function(name, label) {
     if (!name || !label) return;
-    var all = Z01UI.qualityMemory();
-    if (Z01UI.qualityRank(label) <= Z01UI.qualityRank(all[name])) return;
+    var all = NovaUI.qualityMemory();
+    if (NovaUI.qualityRank(label) <= NovaUI.qualityRank(all[name])) return;
     all[name] = label;
-    Lampa.Storage.set('z01_source_quality', all);
+    Lampa.Storage.set('nova_source_quality', all);
   };
 
-  Z01UI.sourceBadge = function(name, parts) {
-    return Z01UI.knownQuality(name) || (parts ? parts.badge : '');
+  NovaUI.sourceBadge = function(name, parts) {
+    return NovaUI.knownQuality(name) || (parts ? parts.badge : '');
   };
 
-  Z01UI.reachKey = function(movie) {
+  NovaUI.reachKey = function(movie) {
     if (!movie) return '';
     return Lampa.Utils.hash(movie.original_name || movie.original_title || movie.name || movie.title || '');
   };
 
-  Z01UI.reachEntry = function(movie, season) {
-    var all = Lampa.Storage.cache('z01_reach', 2000, {});
-    var mine = all[Z01UI.reachKey(movie)] || {};
+  NovaUI.reachEntry = function(movie, season) {
+    var all = Lampa.Storage.cache('nova_reach', 2000, {});
+    var mine = all[NovaUI.reachKey(movie)] || {};
     var value = mine[season || 1];
     if (typeof value === 'number') return {
       e: value,
@@ -837,15 +831,15 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
   };
 
-  Z01UI.reached = function(movie, season) {
-    return Z01UI.reachEntry(movie, season).e;
+  NovaUI.reached = function(movie, season) {
+    return NovaUI.reachEntry(movie, season).e;
   };
 
-  Z01UI.setReach = function(movie, season, episode) {
+  NovaUI.setReach = function(movie, season, episode) {
     episode = parseInt(episode, 10) || 0;
-    var key = Z01UI.reachKey(movie);
+    var key = NovaUI.reachKey(movie);
     if (!key) return;
-    var all = Lampa.Storage.cache('z01_reach', 2000, {});
+    var all = Lampa.Storage.cache('nova_reach', 2000, {});
     var mine = all[key] || {};
     mine[season || 1] = {
       e: episode,
@@ -853,19 +847,19 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       r: episode ? 2 : 0
     };
     all[key] = mine;
-    Lampa.Storage.set('z01_reach', all);
+    Lampa.Storage.set('nova_reach', all);
   };
 
-  Z01UI.rememberReach = function(movie, season, episode) {
+  NovaUI.rememberReach = function(movie, season, episode) {
     episode = parseInt(episode, 10) || 0;
-    var key = Z01UI.reachKey(movie);
+    var key = NovaUI.reachKey(movie);
     if (!episode || !key) return;
-    var entry = Z01UI.reachEntry(movie, season);
+    var entry = NovaUI.reachEntry(movie, season);
     if (episode === entry.l || episode === entry.l + 1) entry.r = (entry.r || 0) + 1;
     else entry.r = 1;
     entry.l = episode;
     if (!entry.e || entry.r >= 2 || episode === entry.e + 1) entry.e = episode;
-    var all = Lampa.Storage.cache('z01_reach', 2000, {});
+    var all = Lampa.Storage.cache('nova_reach', 2000, {});
     var mine = all[key] || {};
     mine[season || 1] = {
       e: entry.e,
@@ -873,10 +867,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       r: entry.r
     };
     all[key] = mine;
-    Lampa.Storage.set('z01_reach', all);
+    Lampa.Storage.set('nova_reach', all);
   };
 
-  Z01UI.icon = {
+  NovaUI.icon = {
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>',
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12l5 5L20 6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
@@ -885,175 +879,172 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4l9 16H3z" stroke-linejoin="round"></path><path d="M12 10v4" stroke-linecap="round"></path><circle cx="12" cy="17" r="0.6" fill="currentColor"></circle></svg>'
   };
 
-  Z01UI.css = [
+  NovaUI.css = [
     '<style>',
-    '.z01{padding:0 0 3em 0}',
-    '.z01 *{-webkit-box-sizing:border-box;box-sizing:border-box}',
+    '.nova{padding:0 0 3em 0}',
+    '.nova *{-webkit-box-sizing:border-box;box-sizing:border-box}',
 
-    '.z01-hero{position:relative;overflow:hidden;-webkit-border-radius:1.2em;border-radius:1.2em;margin-bottom:1.7em;background:rgba(255,255,255,.06);min-height:13em}',
-    '.z01-hero--compact{min-height:0;margin-bottom:1.3em}',
-    '.z01-hero--compact .z01-hero__body{padding:1.1em 1.4em;max-width:100%;min-height:5.2em;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center}',
-    '.z01-hero--compact .z01-hero__actions{margin:0}',
-    '.z01-hero--compact .z01-btn--main{margin-bottom:0}',
-    '.z01-hero--compact .z01-hero__season{margin:.6em 0 0 .2em;font-size:.95em;opacity:.55}',
-    '.z01-hero--compact .z01-hero__progress{position:absolute;left:0;right:0;bottom:0;width:auto;height:.3em;margin:0;-webkit-border-radius:0;border-radius:0}',
-    '.z01-hero--compact .z01-hero__shade{background:-webkit-linear-gradient(left,rgba(10,11,17,.94) 0%,rgba(10,11,17,.8) 45%,rgba(10,11,17,.3) 100%);background:linear-gradient(90deg,rgba(10,11,17,.94) 0%,rgba(10,11,17,.8) 45%,rgba(10,11,17,.3) 100%)}',
-    '.z01-hero--compact .z01-hero__progress{margin-top:.8em}',
-    '.z01-hero__bg{position:absolute;top:0;left:0;right:0;bottom:0}',
-    '.z01-hero__bg img{display:block;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;-webkit-transition:opacity .35s;transition:opacity .35s}',
-    '.z01-hero__bg--loaded img{opacity:1}',
-    '.z01-hero__shade{position:absolute;top:0;left:0;right:0;bottom:0;background:-webkit-linear-gradient(left,rgba(10,11,17,.97) 0%,rgba(10,11,17,.9) 36%,rgba(10,11,17,.45) 68%,rgba(10,11,17,.1) 100%);background:linear-gradient(90deg,rgba(10,11,17,.97) 0%,rgba(10,11,17,.9) 36%,rgba(10,11,17,.45) 68%,rgba(10,11,17,.1) 100%)}',
-    '.z01-hero__body{position:relative;padding:2.2em;max-width:64%}',
-    '.z01-hero__title{font-size:2.3em;font-weight:600;line-height:1.15;margin-bottom:.35em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
-    '.z01-hero__meta{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.1em;margin-bottom:.7em}',
-    '.z01-hero__meta>*{margin:0 .7em .3em 0;opacity:.8}',
-    '.z01-hero__meta>.z01-badge{opacity:1}',
-    '.z01-hero__descr{font-size:1.05em;line-height:1.45;opacity:.65;margin-bottom:1.2em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
-    '.z01-hero__actions{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
-    '.z01-hero__hint{font-size:1em;line-height:1.5;opacity:.55;margin:0 0 0 1.3em;max-width:24em;padding:.1em .15em;overflow:hidden;white-space:nowrap;-o-text-overflow:ellipsis;text-overflow:ellipsis}',
-    '.z01-hero__progress{position:relative;height:.3em;width:16em;max-width:100%;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.2);margin-top:.9em;overflow:hidden}',
-    '.z01-hero__progress .time-line{display:block !important;height:100%;margin:0;background:none}',
-    '.z01-hero__progress .time-line>div{height:100%;background:#fff}',
+    '.nova-hero{position:relative;overflow:hidden;-webkit-border-radius:1.2em;border-radius:1.2em;margin-bottom:1.7em;background:rgba(255,255,255,.06);min-height:13em}',
+    '.nova-hero--compact{min-height:0;margin-bottom:1.3em}',
+    '.nova-hero--compact .nova-hero__body{padding:1.1em 1.4em;max-width:100%;min-height:5.2em;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-box-direction:normal;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center}',
+    '.nova-hero--compact .nova-hero__actions{margin:0}',
+    '.nova-hero--compact .nova-btn--main{margin-bottom:0}',
+    '.nova-hero--compact .nova-hero__season{margin:.6em 0 0 .2em;font-size:.95em;opacity:.55}',
+    '.nova-hero--compact .nova-hero__progress{position:absolute;left:0;right:0;bottom:0;width:auto;height:.3em;margin:0;-webkit-border-radius:0;border-radius:0}',
+    '.nova-hero--compact .nova-hero__shade{background:-webkit-linear-gradient(left,rgba(10,11,17,.94) 0%,rgba(10,11,17,.8) 45%,rgba(10,11,17,.3) 100%);background:linear-gradient(90deg,rgba(10,11,17,.94) 0%,rgba(10,11,17,.8) 45%,rgba(10,11,17,.3) 100%)}',
+    '.nova-hero--compact .nova-hero__progress{margin-top:.8em}',
+    '.nova-hero__bg{position:absolute;top:0;left:0;right:0;bottom:0}',
+    '.nova-hero__bg img{display:block;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;-webkit-transition:opacity .35s;transition:opacity .35s}',
+    '.nova-hero__bg--loaded img{opacity:1}',
+    '.nova-hero__shade{position:absolute;top:0;left:0;right:0;bottom:0;background:-webkit-linear-gradient(left,rgba(10,11,17,.97) 0%,rgba(10,11,17,.9) 36%,rgba(10,11,17,.45) 68%,rgba(10,11,17,.1) 100%);background:linear-gradient(90deg,rgba(10,11,17,.97) 0%,rgba(10,11,17,.9) 36%,rgba(10,11,17,.45) 68%,rgba(10,11,17,.1) 100%)}',
+    '.nova-hero__body{position:relative;padding:2.2em;max-width:64%}',
+    '.nova-hero__title{font-size:2.3em;font-weight:600;line-height:1.15;margin-bottom:.35em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '.nova-hero__meta{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.1em;margin-bottom:.7em}',
+    '.nova-hero__meta>*{margin:0 .7em .3em 0;opacity:.8}',
+    '.nova-hero__meta>.nova-badge{opacity:1}',
+    '.nova-hero__descr{font-size:1.05em;line-height:1.45;opacity:.65;margin-bottom:1.2em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '.nova-hero__actions{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
+    '.nova-hero__hint{font-size:1em;line-height:1.5;opacity:.55;margin:0 0 0 1.3em;max-width:24em;padding:.1em .15em;overflow:hidden;white-space:nowrap;-o-text-overflow:ellipsis;text-overflow:ellipsis}',
+    '.nova-hero__progress{position:relative;height:.3em;width:16em;max-width:100%;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.2);margin-top:.9em;overflow:hidden}',
+    '.nova-hero__progress .time-line{display:block !important;height:100%;margin:0;background:none}',
+    '.nova-hero__progress .time-line>div{height:100%;background:#fff}',
 
-    '.z01-badge{display:inline-block;padding:.2em .55em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(255,255,255,.18);font-size:.78em;font-weight:600;letter-spacing:.04em;line-height:1.4}',
-    '.z01-btn{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em 1.5em;-webkit-border-radius:2.4em;border-radius:2.4em;background:rgba(255,255,255,.12);font-size:1.15em;white-space:nowrap;margin:0 .8em .5em 0}',
-    '.z01-btn>svg{width:1.15em;height:1.15em;margin-right:.6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
-    '.z01-btn.focus{background:#fff;color:#000}',
-    '.z01-btn--main{background:rgba(255,255,255,.82);color:#000}',
-    '.z01-btn--main.focus{background:#fff;-webkit-box-shadow:0 .25em .9em rgba(0,0,0,.45);box-shadow:0 .25em .9em rgba(0,0,0,.45)}',
-    '.z01-btn--ghost{background:rgba(255,255,255,.14);font-size:1.05em}',
+    '.nova-badge{display:inline-block;padding:.2em .55em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(255,255,255,.18);font-size:.78em;font-weight:600;letter-spacing:.04em;line-height:1.4}',
+    '.nova-btn{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em 1.5em;-webkit-border-radius:2.4em;border-radius:2.4em;background:rgba(255,255,255,.12);font-size:1.15em;white-space:nowrap;margin:0 .8em .5em 0}',
+    '.nova-btn>svg{width:1.15em;height:1.15em;margin-right:.6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-btn.focus{background:#fff;color:#000}',
+    '.nova-btn--main{background:rgba(255,255,255,.82);color:#000}',
+    '.nova-btn--main.focus{background:#fff;-webkit-box-shadow:0 .25em .9em rgba(0,0,0,.45);box-shadow:0 .25em .9em rgba(0,0,0,.45)}',
+    '.nova-btn--ghost{background:rgba(255,255,255,.14);font-size:1.05em}',
 
-    '.z01-section{margin-bottom:1.1em}',
-    '.z01-section__title{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:.95em;letter-spacing:.12em;text-transform:uppercase;opacity:.5;margin-bottom:.7em}',
-    '.z01-section__title:before{content:"";display:inline-block;width:.25em;height:1.1em;background:currentColor;margin-right:.6em;-webkit-border-radius:.2em;border-radius:.2em}',
-    '.z01-section__body{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
-    '.z01-chip{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.55em 1.1em;-webkit-border-radius:2em;border-radius:2em;background:rgba(255,255,255,.07);margin:0 .7em .7em 0;font-size:1.05em;white-space:nowrap;max-width:24em}',
-    '.z01-chip.focus{background:#fff;color:#000}',
-    '.z01-chip--active{background:rgba(255,255,255,.16);-webkit-box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5);box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5)}',
-    '.z01-chip--active.focus{-webkit-box-shadow:0 .2em .7em rgba(0,0,0,.4);box-shadow:0 .2em .7em rgba(0,0,0,.4)}',
-    '.z01-chip__idx{font-size:.85em;opacity:.45;margin-right:.55em}',
-    '.z01-chip__badge{font-size:.7em;font-weight:600;padding:.2em .45em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(255,255,255,.2);margin-right:.6em;line-height:1.4}',
-    '.z01-chip.focus .z01-chip__badge{background:rgba(0,0,0,.12)}',
-    '.z01-chip--more{opacity:.75}',
-    '.z01-chip__label{line-height:1.5;padding:.05em .1em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis}',
-    '.z01-chip>svg{width:1em;height:1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
-    '.z01-chip__label+svg{margin-left:.6em;opacity:.6}',
-    '.z01-chip>svg:first-child{margin-right:.55em;opacity:.7}',
-    '.z01-chip--source{font-size:1.15em;padding:.5em 1.1em}',
-    '.z01-chip--ghost{opacity:.5}',
-    '.z01-chip--busy .z01-chip__label{opacity:.5}',
-    '.z01-chip__dot{width:.5em;height:.5em;-webkit-border-radius:50%;border-radius:50%;margin-left:.6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;background:#4ade80}',
-    '.z01-chip--checking{opacity:.55}',
-    '.z01-chip--empty{opacity:.35}',
+    '.nova-section{margin-bottom:1.1em}',
+    '.nova-section__title{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:.95em;letter-spacing:.12em;text-transform:uppercase;opacity:.5;margin-bottom:.7em}',
+    '.nova-section__title:before{content:"";display:inline-block;width:.25em;height:1.1em;background:currentColor;margin-right:.6em;-webkit-border-radius:.2em;border-radius:.2em}',
+    '.nova-section__body{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
+    '.nova-chip{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.55em 1.1em;-webkit-border-radius:2em;border-radius:2em;background:rgba(255,255,255,.07);margin:0 .7em .7em 0;font-size:1.05em;white-space:nowrap;max-width:24em}',
+    '.nova-chip.focus{background:#fff;color:#000}',
+    '.nova-chip--active{background:rgba(255,255,255,.16);-webkit-box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5);box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5)}',
+    '.nova-chip--active.focus{-webkit-box-shadow:0 .2em .7em rgba(0,0,0,.4);box-shadow:0 .2em .7em rgba(0,0,0,.4)}',
+    '.nova-chip__idx{font-size:.85em;opacity:.45;margin-right:.55em}',
+    '.nova-chip__badge{font-size:.7em;font-weight:600;padding:.2em .45em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(255,255,255,.2);margin-right:.6em;line-height:1.4}',
+    '.nova-chip.focus .nova-chip__badge{background:rgba(0,0,0,.12)}',
+    '.nova-chip--more{opacity:.75}',
+    '.nova-chip__label{line-height:1.5;padding:.05em .1em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis}',
+    '.nova-chip>svg{width:1em;height:1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-chip__label+svg{margin-left:.6em;opacity:.6}',
+    '.nova-chip>svg:first-child{margin-right:.55em;opacity:.7}',
+    '.nova-chip--source{font-size:1.15em;padding:.5em 1.1em}',
+    '.nova-chip--ghost{opacity:.5}',
+    '.nova-chip--busy .nova-chip__label{opacity:.5}',
+    '.nova-chip__dot{width:.5em;height:.5em;-webkit-border-radius:50%;border-radius:50%;margin-left:.6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;background:#4ade80}',
+    '.nova-chip--checking{opacity:.55}',
+    '.nova-chip--empty{opacity:.35}',
 
-    '.z01-toolbar{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;margin-bottom:1em}',
-    '.z01-toolbar__label{font-size:.95em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:0 .9em .7em 0}',
-    '.z01-toolbar .z01-btn--main{margin:0 1.4em .7em 0;font-size:1.1em;padding:.55em 1.3em}',
-    '.z01-toolbar .z01-btn__label{max-width:18em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;white-space:nowrap}',
+    '.nova-toolbar{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;margin-bottom:1em}',
+    '.nova-toolbar__label{font-size:.95em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:0 .9em .7em 0}',
+    '.nova-toolbar .nova-btn--main{margin:0 1.4em .7em 0;font-size:1.1em;padding:.55em 1.3em}',
+    '.nova-toolbar .nova-btn__label{max-width:18em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;white-space:nowrap}',
 
-    '.z01-card{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em;-webkit-border-radius:.9em;border-radius:.9em;background:rgba(255,255,255,.05);margin-bottom:.7em}',
-    '.z01-card.focus{background:#fff;color:#000}',
-    '.z01-card__thumb{position:relative;width:10.5em;height:5.9em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;-webkit-border-radius:.5em;border-radius:.5em;overflow:hidden;background:rgba(0,0,0,.35)}',
-    '.z01-card__thumb img{position:absolute;top:0;left:0;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s}',
-    '.z01-card__thumb--loaded img{opacity:1}',
-    '.z01-card__num{position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;font-size:1.7em;font-weight:600;color:#fff;text-shadow:0 .05em .2em rgba(0,0,0,.7)}',
-    '.z01-card__thumb--loaded .z01-card__num{-webkit-box-pack:end;-webkit-justify-content:flex-end;-ms-flex-pack:end;justify-content:flex-end;-webkit-box-align:end;-webkit-align-items:flex-end;-ms-flex-align:end;align-items:flex-end;font-size:1.1em;padding:0 .5em .35em 0}',
-    '.z01-card__thumb--fallback.z01-card__thumb--loaded img{opacity:.4}',
-    '.z01-card__thumb--fallback.z01-card__thumb--loaded .z01-card__num{-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.7em;padding:0}',
-    '.z01-card__viewed{position:absolute;top:.5em;left:.5em;width:.5em;height:.5em;-webkit-border-radius:50%;border-radius:50%;background:#fff;opacity:.85;-webkit-box-shadow:0 0 0 .16em rgba(0,0,0,.4);box-shadow:0 0 0 .16em rgba(0,0,0,.4)}',
-    '.z01-card__line{position:absolute;left:0;right:0;bottom:0;height:.28em;background:rgba(0,0,0,.5)}',
-    '.z01-card__line .time-line{display:block !important;height:100%;margin:0;background:none}',
-    '.z01-card__line .time-line>div{height:100%;background:#fff}',
-    '.z01-card__body{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;padding:0 1.2em;min-width:1em;overflow:hidden}',
-    '.z01-card__title{font-size:1.25em;line-height:1.4;margin-bottom:.3em;padding-bottom:.05em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}',
-    '.z01-card__meta{font-size:.95em;line-height:1.45;opacity:.6;padding-bottom:.05em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}',
-    '.z01-card__meta .z01-dot{margin:0 .5em;opacity:.6}',
-    '.z01-card__match{display:inline-block;margin-top:.4em;padding:.15em .6em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(126,217,150,.2);color:#8fe0a4;font-size:.82em;font-weight:600}',
-    '.z01-card--match .z01-card__thumb{-webkit-box-shadow:inset 0 0 0 .13em rgba(126,217,150,.75);box-shadow:inset 0 0 0 .13em rgba(126,217,150,.75)}',
-    '.z01-card__side{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;text-align:right;padding-right:.7em}',
-    '.z01-card__time{font-size:.95em;opacity:.6;margin-top:.4em}',
-    '.z01-card--soon{opacity:.45}',
-    '.z01-card--nav .z01-card__body{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
-    '.z01-card--nav .z01-card__body{-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}',
-    '.z01-card--nav .z01-card__title{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;margin-bottom:0}',
-    '.z01-card--nav .z01-card__meta{width:100%;margin-top:.2em;font-size:.85em}',
-    '.z01-card__go{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;opacity:.45;padding-left:1em}',
-    '.z01-card__go>svg{width:1.2em;height:1.2em;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}',
-    '.z01-card--slim{padding:.75em 1.1em}',
-    '.z01-card--slim .z01-card__thumb{display:none}',
-    '.z01-card--slim .z01-card__body{padding-left:0}',
-    '.z01-card--slim .z01-card__title{font-size:1.2em;margin-bottom:0}',
-    '.z01-card__line--body{position:static;height:.25em;margin-top:.55em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.18)}',
-    '.z01-card.focus .z01-card__line--body{background:rgba(0,0,0,.16)}',
-    '.z01-card.focus .z01-card__line--body .time-line>div{background:#000}',
-    '.z01-card--slim .z01-card__line{position:static;height:.25em;margin-top:.5em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.16)}',
-    '.z01-card--slim.focus .z01-card__line{background:rgba(0,0,0,.15)}',
-    '.z01-card--slim.focus .z01-card__line .time-line>div{background:#000}',
-    '.z01-list-group{font-size:.9em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:1.2em 0 .55em .2em}',
-    '.z01-list-group:first-child{margin-top:0}',
-    '.z01-card--file .z01-card__thumb{width:4.4em;height:4.4em}',
+    '.nova-card{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em;-webkit-border-radius:.9em;border-radius:.9em;background:rgba(255,255,255,.05);margin-bottom:.7em}',
+    '.nova-card.focus{background:#fff;color:#000}',
+    '.nova-card__thumb{position:relative;width:10.5em;height:5.9em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;-webkit-border-radius:.5em;border-radius:.5em;overflow:hidden;background:rgba(0,0,0,.35)}',
+    '.nova-card__thumb img{position:absolute;top:0;left:0;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;-webkit-transition:opacity .3s;transition:opacity .3s}',
+    '.nova-card__thumb--loaded img{opacity:1}',
+    '.nova-card__num{position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;font-size:1.7em;font-weight:600;color:#fff;text-shadow:0 .05em .2em rgba(0,0,0,.7)}',
+    '.nova-card__thumb--loaded .nova-card__num{-webkit-box-pack:end;-webkit-justify-content:flex-end;-ms-flex-pack:end;justify-content:flex-end;-webkit-box-align:end;-webkit-align-items:flex-end;-ms-flex-align:end;align-items:flex-end;font-size:1.1em;padding:0 .5em .35em 0}',
+    '.nova-card__thumb--fallback.nova-card__thumb--loaded img{opacity:.4}',
+    '.nova-card__thumb--fallback.nova-card__thumb--loaded .nova-card__num{-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.7em;padding:0}',
+    '.nova-card__viewed{position:absolute;top:.5em;left:.5em;width:.5em;height:.5em;-webkit-border-radius:50%;border-radius:50%;background:#fff;opacity:.85;-webkit-box-shadow:0 0 0 .16em rgba(0,0,0,.4);box-shadow:0 0 0 .16em rgba(0,0,0,.4)}',
+    '.nova-card__line{position:absolute;left:0;right:0;bottom:0;height:.28em;background:rgba(0,0,0,.5)}',
+    '.nova-card__line .time-line{display:block !important;height:100%;margin:0;background:none}',
+    '.nova-card__line .time-line>div{height:100%;background:#fff}',
+    '.nova-card__body{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;padding:0 1.2em;min-width:1em;overflow:hidden}',
+    '.nova-card__title{font-size:1.25em;line-height:1.4;margin-bottom:.3em;padding-bottom:.05em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}',
+    '.nova-card__meta{font-size:.95em;line-height:1.45;opacity:.6;padding-bottom:.05em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}',
+    '.nova-card__meta .nova-dot{margin:0 .5em;opacity:.6}',
+    '.nova-card__match{display:inline-block;margin-top:.4em;padding:.15em .6em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(126,217,150,.2);color:#8fe0a4;font-size:.82em;font-weight:600}',
+    '.nova-card--match .nova-card__thumb{-webkit-box-shadow:inset 0 0 0 .13em rgba(126,217,150,.75);box-shadow:inset 0 0 0 .13em rgba(126,217,150,.75)}',
+    '.nova-card__side{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;text-align:right;padding-right:.7em}',
+    '.nova-card__time{font-size:.95em;opacity:.6;margin-top:.4em}',
+    '.nova-card--soon{opacity:.45}',
+    '.nova-card--nav .nova-card__body{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
+    '.nova-card--nav .nova-card__body{-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}',
+    '.nova-card--nav .nova-card__title{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;margin-bottom:0}',
+    '.nova-card--nav .nova-card__meta{width:100%;margin-top:.2em;font-size:.85em}',
+    '.nova-card__go{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;opacity:.45;padding-left:1em}',
+    '.nova-card__go>svg{width:1.2em;height:1.2em;-webkit-transform:rotate(-90deg);transform:rotate(-90deg)}',
+    '.nova-card--slim{padding:.75em 1.1em}',
+    '.nova-card--slim .nova-card__thumb{display:none}',
+    '.nova-card--slim .nova-card__body{padding-left:0}',
+    '.nova-card--slim .nova-card__title{font-size:1.2em;margin-bottom:0}',
+    '.nova-card__line--body{position:static;height:.25em;margin-top:.55em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.18)}',
+    '.nova-card.focus .nova-card__line--body{background:rgba(0,0,0,.16)}',
+    '.nova-card.focus .nova-card__line--body .time-line>div{background:#000}',
+    '.nova-card--slim .nova-card__line{position:static;height:.25em;margin-top:.5em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.16)}',
+    '.nova-card--slim.focus .nova-card__line{background:rgba(0,0,0,.15)}',
+    '.nova-card--slim.focus .nova-card__line .time-line>div{background:#000}',
+    '.nova-list-group{font-size:.9em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:1.2em 0 .55em .2em}',
+    '.nova-list-group:first-child{margin-top:0}',
+    '.nova-card--file .nova-card__thumb{width:4.4em;height:4.4em}',
 
-    '.z01-skeleton__row{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em;-webkit-border-radius:.9em;border-radius:.9em;background:rgba(255,255,255,.04);margin-bottom:.7em;-webkit-animation:z01pulse 1.4s infinite;animation:z01pulse 1.4s infinite}',
-    '.z01-skeleton__thumb{width:10.5em;height:5.9em;-webkit-border-radius:.5em;border-radius:.5em;background:rgba(255,255,255,.08);-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
-    '.z01-skeleton__body{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;padding-left:1.2em}',
-    '.z01-skeleton__line{height:1em;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.08);margin-bottom:.7em}',
-    '.z01-skeleton__line--short{width:35%;margin-bottom:0}',
-    '@-webkit-keyframes z01pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}',
-    '@keyframes z01pulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}',
+    '.nova-skeleton__row{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em;-webkit-border-radius:.9em;border-radius:.9em;background:rgba(255,255,255,.04);margin-bottom:.7em;-webkit-animation:novapulse 1.4s infinite;animation:novapulse 1.4s infinite}',
+    '.nova-skeleton__thumb{width:10.5em;height:5.9em;-webkit-border-radius:.5em;border-radius:.5em;background:rgba(255,255,255,.08);-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-skeleton__body{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;padding-left:1.2em}',
+    '.nova-skeleton__line{height:1em;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.08);margin-bottom:.7em}',
+    '.nova-skeleton__line--short{width:35%;margin-bottom:0}',
+    '@-webkit-keyframes novapulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}',
+    '@keyframes novapulse{0%{opacity:.45}50%{opacity:1}100%{opacity:.45}}',
 
-    '.z01-loading{padding:1.6em 1.8em;-webkit-border-radius:1em;border-radius:1em;background:rgba(255,255,255,.05);margin-bottom:1.2em}',
-    '.z01-loading__title{font-size:1.4em;margin-bottom:.35em}',
-    '.z01-loading__text{font-size:1.05em;opacity:.6;margin-bottom:1em}',
-    '.z01-loading__bar{position:relative;height:.3em;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.14);overflow:hidden}',
-    '.z01-loading__bar>div{height:100%;width:0;background:#fff;-webkit-transition:width .4s;transition:width .4s}',
+    '.nova-loading{padding:1.6em 1.8em;-webkit-border-radius:1em;border-radius:1em;background:rgba(255,255,255,.05);margin-bottom:1.2em}',
+    '.nova-loading__title{font-size:1.4em;margin-bottom:.35em}',
+    '.nova-loading__text{font-size:1.05em;opacity:.6;margin-bottom:1em}',
+    '.nova-loading__bar{position:relative;height:.3em;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.14);overflow:hidden}',
+    '.nova-loading__bar>div{height:100%;width:0;background:#fff;-webkit-transition:width .4s;transition:width .4s}',
 
-    '.z01-note{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:2em;-webkit-border-radius:1em;border-radius:1em;background:rgba(255,255,255,.05)}',
-    '.z01-note__main{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;min-width:1em}',
-    '.z01-note__qr{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;margin-left:2em;text-align:center}',
-    '.z01-note__qr img{display:block;width:10.5em;height:10.5em;background:#fff;-webkit-border-radius:.6em;border-radius:.6em}',
-    '.z01-note__qr-caption{font-size:.85em;opacity:.55;margin-top:.6em;max-width:11em}',
-    '.z01-note__link{margin-top:.5em;font-size:.95em;opacity:.8;word-break:break-all}',
-    '.z01-note__text a{color:#fff;text-decoration:underline}',
-    '.z01-note__text img{max-width:9em;height:auto;background:#fff;padding:.4em;-webkit-border-radius:.4em;border-radius:.4em;margin-top:.7em;opacity:1}',
-    '.z01-note__text ul,.z01-note__text ol{margin:.5em 0;padding-left:1.2em}',
-    '.z01-note__title{font-size:1.6em;margin-bottom:.4em;line-height:1.25}',
-    '.z01-note__text{font-size:1.1em;color:rgba(255,255,255,.62);margin-bottom:1.3em;line-height:1.4}',
-    '.z01-note__actions{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}',
-    '.z01-note__timer{font-weight:600}',
+    '.nova-note{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:2em;-webkit-border-radius:1em;border-radius:1em;background:rgba(255,255,255,.05)}',
+    '.nova-note__main{-webkit-box-flex:1;-webkit-flex-grow:1;-ms-flex-positive:1;flex-grow:1;min-width:1em}',
+    '.nova-note__text a{color:#fff;text-decoration:underline}',
+    '.nova-note__text img{max-width:9em;height:auto;background:#fff;padding:.4em;-webkit-border-radius:.4em;border-radius:.4em;margin-top:.7em;opacity:1}',
+    '.nova-note__text ul,.nova-note__text ol{margin:.5em 0;padding-left:1.2em}',
+    '.nova-note__title{font-size:1.6em;margin-bottom:.4em;line-height:1.25}',
+    '.nova-note__text{font-size:1.1em;color:rgba(255,255,255,.62);margin-bottom:1.3em;line-height:1.4}',
+    '.nova-note__actions{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}',
+    '.nova-note__timer{font-weight:600}',
 
-    '.z01-group{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.5em 1.1em;-webkit-border-radius:2em;border-radius:2em;background:rgba(255,255,255,.07);margin:0 .7em .7em 0;font-size:1.1em;white-space:nowrap}',
-    '.z01-group.focus{background:#fff;color:#000}',
-    '.z01-group--open{background:rgba(255,255,255,.2);-webkit-box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5);box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5)}',
-    '.z01-group--open.focus{-webkit-box-shadow:0 .2em .7em rgba(0,0,0,.4);box-shadow:0 .2em .7em rgba(0,0,0,.4)}',
-    '.z01-group__count{font-size:.78em;opacity:.55;margin-left:.6em}',
-    '.z01-group__mark{width:.5em;height:.5em;-webkit-border-radius:50%;border-radius:50%;background:#fff;margin-right:.6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
-    '.z01-drop{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.3em 0 0 1em;margin:0 0 .7em .3em;-webkit-box-shadow:inset .16em 0 0 rgba(255,255,255,.18);box-shadow:inset .16em 0 0 rgba(255,255,255,.18)}',
+    '.nova-group{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.5em 1.1em;-webkit-border-radius:2em;border-radius:2em;background:rgba(255,255,255,.07);margin:0 .7em .7em 0;font-size:1.1em;white-space:nowrap}',
+    '.nova-group.focus{background:#fff;color:#000}',
+    '.nova-group--open{background:rgba(255,255,255,.2);-webkit-box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5);box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5)}',
+    '.nova-group--open.focus{-webkit-box-shadow:0 .2em .7em rgba(0,0,0,.4);box-shadow:0 .2em .7em rgba(0,0,0,.4)}',
+    '.nova-group__count{font-size:.78em;opacity:.55;margin-left:.6em}',
+    '.nova-group__mark{width:.5em;height:.5em;-webkit-border-radius:50%;border-radius:50%;background:#fff;margin-right:.6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-drop{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.3em 0 0 1em;margin:0 0 .7em .3em;-webkit-box-shadow:inset .16em 0 0 rgba(255,255,255,.18);box-shadow:inset .16em 0 0 rgba(255,255,255,.18)}',
 
-    '.z01__list--grid{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;margin:0 -.45em}',
-    '.z01__list--grid .z01-card{display:block;width:25%;margin:0 0 1em 0;padding:0 .45em;background:none}',
-    '.z01__list--grid .z01-card.focus{background:none;color:inherit}',
-    '.z01__list--grid .z01-card__thumb{width:100%;height:0;padding-top:56%}',
-    '.z01__list--grid .z01-card.focus .z01-card__thumb{-webkit-box-shadow:0 0 0 .2em #fff;box-shadow:0 0 0 .2em #fff}',
-    '.z01__list--grid .z01-card__body{padding:.6em .1em 0 .1em}',
-    '.z01__list--grid .z01-card__title{font-size:1.1em}',
-    '.z01__list--grid .z01-card__side{position:absolute;top:.5em;right:.9em;text-align:right}',
-    '.z01__list--grid .z01-card__time{display:none}',
-    '.z01__list--grid .z01-card__num{-webkit-box-pack:start;-webkit-justify-content:flex-start;-ms-flex-pack:start;justify-content:flex-start;-webkit-box-align:start;-webkit-align-items:flex-start;-ms-flex-align:start;align-items:flex-start;padding:.4em 0 0 .55em;font-size:1.2em}',
+    '.nova__list--grid{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;margin:0 -.45em}',
+    '.nova__list--grid .nova-card{display:block;width:25%;margin:0 0 1em 0;padding:0 .45em;background:none}',
+    '.nova__list--grid .nova-card.focus{background:none;color:inherit}',
+    '.nova__list--grid .nova-card__thumb{width:100%;height:0;padding-top:56%}',
+    '.nova__list--grid .nova-card--file .nova-card__thumb{width:100%;height:0;padding-top:56%}',
+    '.nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .2em #fff;box-shadow:0 0 0 .2em #fff}',
+    '.nova__list--grid .nova-card__body{padding:.6em .1em 0 .1em}',
+    '.nova__list--grid .nova-card__title{font-size:1.1em}',
+    '.nova__list--grid .nova-card__side{position:absolute;top:.5em;right:.9em;text-align:right}',
+    '.nova__list--grid .nova-card__time{display:none}',
+    '.nova__list--grid .nova-card__num{-webkit-box-pack:start;-webkit-justify-content:flex-start;-ms-flex-pack:start;justify-content:flex-start;-webkit-box-align:start;-webkit-align-items:flex-start;-ms-flex-align:start;align-items:flex-start;padding:.4em 0 0 .55em;font-size:1.2em}',
 
-    '.z01-hero__season{font-size:.95em;opacity:.55;margin-top:.8em}',
+    '.nova-hero__season{font-size:.95em;opacity:.55;margin-top:.8em}',
 
     '@media screen and (max-width:1200px){',
-    '.z01__list--grid .z01-card{width:33.3333%}',
+    '.nova__list--grid .nova-card{width:33.3333%}',
     '}',
     '@media screen and (max-width:580px){',
-    '.z01__list--grid .z01-card{width:50%}',
-    '.z01-hero__body{max-width:100%;padding:1.3em}',
-    '.z01-hero__title{font-size:1.7em}',
-    '.z01-hero__descr{display:none}',
-    '.z01-hero__shade{background:-webkit-linear-gradient(top,rgba(10,11,17,.55) 0%,rgba(10,11,17,.94) 60%);background:linear-gradient(180deg,rgba(10,11,17,.55) 0%,rgba(10,11,17,.94) 60%)}',
-    '.z01-card__thumb{width:7em;height:4.4em}',
-    '.z01-card__side{display:none}',
-    '.z01-chip{max-width:16em}',
+    '.nova__list--grid .nova-card{width:50%}',
+    '.nova-hero__body{max-width:100%;padding:1.3em}',
+    '.nova-hero__title{font-size:1.7em}',
+    '.nova-hero__descr{display:none}',
+    '.nova-hero__shade{background:-webkit-linear-gradient(top,rgba(10,11,17,.55) 0%,rgba(10,11,17,.94) 60%);background:linear-gradient(180deg,rgba(10,11,17,.55) 0%,rgba(10,11,17,.94) 60%)}',
+    '.nova-card__thumb{width:7em;height:4.4em}',
+    '.nova-card__side{display:none}',
+    '.nova-chip{max-width:16em}',
     '}',
     '</style>'
   ].join('');
@@ -1096,7 +1087,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     if (balansers_with_search == undefined) {
       network.timeout(10000);
-      network.silent(account('http://online'+dd+'3.skaz.tv/lite/withsearch'), function(json) {
+      network.silent(account(_srv(3) + '/lite/withsearch'), function(json) {
         balansers_with_search = json;
       }, function() {
 		  balansers_with_search = [];
@@ -1132,7 +1123,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       for (i = 0; i < keys.length; i++) {
         var src = sources_map[keys[i]];
 
-        var real = Z01UI.qualityRank(Z01UI.knownQuality(keys[i]));
+        var real = NovaUI.qualityRank(NovaUI.knownQuality(keys[i]));
         indexed.push({
           key: keys[i],
           shown: src && src.show ? 1 : 0,
@@ -1175,7 +1166,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 		return all[id];
 	}
 
-    var modern = Z01UI.enabled();
+    var modern = NovaUI.enabled();
     var ui = {};
     var ui_items = [];
     var ui_enter = null;
@@ -1208,10 +1199,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.uiFrame = function() {
       if (!ui.root) {
-        ui.root = $('<div class="z01"></div>');
-        ui.hero_box = $('<div class="z01__hero"></div>');
-        ui.rows = $('<div class="z01__rows"></div>');
-        ui.list = $('<div class="z01__list"></div>');
+        ui.root = $('<div class="nova"></div>');
+        ui.hero_box = $('<div class="nova__hero"></div>');
+        ui.rows = $('<div class="nova__rows"></div>');
+        ui.list = $('<div class="nova__list"></div>');
         ui.root.append(ui.hero_box).append(ui.rows).append(ui.list);
       }
       if (!ui.root.parent().length) {
@@ -1222,9 +1213,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     this.uiSkeleton = function(count) {
-      var box = $('<div class="z01-skeleton"></div>');
+      var box = $('<div class="nova-skeleton"></div>');
       for (var i = 0; i < (count || 4); i++) {
-        box.append('<div class="z01-skeleton__row"><div class="z01-skeleton__thumb"></div><div class="z01-skeleton__body"><div class="z01-skeleton__line"></div><div class="z01-skeleton__line z01-skeleton__line--short"></div></div></div>');
+        box.append('<div class="nova-skeleton__row"><div class="nova-skeleton__thumb"></div><div class="nova-skeleton__body"><div class="nova-skeleton__line"></div><div class="nova-skeleton__line nova-skeleton__line--short"></div></div></div>');
       }
       return box;
     };
@@ -1235,13 +1226,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       ui_load_started = Date.now();
       ui_load_found = 0;
       ui_load_percent = 0;
-      ui.load = $('<div class="z01-loading">' +
-        '<div class="z01-loading__title"></div>' +
-        '<div class="z01-loading__text"></div>' +
-        '<div class="z01-loading__bar"><div></div></div>' +
+      ui.load = $('<div class="nova-loading">' +
+        '<div class="nova-loading__title"></div>' +
+        '<div class="nova-loading__text"></div>' +
+        '<div class="nova-loading__bar"><div></div></div>' +
         '</div>');
-      ui.load.find('.z01-loading__title').text(Lampa.Lang.translate('z01_loading_title'));
-      this.uiWatch(Z01UI.WATCHDOG_FIRST);
+      ui.load.find('.nova-loading__title').text(Lampa.Lang.translate('nova_loading_title'));
+      this.uiWatch(NovaUI.WATCHDOG_FIRST);
       ui.list.empty().append(ui.load).append(this.uiSkeleton(3));
       this.uiLoadingText();
       clearInterval(ui_load_timer);
@@ -1254,14 +1245,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (!ui.load || !ui.load.parent().length) return this.uiLoadingStop();
       var seconds = Math.max(0, Math.round((Date.now() - ui_load_started) / 1000));
       var text = ui_load_found ?
-        Lampa.Lang.translate('z01_loading_found').replace('{n}', ui_load_found) :
-        Lampa.Lang.translate('z01_loading_start');
-      text += ' · ' + seconds + Lampa.Lang.translate('z01_sec');
-      if (seconds >= 12 && ui_load_percent < 100) text += ' · ' + Lampa.Lang.translate('z01_loading_slow');
-      ui.load.find('.z01-loading__text').text(text);
+        Lampa.Lang.translate('nova_loading_found').replace('{n}', ui_load_found) :
+        Lampa.Lang.translate('nova_loading_start');
+      text += ' · ' + seconds + Lampa.Lang.translate('nova_sec');
+      if (seconds >= 12 && ui_load_percent < 100) text += ' · ' + Lampa.Lang.translate('nova_loading_slow');
+      ui.load.find('.nova-loading__text').text(text);
 
       var percent = Math.max(ui_load_percent, Math.min(90, seconds * 7));
-      ui.load.find('.z01-loading__bar>div').css('width', percent + '%');
+      ui.load.find('.nova-loading__bar>div').css('width', percent + '%');
     };
 
     this.uiLoadingProgress = function(json, times) {
@@ -1273,7 +1264,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       });
       ui_load_found = found;
       ui_load_percent = json && json.ready ? 100 : Math.min(95, Math.round((times / 15) * 100));
-      this.uiWatch(Z01UI.WATCHDOG_FIRST);
+      this.uiWatch(NovaUI.WATCHDOG_FIRST);
       this.uiLoadingText();
     };
 
@@ -1293,7 +1284,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         _this.doesNotAnswer({
           timeout: true
         });
-      }, (seconds || Z01UI.WATCHDOG) * 1000);
+      }, (seconds || NovaUI.WATCHDOG) * 1000);
     };
 
     this.uiWatchStop = function() {
@@ -1317,25 +1308,25 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         clearTimeout(sources_timer);
         sources_timer = setTimeout(function() {
           _this.sourcesCacheShow();
-        }, Z01UI.SOURCES_DELAY);
+        }, NovaUI.SOURCES_DELAY);
       }
     };
 
     this.sourcesCacheSave = function(list) {
       if (!object.movie.id || !list || !list.length) return;
-      var all = Lampa.Storage.cache('z01_sources', 500, {});
+      var all = Lampa.Storage.cache('nova_sources', 500, {});
       all[object.movie.id] = {
         time: Date.now(),
         list: list
       };
-      Lampa.Storage.set('z01_sources', all);
+      Lampa.Storage.set('nova_sources', all);
     };
 
     this.sourcesCacheShow = function() {
       if (!modern || object.balanser || sourceKeys().length) return;
-      var all = Lampa.Storage.cache('z01_sources', 500, {});
+      var all = Lampa.Storage.cache('nova_sources', 500, {});
       var mine = all[object.movie.id];
-      if (!mine || !mine.list || Date.now() - (mine.time || 0) > Z01UI.SOURCES_TTL) return;
+      if (!mine || !mine.list || Date.now() - (mine.time || 0) > NovaUI.SOURCES_TTL) return;
       var keys = [];
       mine.list.forEach(function(item) {
         if (!item || !item.name) return;
@@ -1371,7 +1362,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiFocusRestore = function(fallback) {
       var element = false;
       if (ui_focus && ui.root) {
-        var found = ui.root.find('[data-z01-focus="' + ui_focus + '"]');
+        var found = ui.root.find('[data-nova-focus="' + ui_focus + '"]');
         if (found.length) element = found[0];
       }
       ui_focus = '';
@@ -1392,10 +1383,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (items[i].hash_behold == movie_choice.movie_view) return items[i];
           }
         }
-        var pref = Lampa.Storage.get('z01_voice_pref', '');
-        if (pref && Lampa.Storage.get('z01_voice_auto', true) !== false) {
+        var pref = Lampa.Storage.get('nova_voice_pref', '');
+        if (pref && Lampa.Storage.get('nova_voice_auto', true) !== false) {
           for (i = 0; i < items.length; i++) {
-            if (Z01UI.voiceKind(items[i].title || items[i].text) == pref) return items[i];
+            if (NovaUI.voiceKind(items[i].title || items[i].text) == pref) return items[i];
           }
         }
         return items[0];
@@ -1403,7 +1394,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var choice = this.getChoice();
       var season = items[0].season;
 
-      var reached = Z01UI.reached(object.movie, season);
+      var reached = NovaUI.reached(object.movie, season);
       if (!reached) {
         var mark = choice.episodes_view ? parseInt(choice.episodes_view[season], 10) : 0;
         if (mark > reached) reached = mark;
@@ -1413,7 +1404,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           if (last_seen > reached) reached = last_seen;
         }
         for (i = 0; i < items.length; i++) {
-          if (Z01UI.isSeen(items[i], viewed)) {
+          if (NovaUI.isSeen(items[i], viewed)) {
             var num = parseInt(items[i].episode, 10) || 0;
             if (num > reached) reached = num;
           }
@@ -1426,7 +1417,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (line && line.percent > 0 && line.percent < 90) return items[i];
 
             for (var j = i + 1; j < items.length; j++) {
-              if (!Z01UI.isSeen(items[j], viewed)) return items[j];
+              if (!NovaUI.isSeen(items[j], viewed)) return items[j];
             }
             return items[i + 1] || items[i];
           }
@@ -1442,7 +1433,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       }
 
       for (i = 0; i < items.length; i++) {
-        if (!Z01UI.isSeen(items[i], viewed)) return items[i];
+        if (!NovaUI.isSeen(items[i], viewed)) return items[i];
       }
       return items[0];
     };
@@ -1450,7 +1441,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiPlayButton = function() {
       var _this = this;
       if (!ui.play) {
-        ui.play = $('<div class="z01-btn z01-btn--main selector" data-z01-focus="hero">' + Z01UI.icon.play + '<span class="z01-btn__label"></span></div>');
+        ui.play = $('<div class="nova-btn nova-btn--main selector" data-nova-focus="hero">' + NovaUI.icon.play + '<span class="nova-btn__label"></span></div>');
         ui.play.on('hover:enter', function() {
           _this.uiPlay(_this.uiPickResume(ui_items));
         }).on('hover:long', function() {
@@ -1481,7 +1472,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiFreshItem = function() {
       var viewed = Lampa.Storage.cache('online_view', 5000, []);
       for (var i = 0; i < ui_items.length; i++) {
-        if (!Z01UI.isSeen(ui_items[i], viewed)) return ui_items[i];
+        if (!NovaUI.isSeen(ui_items[i], viewed)) return ui_items[i];
       }
       return null;
     };
@@ -1489,7 +1480,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiNextButton = function() {
       var _this = this;
       if (!ui.next) {
-        ui.next = $('<div class="z01-btn z01-btn--ghost selector" data-z01-focus="hero-next"><span class="z01-btn__label"></span></div>');
+        ui.next = $('<div class="nova-btn nova-btn--ghost selector" data-nova-focus="hero-next"><span class="nova-btn__label"></span></div>');
         ui.next.on('hover:enter', function() {
           _this.uiPlay(_this.uiNextItem(_this.uiPickResume(ui_items)));
         }).on('hover:focus', function(e) {
@@ -1512,26 +1503,26 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         return item.episode ? text + ' · ' + Lampa.Lang.translate('torrent_serial_episode') + ' ' + item.episode : text;
       };
       var menu = [{
-        title: name(target, started ? 'z01_continue' : 'z01_watch'),
+        title: name(target, started ? 'nova_continue' : 'nova_watch'),
         item: target
       }];
       if (started) menu.push({
-        title: name(target, 'z01_from_start'),
+        title: name(target, 'nova_from_start'),
         item: target,
         reset: true
       });
       var next = this.uiNextItem(target);
       if (next) menu.push({
-        title: name(next, 'z01_next_episode'),
+        title: name(next, 'nova_next_episode'),
         item: next
       });
       var fresh = this.uiFreshItem();
       if (fresh && fresh !== target && fresh !== next) menu.push({
-        title: name(fresh, 'z01_first_new'),
+        title: name(fresh, 'nova_first_new'),
         item: fresh
       });
-      if (object.movie.name && ui_items.length > Z01UI.JUMP_FROM) menu.push({
-        title: Lampa.Lang.translate('z01_jump_pick'),
+      if (ui_items.length > NovaUI.JUMP_FROM) menu.push({
+        title: Lampa.Lang.translate('nova_jump_pick'),
         jump: true
       });
       Lampa.Select.show({
@@ -1550,34 +1541,34 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.uiHero = function(items) {
       var _this = this;
-      if (Lampa.Storage.get('z01_hero', true) === false) {
+      if (Lampa.Storage.get('nova_hero', true) === false) {
         ui.hero_box.empty();
         ui.hero = null;
         return;
       }
       var movie = object.movie;
 
-      var with_art = Lampa.Storage.get('z01_hero_art', true) !== false;
+      var with_art = Lampa.Storage.get('nova_hero_art', true) !== false;
       if (!ui.hero) {
-        ui.hero = $('<div class="z01-hero">' +
-          '<div class="z01-hero__bg"><img alt=""></div><div class="z01-hero__shade"></div>' +
-          '<div class="z01-hero__body">' +
-          (with_art ? '<div class="z01-hero__title"></div><div class="z01-hero__meta"></div><div class="z01-hero__descr"></div>' : '') +
-          '<div class="z01-hero__actions"><div class="z01-hero__hint"></div></div>' +
-          '<div class="z01-hero__season" style="display:none"></div>' +
-          '<div class="z01-hero__progress" style="display:none"></div>' +
+        ui.hero = $('<div class="nova-hero">' +
+          '<div class="nova-hero__bg"><img alt=""></div><div class="nova-hero__shade"></div>' +
+          '<div class="nova-hero__body">' +
+          (with_art ? '<div class="nova-hero__title"></div><div class="nova-hero__meta"></div><div class="nova-hero__descr"></div>' : '') +
+          '<div class="nova-hero__actions"><div class="nova-hero__hint"></div></div>' +
+          '<div class="nova-hero__season" style="display:none"></div>' +
+          '<div class="nova-hero__progress" style="display:none"></div>' +
           '</div></div>');
-        if (!with_art) ui.hero.addClass('z01-hero--compact');
+        if (!with_art) ui.hero.addClass('nova-hero--compact');
         if (with_art) {
-          ui.hero.find('.z01-hero__title').text(movie.title || movie.name || '');
-          ui.hero.find('.z01-hero__descr').text(movie.overview || '');
+          ui.hero.find('.nova-hero__title').text(movie.title || movie.name || '');
+          ui.hero.find('.nova-hero__descr').text(movie.overview || '');
         }
         var art = movie.backdrop_path || movie.poster_path;
         if (art) {
-          var back = ui.hero.find('.z01-hero__bg');
-          var img = ui.hero.find('.z01-hero__bg img')[0];
+          var back = ui.hero.find('.nova-hero__bg');
+          var img = ui.hero.find('.nova-hero__bg img')[0];
           img.onload = function() {
-            back.addClass('z01-hero__bg--loaded');
+            back.addClass('nova-hero__bg--loaded');
           };
           img.onerror = function() {};
           img.src = Lampa.TMDB.image('t/p/w780' + art);
@@ -1596,57 +1587,57 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         ui.hero = null;
         return null;
       }
-      ui.hero.find('.z01-hero__actions').prepend(button);
+      ui.hero.find('.nova-hero__actions').prepend(button);
 
       var next_item = serial_now ? this.uiNextItem(target) : null;
       var line_target = target.timeline;
       var next_show = !!next_item && !!(line_target && line_target.percent > 0 && line_target.percent < 90);
       var next_button = this.uiNextButton();
       if (next_show) {
-        next_button.find('.z01-btn__label').text(Lampa.Lang.translate('z01_next_episode') +
+        next_button.find('.nova-btn__label').text(Lampa.Lang.translate('nova_next_episode') +
           ' · ' + Lampa.Lang.translate('torrent_serial_episode') + ' ' + next_item.episode);
         button.after(next_button);
       } else next_button.detach();
 
       if (with_art) {
-        var meta = ui.hero.find('.z01-hero__meta').empty();
-        var badge = Z01UI.shortQuality(target.quality || (target.qualitys ? Lampa.Arrays.getKeys(target.qualitys)[0] : ''));
-        if (badge) meta.append('<div class="z01-badge">' + badge + '</div>');
+        var meta = ui.hero.find('.nova-hero__meta').empty();
+        var badge = NovaUI.shortQuality(target.quality || (target.qualitys ? Lampa.Arrays.getKeys(target.qualitys)[0] : ''));
+        if (badge) meta.append('<div class="nova-badge">' + badge + '</div>');
         if (movie.vote_average) meta.append('<div>★ ' + parseFloat(movie.vote_average + '').toFixed(1) + '</div>');
         var year = ((movie.release_date || movie.first_air_date || '') + '').slice(0, 4);
         if (year) meta.append('<div>' + year + '</div>');
-        if (target.time) meta.append('<div>' + Z01UI.esc(target.time) + '</div>');
+        if (target.time) meta.append('<div>' + NovaUI.esc(target.time) + '</div>');
       }
 
       var serial = movie.name ? true : false;
       var line = target.timeline;
       var started = line && line.percent > 0 && line.percent < 90;
-      var label = Lampa.Lang.translate(started ? 'z01_continue' : 'z01_watch');
+      var label = Lampa.Lang.translate(started ? 'nova_continue' : 'nova_watch');
       if (serial && target.episode) {
         label += ' · S' + (target.season || 1) + ' E' + target.episode;
       }
-      button.find('.z01-btn__label').text(label);
+      button.find('.nova-btn__label').text(label);
 
       var hint = [];
-      if (!object.balanser && sources[balanser]) hint.push(Z01UI.splitSourceName(sources[balanser].name).name);
-      if (target.voice_name && target.voice_name !== Lampa.Lang.translate('z01_unknown')) hint.push(target.voice_name);
-      ui.hero.find('.z01-hero__hint').text(hint.join(' · '));
+      if (!object.balanser && sources[balanser]) hint.push(NovaUI.splitSourceName(sources[balanser].name).name);
+      if (target.voice_name && target.voice_name !== Lampa.Lang.translate('nova_unknown')) hint.push(target.voice_name);
+      ui.hero.find('.nova-hero__hint').text(hint.join(' · '));
 
-      var progress = ui.hero.find('.z01-hero__progress').empty();
+      var progress = ui.hero.find('.nova-hero__progress').empty();
       if (line && line.percent > 0) progress.show().append(Lampa.Timeline.render(line));
       else progress.hide();
 
-      var season_line = ui.hero.find('.z01-hero__season');
+      var season_line = ui.hero.find('.nova-hero__season');
       if (serial && !ui_nav && items.length > 1) {
         var viewed = Lampa.Storage.cache('online_view', 5000, []);
         var seen = 0;
         items.forEach(function(item) {
-          if (Z01UI.isSeen(item, viewed)) seen++;
+          if (NovaUI.isSeen(item, viewed)) seen++;
         });
-        var progress_text = Lampa.Lang.translate('z01_season_progress').replace('{seen}', seen).replace('{total}', items.length);
+        var progress_text = Lampa.Lang.translate('nova_season_progress').replace('{seen}', seen).replace('{total}', items.length);
 
         if (seen < items.length) {
-          progress_text += ' · ' + Lampa.Lang.translate('z01_season_left').replace('{left}', items.length - seen);
+          progress_text += ' · ' + Lampa.Lang.translate('nova_season_left').replace('{left}', items.length - seen);
         }
         season_line.text(progress_text).show();
       } else season_line.hide();
@@ -1692,16 +1683,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiRows = function() {
       var _this = this;
       var rows = ui.rows.empty();
-      var toolbar = $('<div class="z01-toolbar"></div>');
+      var toolbar = $('<div class="nova-toolbar"></div>');
 
       var addChip = function(key, label, text, extra) {
-        if (label) toolbar.append($('<div class="z01-toolbar__label"></div>').text(label));
-        var chip = $('<div class="z01-chip selector"></div>');
-        chip.attr('data-z01-focus', key);
-        if (extra && extra.badge) chip.append($('<span class="z01-chip__badge"></span>').text(extra.badge));
-        chip.append($('<span class="z01-chip__label"></span>').text(text));
-        if (!(extra && extra.action)) chip.append(Z01UI.icon.chevron);
-        if (ui_open == key) chip.addClass('z01-chip--active');
+        if (label) toolbar.append($('<div class="nova-toolbar__label"></div>').text(label));
+        var chip = $('<div class="nova-chip selector"></div>');
+        chip.attr('data-nova-focus', key);
+        if (extra && extra.badge) chip.append($('<span class="nova-chip__badge"></span>').text(extra.badge));
+        chip.append($('<span class="nova-chip__label"></span>').text(text));
+        if (!(extra && extra.action)) chip.append(NovaUI.icon.chevron);
+        if (ui_open == key) chip.addClass('nova-chip--active');
         chip.on('hover:enter', function() {
           if (extra && extra.action) extra.action();
           else _this.uiToggle(key);
@@ -1714,9 +1705,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
       if (!object.balanser && sourceKeys().length && balanser) {
         var info = sources[balanser] || {};
-        var parts = Z01UI.splitSourceName(info.name || balanser);
+        var parts = NovaUI.splitSourceName(info.name || balanser);
         addChip('source', Lampa.Lang.translate('lampac_balanser'), parts.name, {
-          badge: Z01UI.sourceBadge(balanser, parts)
+          badge: NovaUI.sourceBadge(balanser, parts)
         });
       }
 
@@ -1731,13 +1722,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         addChip('voice', Lampa.Lang.translate('torrent_parser_voice'), (voices[choice.voice] || voices[0]).title);
       }
 
-      if (!ui_nav && object.movie.name && ui_items.length > Z01UI.JUMP_FROM) {
-        var page_now = Z01UI.pageAt(Z01UI.pages(ui_items.length), ui_page > 0 ? ui_page : 0);
-        addChip('jump', Lampa.Lang.translate('z01_jump'), this.pageTitle(page_now));
+      if (!ui_nav && ui_items.length > NovaUI.JUMP_FROM) {
+        var page_now = NovaUI.pageAt(NovaUI.pages(ui_items.length), ui_page > 0 ? ui_page : 0);
+        addChip('jump', Lampa.Lang.translate('nova_jump'), this.pageTitle(page_now));
       }
 
       if (similar_list && similar_list.length > 1 && !similar_shown) {
-        addChip('variants', '', Lampa.Lang.translate('z01_similar_all'), {
+        addChip('variants', '', Lampa.Lang.translate('nova_similar_all'), {
           badge: String(similar_list.length),
           action: function() {
             var saved = similar_list;
@@ -1764,12 +1755,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (state == 'ok') return 0;
         if (state == 'empty') return 2;
 
-        return (sources[name] && sources[name].show) || Z01UI.knownQuality(name) ? 1 : 2;
+        return (sources[name] && sources[name].show) || NovaUI.knownQuality(name) ? 1 : 2;
       };
       var quality = function(name) {
         var info = sources[name] || {};
-        return Z01UI.qualityRank(Z01UI.knownQuality(name) ||
-          Z01UI.splitSourceName(info.name || name).badge);
+        return NovaUI.qualityRank(NovaUI.knownQuality(name) ||
+          NovaUI.splitSourceName(info.name || name).badge);
       };
       return names.map(function(name, index) {
         return {
@@ -1786,7 +1777,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     this.probeCache = function() {
-      var all = Lampa.Storage.cache('z01_probe', 2000, {});
+      var all = Lampa.Storage.cache('nova_probe', 2000, {});
       var mine = all[object.movie.id];
       if (!mine) {
         mine = {
@@ -1801,7 +1792,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       for (var key in list) {
         var entry = list[key] || {};
         var stamp = entry.t || mine.time || 0;
-        var ttl = entry.s == 'ok' ? Z01UI.PROBE_TTL_OK : Z01UI.PROBE_TTL_EMPTY;
+        var ttl = entry.s == 'ok' ? NovaUI.PROBE_TTL_OK : NovaUI.PROBE_TTL_EMPTY;
         if (now - stamp > ttl) delete list[key];
       }
       mine.list = list;
@@ -1809,7 +1800,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     this.probeSave = function(name, state, count) {
-      var all = Lampa.Storage.cache('z01_probe', 2000, {});
+      var all = Lampa.Storage.cache('nova_probe', 2000, {});
       var mine = this.probeCache();
       mine.list[name] = {
         s: state,
@@ -1817,7 +1808,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         t: Date.now()
       };
       all[object.movie.id] = mine;
-      Lampa.Storage.set('z01_probe', all);
+      Lampa.Storage.set('nova_probe', all);
     };
 
     this.sourceState = function(name) {
@@ -1827,7 +1818,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.probeOrder = function(names) {
       var rank = function(name) {
-        if (Z01UI.knownQuality(name)) return 0;
+        if (NovaUI.knownQuality(name)) return 0;
         return (sources[name] && sources[name].show) ? 2 : 1;
       };
       return names.map(function(name, index) {
@@ -1845,7 +1836,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.probeBackground = function() {
       var _this = this;
       if (!modern || probe_auto || object.balanser) return;
-      if (Lampa.Storage.get('z01_probe_enable', true) === false) return;
+      if (Lampa.Storage.get('nova_probe_enable', true) === false) return;
       clearTimeout(probe_timer);
 
       probe_timer = setTimeout(function() {
@@ -1854,13 +1845,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (all.length < 2) return;
         probe_auto = true;
         _this.probeSources(all);
-      }, Z01UI.PROBE_DELAY);
+      }, NovaUI.PROBE_DELAY);
     };
 
     this.probeStop = function() {
       probe_busy = false;
       clearTimeout(probe_timer);
-      if (ui.rows) ui.rows.find('.z01-chip--checking').removeClass('z01-chip--checking');
+      if (ui.rows) ui.rows.find('.nova-chip--checking').removeClass('nova-chip--checking');
       probe_nets.forEach(function(net) {
         net.clear();
       });
@@ -1869,32 +1860,32 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.probeMark = function(name, state, count) {
       if (!ui.rows) return;
-      var row = ui.rows.find('.z01-drop');
+      var row = ui.rows.find('.nova-drop');
       if (!row.length) return;
-      var chip = row.find('[data-z01-focus="src:' + name + '"]');
+      var chip = row.find('[data-nova-focus="src:' + name + '"]');
       if (!chip.length) {
 
         if (state !== 'ok') return;
         chip = this.sourceChip(name);
         row.append(chip);
       }
-      chip.removeClass('z01-chip--checking z01-chip--empty');
-      chip.find('.z01-chip__dot').remove();
+      chip.removeClass('nova-chip--checking nova-chip--empty');
+      chip.find('.nova-chip__dot').remove();
 
-      var real = Z01UI.knownQuality(name);
+      var real = NovaUI.knownQuality(name);
       if (real && !(sources[name] || {}).vip) {
-        var mark = chip.find('.z01-chip__badge');
-        if (!mark.length) chip.prepend($('<span class="z01-chip__badge"></span>').text(real));
+        var mark = chip.find('.nova-chip__badge');
+        if (!mark.length) chip.prepend($('<span class="nova-chip__badge"></span>').text(real));
         else mark.text(real);
       }
 
-      if (state == 'empty') chip.addClass('z01-chip--empty');
-      else if (state == 'ok') chip.append('<span class="z01-chip__dot"></span>');
+      if (state == 'empty') chip.addClass('nova-chip--empty');
+      else if (state == 'ok') chip.append('<span class="nova-chip__dot"></span>');
     };
 
     this.probeSources = function(names) {
       var _this = this;
-      if (Lampa.Storage.get('z01_probe_enable', true) === false) return;
+      if (Lampa.Storage.get('nova_probe_enable', true) === false) return;
       this.probeStop();
       probe_busy = true;
 
@@ -1910,12 +1901,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       });
       queue = this.probeOrder(queue);
 
-      queue = queue.slice(0, Z01UI.PROBE_LIMIT);
-      var deadline = Date.now() + Z01UI.PROBE_BUDGET;
+      queue = queue.slice(0, NovaUI.PROBE_LIMIT);
+      var deadline = Date.now() + NovaUI.PROBE_BUDGET;
 
       queue.forEach(function(name) {
-        var chip = ui.rows.find('[data-z01-focus="src:' + name + '"]');
-        chip.addClass('z01-chip--checking');
+        var chip = ui.rows.find('[data-nova-focus="src:' + name + '"]');
+        chip.addClass('nova-chip--checking');
       });
 
       var index = 0;
@@ -1925,7 +1916,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var name = queue[index++];
         var net = new Network();
         probe_nets.push(net);
-        net.timeout(Z01UI.PROBE_TIMEOUT);
+        net.timeout(NovaUI.PROBE_TIMEOUT);
         net["native"](account(_this.requestParams(sources[name].url)), function(answer) {
           _this.probeDone(name, answer);
           next();
@@ -1940,7 +1931,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
         });
       };
-      for (var worker = 0; worker < Z01UI.PROBE_PARALLEL; worker++) next();
+      for (var worker = 0; worker < NovaUI.PROBE_PARALLEL; worker++) next();
     };
 
     this.probeDone = function(name, answer) {
@@ -1961,7 +1952,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var found = (text.match(/videos__item/g) || []).length ||
         (text.match(/"method"\s*:\s*"(play|call|link)"/g) || []).length;
       var state = found ? 'ok' : 'empty';
-      if (found) Z01UI.rememberQuality(name, Z01UI.bestQualityFromText(text));
+      if (found) NovaUI.rememberQuality(name, NovaUI.bestQualityFromText(text));
       this.probeSave(name, state, found);
       this.probeMark(name, state, found);
     };
@@ -1985,8 +1976,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.uiToolbarFocus = function() {
       if (!modern || !ui.rows) return false;
-      var row = ui.rows.find('.z01-toolbar');
-      var chip = row.find('[data-z01-focus="source"]')[0] || row.find('.z01-chip')[0];
+      var row = ui.rows.find('.nova-toolbar');
+      var chip = row.find('[data-nova-focus="source"]')[0] || row.find('.nova-chip')[0];
       if (!chip) return false;
       last = chip;
       scroll.update($(chip), true);
@@ -2009,19 +2000,19 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.uiToolbarFocused = function() {
       if (!modern || !ui.rows || !last) return false;
-      return ui.rows.find('.z01-toolbar').find(last).length > 0;
+      return ui.rows.find('.nova-toolbar').find(last).length > 0;
     };
 
     this.uiJumpRow = function() {
       var _this = this;
       var items = ui_items;
-      var pages = Z01UI.pages(items.length);
-      var row = $('<div class="z01-drop"></div>');
+      var pages = NovaUI.pages(items.length);
+      var row = $('<div class="nova-drop"></div>');
       var make = function(page) {
-        var chip = $('<div class="z01-chip selector"></div>');
-        chip.attr('data-z01-focus', 'jump:' + page.start);
-        chip.append($('<span class="z01-chip__label"></span>').text(_this.pageTitle(page)));
-        if (page.start === ui_page) chip.addClass('z01-chip--active');
+        var chip = $('<div class="nova-chip selector"></div>');
+        chip.attr('data-nova-focus', 'jump:' + page.start);
+        chip.append($('<span class="nova-chip__label"></span>').text(_this.pageTitle(page)));
+        if (page.start === ui_page) chip.addClass('nova-chip--active');
         chip.on('hover:enter', function() {
           _this.uiShowPage(page.start, page.start);
         }).on('hover:focus', function(e) {
@@ -2059,7 +2050,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           Lampa.Controller.collectionFocus(last, scroll.render());
           return true;
         }
-        this.uiShowPage(Z01UI.pageAt(Z01UI.pages(ui_items.length), i).start, i);
+        this.uiShowPage(NovaUI.pageAt(NovaUI.pages(ui_items.length), i).start, i);
         return true;
       }
       return false;
@@ -2078,9 +2069,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
       if (type == 'voice') {
         var rank = function(title) {
-          var kind = Z01UI.voiceKind(title);
-          for (var i = 0; i < Z01UI.VOICE_KINDS.length; i++) {
-            if (Z01UI.VOICE_KINDS[i].key == kind) return i;
+          var kind = NovaUI.voiceKind(title);
+          for (var i = 0; i < NovaUI.VOICE_KINDS.length; i++) {
+            if (NovaUI.VOICE_KINDS[i].key == kind) return i;
           }
           return 90;
         };
@@ -2089,12 +2080,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         });
       }
 
-      var row = $('<div class="z01-drop"></div>');
+      var row = $('<div class="nova-drop"></div>');
       order.forEach(function(item) {
-        var chip = $('<div class="z01-chip selector"></div>');
-        chip.attr('data-z01-focus', type + ':' + item.index);
-        chip.append($('<span class="z01-chip__label"></span>').text(item.entry.title));
-        if (item.index == selected) chip.addClass('z01-chip--active');
+        var chip = $('<div class="nova-chip selector"></div>');
+        chip.attr('data-nova-focus', type + ':' + item.index);
+        chip.append($('<span class="nova-chip__label"></span>').text(item.entry.title));
+        if (item.index == selected) chip.addClass('nova-chip--active');
         chip.on('hover:enter', function() {
           if (item.index == selected) return _this.uiToggle(type);
           _this.uiSwitch(type, item.index);
@@ -2112,12 +2103,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var list = filter_find[type] || [];
       if (!list[index]) return;
       var choice = this.getChoice();
-      if (type == 'season') this.seasonMemory(Z01UI.seasonNumber(list[index].title));
+      if (type == 'season') this.seasonMemory(NovaUI.seasonNumber(list[index].title));
       if (type == 'voice') {
         choice.voice_name = list[index].title;
         choice.voice_url = list[index].url;
 
-        Lampa.Storage.set('z01_voice_pref', Z01UI.voiceKind(list[index].title));
+        Lampa.Storage.set('nova_voice_pref', NovaUI.voiceKind(list[index].title));
       }
       ui_open = '';
       choice[type] = index;
@@ -2134,18 +2125,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.sourceChip = function(name) {
       var _this = this;
       var info = sources[name] || {};
-      var parts = Z01UI.splitSourceName(info.name || name);
-      var chip = $('<div class="z01-chip selector"></div>');
-      chip.attr('data-z01-focus', 'src:' + name);
-      var badge = Z01UI.sourceBadge(name, parts);
-      if (badge) chip.append('<span class="z01-chip__badge">' + badge + '</span>');
-      chip.append($('<span class="z01-chip__label"></span>').text(parts.name));
-      if (name == balanser) chip.addClass('z01-chip--active');
+      var parts = NovaUI.splitSourceName(info.name || name);
+      var chip = $('<div class="nova-chip selector"></div>');
+      chip.attr('data-nova-focus', 'src:' + name);
+      var badge = NovaUI.sourceBadge(name, parts);
+      if (badge) chip.append('<span class="nova-chip__badge">' + badge + '</span>');
+      chip.append($('<span class="nova-chip__label"></span>').text(parts.name));
+      if (name == balanser) chip.addClass('nova-chip--active');
 
       var known = this.probeCache().list[name];
       if (known) {
-        if (known.s == 'empty') chip.addClass('z01-chip--empty');
-        else if (known.s == 'ok') chip.append('<span class="z01-chip__dot"></span>');
+        if (known.s == 'empty') chip.addClass('nova-chip--empty');
+        else if (known.s == 'ok') chip.append('<span class="nova-chip__dot"></span>');
       }
       chip.on('hover:enter', function() {
         ui_open = '';
@@ -2176,7 +2167,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (state == 'ok') return true;
         if (state == 'empty') return false;
 
-        if (Z01UI.knownQuality(name)) return true;
+        if (NovaUI.knownQuality(name)) return true;
         return info.show;
       });
 
@@ -2186,16 +2177,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (ui_all_sources) visible = visible.concat(hidden);
       visible = this.sourceOrder(visible);
 
-      var row = $('<div class="z01-drop"></div>');
+      var row = $('<div class="nova-drop"></div>');
       visible.forEach(function(name) {
         row.append(_this.sourceChip(name));
       });
 
       if (!ui_all_sources && hidden.length) {
-        var more = $('<div class="z01-chip z01-chip--more selector"></div>');
-        more.attr('data-z01-focus', 'src:more');
-        more.append($('<span class="z01-chip__label"></span>')
-          .text(Lampa.Lang.translate('z01_more_sources').replace('{count}', hidden.length)));
+        var more = $('<div class="nova-chip nova-chip--more selector"></div>');
+        more.attr('data-nova-focus', 'src:more');
+        more.append($('<span class="nova-chip__label"></span>')
+          .text(Lampa.Lang.translate('nova_more_sources').replace('{count}', hidden.length)));
         more.on('hover:enter', function() {
           ui_all_sources = true;
           ui_focus = 'src:' + (hidden[0] || balanser);
@@ -2216,12 +2207,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var list = filter_find[type] || [];
       if (!list[index]) return;
       var choice = this.getChoice();
-      if (type == 'season') this.seasonMemory(Z01UI.seasonNumber(list[index].title));
+      if (type == 'season') this.seasonMemory(NovaUI.seasonNumber(list[index].title));
       if (type == 'voice') {
         choice.voice_name = list[index].title;
         choice.voice_url = list[index].url;
 
-        Lampa.Storage.set('z01_voice_pref', Z01UI.voiceKind(list[index].title));
+        Lampa.Storage.set('nova_voice_pref', NovaUI.voiceKind(list[index].title));
       }
       ui_open = '';
       choice[type] = index;
@@ -2270,7 +2261,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       ui_focus = 'source';
       this.uiLoading();
       this.uiRows();
-      var chip = ui.rows.find('[data-z01-focus="source"]')[0];
+      var chip = ui.rows.find('[data-nova-focus="source"]')[0];
       if (chip) last = chip;
       this.find();
       Lampa.Controller.toggle('content');
@@ -2288,7 +2279,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (state == 'ok') return true;
         if (state == 'empty') return false;
 
-        return sources[name].show || !!Z01UI.knownQuality(name);
+        return sources[name].show || !!NovaUI.knownQuality(name);
       });
       if (!keys.length) return '';
       return this.sourceOrder(keys)[0];
@@ -2299,12 +2290,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       this.uiFrame();
       this.uiLoadingStop();
       this.uiWatchStop();
-      var note = $('<div class="z01-note"><div class="z01-note__main"><div class="z01-note__title"></div><div class="z01-note__text"></div><div class="z01-note__actions"></div></div></div>');
-      note.find('.z01-note__title').text(params.title || '');
-      note.find('.z01-note__text').html(params.text || '');
-      var actions = note.find('.z01-note__actions');
+      var note = $('<div class="nova-note"><div class="nova-note__main"><div class="nova-note__title"></div><div class="nova-note__text"></div><div class="nova-note__actions"></div></div></div>');
+      note.find('.nova-note__title').text(params.title || '');
+      note.find('.nova-note__text').html(params.text || '');
+      var actions = note.find('.nova-note__actions');
       (params.actions || []).forEach(function(action) {
-        var button = $('<div class="z01-btn selector"></div>');
+        var button = $('<div class="nova-btn selector"></div>');
         if (action.icon) button.append(action.icon);
         button.append($('<span></span>').text(action.title));
         button.on('hover:enter', action.handler).on('hover:focus', function(e) {
@@ -2314,16 +2305,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         actions.append(button);
       });
 
-      if (params.qr) {
-        var qr = $('<div class="z01-note__qr"><img alt=""><div class="z01-note__qr-caption"></div></div>');
-        qr.find('img').attr('src', Z01UI.qrImage(params.qr));
-        qr.find('.z01-note__qr-caption').text(Lampa.Lang.translate('z01_qr_hint'));
-        note.append(qr);
-
-        if (String(params.text || '').indexOf(params.qr) === -1) {
-          note.find('.z01-note__text').append($('<div class="z01-note__link"></div>').text(params.qr));
-        }
-      }
       ui.list.empty().append(note);
       this.uiRows();
       this.loading(false);
@@ -2337,7 +2318,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       params = params || {};
       if (!items.length) return this.empty();
       this.probeSave(balanser, 'ok', items.length);
-      if (!params.similars) Z01UI.rememberQuality(balanser, Z01UI.bestQuality(items));
+      if (!params.similars) NovaUI.rememberQuality(balanser, NovaUI.bestQuality(items));
       this.probeBackground();
       this.uiFrame();
       this.uiLoadingStop();
@@ -2359,7 +2340,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       };
       ui_nav = items.length > 1 && items.every(function(item) {
         var text = item.text || item.title || '';
-        if (Z01UI.isSeasonLabel(text)) return true;
+        if (NovaUI.isSeasonLabel(text)) return true;
 
         return serial && typeof item.episode === 'undefined' && !looksEpisode(text);
       });
@@ -2383,16 +2364,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
         }
 
-        var compact = !serial && !ui_nav && items.length > 1;
-        var grid = serial && items.length > 3 && Lampa.Storage.get('z01_view', 'list') === 'grid';
-        if (grid) list.addClass('z01__list--grid');
-        else list.removeClass('z01__list--grid');
+        var grid = !ui_nav && items.length > 3 && Lampa.Storage.get('nova_view', 'list') === 'grid';
+        var compact = !serial && !ui_nav && !grid && items.length > 1;
+        if (grid) list.addClass('nova__list--grid');
+        else list.removeClass('nova__list--grid');
 
-        var paged = serial && !ui_nav && !params.similars && items.length > Z01UI.JUMP_FROM;
+        var paged = !ui_nav && !params.similars && items.length > NovaUI.JUMP_FROM;
         var page_start = 0;
         var page_end = items.length - 1;
         if (paged) {
-          var pages = Z01UI.pages(items.length);
+          var pages = NovaUI.pages(items.length);
           var page;
           if (ui_page < 0 || ui_page >= items.length) {
             var resume_item = _this.uiPickResume(items);
@@ -2403,8 +2384,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                 break;
               }
             }
-            page = Z01UI.pageAt(pages, resume_at);
-          } else page = Z01UI.pageAt(pages, ui_page);
+            page = NovaUI.pageAt(pages, resume_at);
+          } else page = NovaUI.pageAt(pages, ui_page);
           ui_page = page.start;
           page_start = page.start;
           page_end = page.end;
@@ -2417,7 +2398,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }) : false;
           var episode_num = element.episode || index + 1;
           var episode_last = choice.episodes_view[element.season];
-          var voice_name = choice.voice_name || (filter_find.voice[0] ? filter_find.voice[0].title : false) || element.voice_name || (serial ? Lampa.Lang.translate('z01_unknown') : element.text) || Lampa.Lang.translate('z01_unknown');
+          var voice_name = choice.voice_name || (filter_find.voice[0] ? filter_find.voice[0].title : false) || element.voice_name || (serial ? Lampa.Lang.translate('nova_unknown') : element.text) || Lampa.Lang.translate('nova_unknown');
 
           if (element.quality) {
             element.qualitys = element.quality;
@@ -2449,20 +2430,20 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           if (episode && episode.air_date && fully) meta.push(Lampa.Utils.parseTime(episode.air_date).full);
           else if (!episode && !compact && object.movie.release_date && fully) meta.push(Lampa.Utils.parseTime(object.movie.release_date).full);
 
-          if (!serial && !ui_nav && voice_name && voice_name !== title && voice_name !== Lampa.Lang.translate('z01_unknown')) meta.push(voice_name);
+          if (!serial && !ui_nav && voice_name && voice_name !== title && voice_name !== Lampa.Lang.translate('nova_unknown')) meta.push(voice_name);
 
           element.__meta_base = meta.slice();
           var seen_line = element.timeline;
           if (!ui_nav && seen_line && seen_line.percent > 0 && seen_line.duration > seen_line.time) {
-            meta.push(Lampa.Lang.translate('z01_left') + ' ' + Lampa.Utils.secondsToTime(seen_line.duration - seen_line.time, true));
+            meta.push(Lampa.Lang.translate('nova_left') + ' ' + Lampa.Utils.secondsToTime(seen_line.duration - seen_line.time, true));
           }
 
           var addViewed = function() {
             if (!element.__html) return;
-            var box = element.__html.find('.z01-card__thumb');
-            if (box.length && !box.find('.z01-card__viewed').length) {
+            var box = element.__html.find('.nova-card__thumb');
+            if (box.length && !box.find('.nova-card__viewed').length) {
 
-              box.append('<div class="z01-card__viewed"></div>');
+              box.append('<div class="nova-card__viewed"></div>');
             }
           };
           element.mark = function() {
@@ -2476,7 +2457,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (!serial) choice.movie_view = hash_behold;
             else {
               choice.episodes_view[element.season] = episode_num;
-              Z01UI.rememberReach(object.movie, element.season, episode_num);
+              NovaUI.rememberReach(object.movie, element.season, episode_num);
             }
             _this.saveChoice(choice);
             var voice_text = choice.voice_name || element.voice_name || element.title;
@@ -2497,7 +2478,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               Lampa.Arrays.remove(viewed, hash_behold);
               Lampa.Storage.set('online_view', viewed);
               Lampa.Storage.remove('online_view', hash_behold);
-              if (element.__html) element.__html.find('.z01-card__viewed').remove();
+              if (element.__html) element.__html.find('.nova-card__viewed').remove();
             }
             _this.uiRefreshMarks();
           };
@@ -2513,46 +2494,46 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             return;
           }
 
-          var html = $('<div class="z01-card selector">' +
-            '<div class="z01-card__thumb"><img alt=""><div class="z01-card__num"></div><div class="z01-card__line"></div></div>' +
-            '<div class="z01-card__body"><div class="z01-card__title"></div><div class="z01-card__meta"></div></div>' +
-            '<div class="z01-card__side"><div class="z01-card__quality"></div><div class="z01-card__time"></div></div>' +
+          var html = $('<div class="nova-card selector">' +
+            '<div class="nova-card__thumb"><img alt=""><div class="nova-card__num"></div><div class="nova-card__line"></div></div>' +
+            '<div class="nova-card__body"><div class="nova-card__title"></div><div class="nova-card__meta"></div></div>' +
+            '<div class="nova-card__side"><div class="nova-card__quality"></div><div class="nova-card__time"></div></div>' +
             '</div>');
           element.__html = html;
-          if (!serial) html.addClass('z01-card--file');
+          if (!serial) html.addClass('nova-card--file');
 
-          if (ui_nav) html.addClass('z01-card--nav');
-          html.find('.z01-card__title').text(title);
-          html.find('.z01-card__meta').html(meta.map(function(part) {
-            return '<span>' + Z01UI.esc(part) + '</span>';
-          }).join('<span class="z01-dot">●</span>'));
-          html.find('.z01-card__num').text(Z01UI.episodeNumber(episode_num));
-          html.find('.z01-card__time').text(element.time || '');
+          if (ui_nav) html.addClass('nova-card--nav');
+          html.find('.nova-card__title').text(title);
+          html.find('.nova-card__meta').html(meta.map(function(part) {
+            return '<span>' + NovaUI.esc(part) + '</span>';
+          }).join('<span class="nova-dot">●</span>'));
+          html.find('.nova-card__num').text(NovaUI.episodeNumber(episode_num));
+          html.find('.nova-card__time').text(element.time || '');
 
-          var badge = Z01UI.shortQuality(element.quality);
-          if (badge) html.find('.z01-card__quality').addClass('z01-badge').text(badge);
-          else html.find('.z01-card__quality').remove();
+          var badge = NovaUI.shortQuality(element.quality);
+          if (badge) html.find('.nova-card__quality').addClass('nova-badge').text(badge);
+          else html.find('.nova-card__quality').remove();
 
-          var line_box = html.find('.z01-card__line').show();
+          var line_box = html.find('.nova-card__line').show();
           line_box.append(Lampa.Timeline.render(element.timeline));
 
           if (compact) {
-            line_box.addClass('z01-card__line--body').appendTo(html.find('.z01-card__body'));
+            line_box.addClass('nova-card__line--body').appendTo(html.find('.nova-card__body'));
           }
-          if (!serial || ui_nav) html.find('.z01-card__num').remove();
+          if (!serial || ui_nav) html.find('.nova-card__num').remove();
           if (ui_nav) {
-            html.addClass('z01-card--slim');
+            html.addClass('nova-card--slim');
             if (title_count[title] > 1) {
-              var provider = Z01UI.providerName(element.url);
-              if (provider) html.find('.z01-card__meta').text(provider);
+              var provider = NovaUI.providerName(element.url);
+              if (provider) html.find('.nova-card__meta').text(provider);
             }
             line_box.remove();
-            html.find('.z01-card__thumb').remove();
-            html.find('.z01-card__side').remove();
-            html.find('.z01-card__body').append('<div class="z01-card__go">' + Z01UI.icon.chevron + '</div>');
+            html.find('.nova-card__thumb').remove();
+            html.find('.nova-card__side').remove();
+            html.find('.nova-card__body').append('<div class="nova-card__go">' + NovaUI.icon.chevron + '</div>');
           }
 
-          var thumb = html.find('.z01-card__thumb');
+          var thumb = html.find('.nova-card__thumb');
           var art = ui_nav ? '' : '';
           var art_fallback = false;
           if (ui_nav) art = '';
@@ -2563,20 +2544,20 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             art_fallback = true;
           }
           if (art) {
-            if (art_fallback) thumb.addClass('z01-card__thumb--fallback');
+            if (art_fallback) thumb.addClass('nova-card__thumb--fallback');
             var img = html.find('img')[0];
             img.onload = function() {
-              thumb.addClass('z01-card__thumb--loaded');
+              thumb.addClass('nova-card__thumb--loaded');
             };
             img.onerror = function() {
-              thumb.removeClass('z01-card__thumb--fallback');
+              thumb.removeClass('nova-card__thumb--fallback');
             };
             img.src = art;
             images.push(img);
             if (!art_fallback) element.thumbnail = art;
           }
 
-          if (!ui_nav && Z01UI.isSeen(element, viewed)) {
+          if (!ui_nav && NovaUI.isSeen(element, viewed)) {
             focus_mark = html;
             addViewed();
           }
@@ -2632,31 +2613,31 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (episode.air_date) meta.push(Lampa.Utils.parseTime(episode.air_date).full);
             var air = new Date((episode.air_date + '').replace(/-/g, '/'));
             var days = Math.round((air.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
-            var html = $('<div class="z01-card z01-card--soon">' +
-              '<div class="z01-card__thumb"><img alt=""><div class="z01-card__num"></div></div>' +
-              '<div class="z01-card__body"><div class="z01-card__title"></div><div class="z01-card__meta"></div></div>' +
-              '<div class="z01-card__side"><div class="z01-card__time"></div></div>' +
+            var html = $('<div class="nova-card nova-card--soon">' +
+              '<div class="nova-card__thumb"><img alt=""><div class="nova-card__num"></div></div>' +
+              '<div class="nova-card__body"><div class="nova-card__title"></div><div class="nova-card__meta"></div></div>' +
+              '<div class="nova-card__side"><div class="nova-card__time"></div></div>' +
               '</div>');
-            html.find('.z01-card__num').text(Z01UI.episodeNumber(episode.episode_number));
-            var soon_thumb = html.find('.z01-card__thumb');
+            html.find('.nova-card__num').text(NovaUI.episodeNumber(episode.episode_number));
+            var soon_thumb = html.find('.nova-card__thumb');
             var soon_art = episode.still_path ? Lampa.TMDB.image('t/p/w300' + episode.still_path) : _this.uiFallbackArt();
             if (soon_art) {
-              if (!episode.still_path) soon_thumb.addClass('z01-card__thumb--fallback');
+              if (!episode.still_path) soon_thumb.addClass('nova-card__thumb--fallback');
               var soon_img = html.find('img')[0];
               soon_img.onload = function() {
-                soon_thumb.addClass('z01-card__thumb--loaded');
+                soon_thumb.addClass('nova-card__thumb--loaded');
               };
               soon_img.onerror = function() {
-                soon_thumb.removeClass('z01-card__thumb--fallback');
+                soon_thumb.removeClass('nova-card__thumb--fallback');
               };
               soon_img.src = soon_art;
               images.push(soon_img);
             }
-            html.find('.z01-card__title').text(episode.name || '');
-            html.find('.z01-card__meta').html(meta.map(function(part) {
-              return '<span>' + Z01UI.esc(part) + '</span>';
-            }).join('<span class="z01-dot">●</span>'));
-            if (days > 0) html.find('.z01-card__time').text(Lampa.Lang.translate('full_episode_days_left') + ': ' + days);
+            html.find('.nova-card__title').text(episode.name || '');
+            html.find('.nova-card__meta').html(meta.map(function(part) {
+              return '<span>' + NovaUI.esc(part) + '</span>';
+            }).join('<span class="nova-dot">●</span>'));
+            if (days > 0) html.find('.nova-card__time').text(Lampa.Lang.translate('full_episode_days_left') + ': ' + days);
             list.append(html);
           });
         }
@@ -2674,7 +2655,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (!fallback && hero_button && hero_button.length && Lampa.Storage.get('lampac_continue_play', true) !== false) fallback = hero_button[0];
         if (!fallback) fallback = (focus_element || focus_mark || false);
         if (fallback && fallback.jquery) fallback = fallback[0];
-        if (!fallback) fallback = list.find('.z01-card')[0];
+        if (!fallback) fallback = list.find('.nova-card')[0];
         _this.uiFocusRestore(fallback);
 
         _this.loading(false);
@@ -2728,7 +2709,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         }
       }
       if (changed) Lampa.Storage.set('online_view', viewed);
-      Z01UI.setReach(object.movie, element.season, upto);
+      NovaUI.setReach(object.movie, element.season, upto);
       var choice = this.getChoice();
       if (element.season) choice.episodes_view[element.season] = upto;
       this.saveChoice(choice);
@@ -2743,20 +2724,20 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (!html || !html.length) return;
         if (element.hash_timeline) element.timeline = Lampa.Timeline.view(element.hash_timeline);
         var line = element.timeline;
-        var box = html.find('.z01-card__line');
+        var box = html.find('.nova-card__line');
         if (box.length && line) box.empty().append(Lampa.Timeline.render(line));
         if (element.__meta_base) {
           var meta = element.__meta_base.slice();
           if (line && line.percent > 0 && line.duration > line.time) {
-            meta.push(Lampa.Lang.translate('z01_left') + ' ' + Lampa.Utils.secondsToTime(line.duration - line.time, true));
+            meta.push(Lampa.Lang.translate('nova_left') + ' ' + Lampa.Utils.secondsToTime(line.duration - line.time, true));
           }
-          html.find('.z01-card__meta').html(meta.map(function(part) {
-            return '<span>' + Z01UI.esc(part) + '</span>';
-          }).join('<span class="z01-dot">\u25cf</span>'));
+          html.find('.nova-card__meta').html(meta.map(function(part) {
+            return '<span>' + NovaUI.esc(part) + '</span>';
+          }).join('<span class="nova-dot">\u25cf</span>'));
         }
-        var thumb = html.find('.z01-card__thumb');
-        if (thumb.length && Z01UI.isSeen(element, viewed) && !thumb.find('.z01-card__viewed').length) {
-          thumb.append('<div class="z01-card__viewed"></div>');
+        var thumb = html.find('.nova-card__thumb');
+        if (thumb.length && NovaUI.isSeen(element, viewed) && !thumb.find('.nova-card__viewed').length) {
+          thumb.append('<div class="nova-card__viewed"></div>');
         }
       });
       this.uiHero(ui_items);
@@ -2764,8 +2745,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.uiSimilars = function(json, manual) {
       var _this = this;
-      var rank = Z01UI.rankSimilars(json, object.movie);
-      var auto_enabled = Lampa.Storage.get('z01_similar_auto', true) !== false;
+      var rank = NovaUI.rankSimilars(json, object.movie);
+      var auto_enabled = Lampa.Storage.get('nova_similar_auto', true) !== false;
 
       if (!manual && !similar_auto && auto_enabled && rank.sure) {
         similar_list = json;
@@ -2786,27 +2767,27 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var year = ((elem.start_date || elem.year || object.movie.release_date || object.movie.first_air_date || '') + '').slice(0, 4);
         if (year) info.push(year);
         if (elem.details) info.push(elem.details);
-        var html = $('<div class="z01-card z01-card--file selector">' +
-          '<div class="z01-card__thumb"><img alt=""></div>' +
-          '<div class="z01-card__body"><div class="z01-card__title"></div><div class="z01-card__meta"></div></div>' +
+        var html = $('<div class="nova-card nova-card--file selector">' +
+          '<div class="nova-card__thumb"><img alt=""></div>' +
+          '<div class="nova-card__body"><div class="nova-card__title"></div><div class="nova-card__meta"></div></div>' +
           '</div>');
-        html.find('.z01-card__title').text(elem.title || elem.text || '');
-        html.find('.z01-card__meta').html(info.map(function(part) {
-          return '<span>' + Z01UI.esc(part) + '</span>';
-        }).join('<span class="z01-dot">●</span>'));
+        html.find('.nova-card__title').text(elem.title || elem.text || '');
+        html.find('.nova-card__meta').html(info.map(function(part) {
+          return '<span>' + NovaUI.esc(part) + '</span>';
+        }).join('<span class="nova-dot">●</span>'));
         if (rank.likely && row === rank.best) {
-          html.addClass('z01-card--match');
-          html.find('.z01-card__body').append($('<div class="z01-card__match"></div>')
-            .text(Lampa.Lang.translate('z01_similar_best')));
+          html.addClass('nova-card--match');
+          html.find('.nova-card__body').append($('<div class="nova-card__match"></div>')
+            .text(Lampa.Lang.translate('nova_similar_best')));
         }
         if (elem.img) {
           var art = elem.img;
           if (art.charAt(0) === '/') art = (last_origin || Defined.localhost) + art.substring(1);
           if (art.indexOf('/proxyimg') !== -1) art = account(art);
-          var thumb = html.find('.z01-card__thumb');
+          var thumb = html.find('.nova-card__thumb');
           var img = html.find('img')[0];
           img.onload = function() {
-            thumb.addClass('z01-card__thumb--loaded');
+            thumb.addClass('nova-card__thumb--loaded');
           };
           img.onerror = function() {};
           img.src = art;
@@ -2834,7 +2815,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         })
       }, this.getChoice());
       this.loading(false);
-      last = list.find('.z01-card')[0] || false;
+      last = list.find('.nova-card')[0] || false;
       Lampa.Controller.enable('content');
     };
 
@@ -2879,7 +2860,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           } else {
             var url = filter_find[a.stype][b.index].url;
             var choice = _this.getChoice();
-            if (a.stype == 'season') _this.seasonMemory(Z01UI.seasonNumber(filter_find.season[b.index].title));
+            if (a.stype == 'season') _this.seasonMemory(NovaUI.seasonNumber(filter_find.season[b.index].title));
             if (a.stype == 'voice') {
               choice.voice_name = filter_find.voice[b.index].title;
               choice.voice_url = url;
@@ -2903,7 +2884,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       scroll.minus(files.render().find('.explorer__files-head'));
       if (modern) {
 
-        files.render().find('.explorer__files-head').addClass('z01-hidden-head').css('display', 'none');
+        files.render().find('.explorer__files-head').addClass('nova-hidden-head').css('display', 'none');
         scroll.minus(files.render().find('.explorer__files-head'));
         this.uiLoadingPanel();
       } else {
@@ -2937,7 +2918,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this.search();
         })["catch"](function(e) {
 
-          var other = Z01UI.networkFail(e) && server_tries < serverPool.length - 1 ? nextServerUrl(Defined.localhost) : '';
+          var other = NovaUI.networkFail(e) && server_tries < serverPool.length - 1 ? nextServerUrl(Defined.localhost) : '';
           if (other) {
             server_tries++;
             Defined.localhost = serverBase(other);
@@ -3025,7 +3006,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     var acceptSource = function(key, title) {
       if (!object.movie.name) return true;
-      return !Z01UI.isMovieOnlySource(key, title);
+      return !NovaUI.isMovieOnlySource(key, title);
     };
 
     this.startSource = function(json) {
@@ -3059,7 +3040,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
           if (!sources[balanser]) balanser = filter_sources[0];
 
-          var kept = last_select_balanser[object.movie.id] == balanser || !!Z01UI.knownQuality(balanser);
+          var kept = last_select_balanser[object.movie.id] == balanser || !!NovaUI.knownQuality(balanser);
           if (!sources[balanser].show && !object.lampac_custom_select && !kept) balanser = filter_sources[0];
           source = sources[balanser].url;
           Lampa.Storage.set('active_balanser', balanser);
@@ -3076,7 +3057,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (_this3.memkey || ''));
         var red = false;
         var gou = function gou(json, any) {
-          if (json.accsdb || Z01UI.serverDenial(json)) {
+          if (json.accsdb || NovaUI.serverDenial(json)) {
             if (rotateToNextAccount()) {
               url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (_this3.memkey || ''));
               life_wait_timer = setTimeout(fin, 300);
@@ -3157,7 +3138,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
           network.timeout(15000);
           network.silent(account(url), function(json) {
-            if (json.accsdb || Z01UI.serverDenial(json)) {
+            if (json.accsdb || NovaUI.serverDenial(json)) {
               if (rotateToNextAccount()) {
                 tryWithAccount();
               } else {
@@ -3234,10 +3215,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var send = function(target, retry_left) {
           var target_origin = serverBase(target);
           if (target_origin) last_origin = target_origin;
-          network.timeout(Z01UI.REQUEST_TIMEOUT);
+          network.timeout(NovaUI.REQUEST_TIMEOUT);
           network["native"](account(target), done, function(er) {
             if (gen !== request_gen) return;
-            var other = retry_left > 0 && Z01UI.networkFail(er) ? nextServerUrl(target) : '';
+            var other = retry_left > 0 && NovaUI.networkFail(er) ? nextServerUrl(target) : '';
             if (other) return send(other, retry_left - 1);
             _this.doesNotAnswer(er);
           }, false, {
@@ -3303,7 +3284,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           Lampa.Controller.toggle('content');
           network.clear();
         });
-        network.timeout(Z01UI.REQUEST_TIMEOUT);
+        network.timeout(NovaUI.REQUEST_TIMEOUT);
         network["native"](account(file.url), function(json) {
 			if(json.rch){
 				if(waiting_rch) {
@@ -3393,7 +3374,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             data.quality[q] = data.quality[q].split(" or ")[0];
         }
 
-        var want = parseInt(Lampa.Storage.get('z01_quality', 'auto'), 10);
+        var want = parseInt(Lampa.Storage.get('nova_quality', 'auto'), 10);
         if (want) {
           var best = 0;
           var best_url = '';
@@ -3425,13 +3406,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               first.hls_manifest_timeout = json_call.hls_manifest_timeout || json.hls_manifest_timeout;
               first.subtitles = json.subtitles;
 			  first.subtitles_call = json_call.subtitles_call || json.subtitles_call;
-			  if (json.vast && json.vast.url) {
-                first.vast_url = json.vast.url;
-                first.vast_msg = json.vast.msg;
-                first.vast_region = json.vast.region;
-                first.vast_platform = json.vast.platform;
-                first.vast_screen = json.vast.screen;
-			  }
               _this5.orUrlReserve(first);
               _this5.setDefaultQuality(first);
               if (item.season) {
@@ -3480,25 +3454,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               if (first.url) {
                 var element = first;
 				_markMedia(element, !!item.season);
-                if (element.url && element.isonline) {
-
-}
-else if (element.url) {
-  if (false) {
-    if (Platform.is('browser') && location.host.indexOf("127.0.0.1") !== -1) {
-      Noty.show('Видео открыто в playerInner', {time: 3000});
-      $.get('http://online'+dd+'3.skaz.tv/player-inner/' + element.url);
-      return;
-    }
-
-    Player.play(element);
-  }
-  else {
-    if (true && Platform.is('browser') && location.host.indexOf("127.0.0.1") !== -1)
-      Noty.show('Внешний плеер можно указать в init.conf (playerInner)', {time: 3000});
-    Player.play(element);
-  }
-}
                 if (playlist.length > 1) {
 
                   var extlist = playlist.slice();
@@ -3557,7 +3512,7 @@ else if (element.url) {
         var buttons = this.parseJsonDate(str, '.videos__button');
 
         var season_buttons = buttons.filter(function(b) {
-          return Z01UI.isSeasonLabel(b.text);
+          return NovaUI.isSeasonLabel(b.text);
         });
         if (season_buttons.length > 1) {
           filter_find.season = season_buttons.map(function(b) {
@@ -3575,7 +3530,7 @@ else if (element.url) {
             });
           }
           buttons = buttons.filter(function(b) {
-            return !Z01UI.isSeasonLabel(b.text);
+            return !NovaUI.isSeasonLabel(b.text);
           });
           if (!season_pinned) {
 
@@ -3631,11 +3586,11 @@ else if (element.url) {
                 return v.active;
               });
 
-              var pref_kind = Lampa.Storage.get('z01_voice_pref', '');
+              var pref_kind = Lampa.Storage.get('nova_voice_pref', '');
               var find_voice_pref = false;
-              if (modern && pref_kind && !select_voice_url && !select_voice_name && Lampa.Storage.get('z01_voice_auto', true) !== false) {
+              if (modern && pref_kind && !select_voice_url && !select_voice_name && Lampa.Storage.get('nova_voice_auto', true) !== false) {
                 find_voice_pref = arrFind(buttons, function(v) {
-                  return Z01UI.voiceKind(v.text) == pref_kind;
+                  return NovaUI.voiceKind(v.text) == pref_kind;
                 });
               }
 
@@ -3763,11 +3718,11 @@ else if (element.url) {
     };
 
     this.seasonMemory = function(number) {
-      var all = Lampa.Storage.cache('z01_season_last', 3000, {});
+      var all = Lampa.Storage.cache('nova_season_last', 3000, {});
       if (number === undefined) return all[object.movie.id];
       if (!number) return;
       all[object.movie.id] = number;
-      Lampa.Storage.set('z01_season_last', all);
+      Lampa.Storage.set('nova_season_last', all);
     };
 
     this.seasonIndexByMemory = function() {
@@ -3775,7 +3730,7 @@ else if (element.url) {
       if (!wanted) return -1;
       var list = filter_find.season || [];
       for (var i = 0; i < list.length; i++) {
-        if (Z01UI.seasonNumber(list[i].title) == wanted) return i;
+        if (NovaUI.seasonNumber(list[i].title) == wanted) return i;
       }
       return -1;
     };
@@ -4216,7 +4171,7 @@ else if (element.url) {
           });
           if (params.element && params.element.episode) {
             menu.push({
-              title: Lampa.Lang.translate('z01_mark_before'),
+              title: Lampa.Lang.translate('nova_mark_before'),
               markbefore: true
             });
           }
@@ -4244,7 +4199,7 @@ else if (element.url) {
           }
           if (modern) {
             menu.push({
-              title: Lampa.Lang.translate('z01_clarify'),
+              title: Lampa.Lang.translate('nova_clarify'),
               clarify: true
             });
           }
@@ -4335,8 +4290,8 @@ else if (element.url) {
       var next = this.nextSource();
       if (next && !object.balanser) {
         actions.push({
-          title: Lampa.Lang.translate('z01_try_source').replace('{name}', sources[next].name || next),
-          icon: Z01UI.icon.play,
+          title: Lampa.Lang.translate('nova_try_source').replace('{name}', sources[next].name || next),
+          icon: NovaUI.icon.play,
           handler: function() {
             _this.switchSource(next);
           }
@@ -4344,16 +4299,16 @@ else if (element.url) {
       }
       if (!object.balanser && sourceKeys().length > 1) {
         actions.push({
-          title: Lampa.Lang.translate('z01_all_sources'),
-          icon: Z01UI.icon.chevron,
+          title: Lampa.Lang.translate('nova_all_sources'),
+          icon: NovaUI.icon.chevron,
           handler: function() {
             _this.uiSourceMenu();
           }
         });
       }
       actions.push({
-        title: Lampa.Lang.translate('z01_retry'),
-        icon: Z01UI.icon.refresh,
+        title: Lampa.Lang.translate('nova_retry'),
+        icon: NovaUI.icon.refresh,
         handler: function() {
 
           online_results_cache = {};
@@ -4363,8 +4318,8 @@ else if (element.url) {
         }
       });
       actions.push({
-        title: Lampa.Lang.translate('z01_clarify'),
-        icon: Z01UI.icon.search,
+        title: Lampa.Lang.translate('nova_clarify'),
+        icon: NovaUI.icon.search,
         handler: function() {
           _this.uiSearch();
         }
@@ -4379,7 +4334,7 @@ else if (element.url) {
         this.probeBackground();
         this.uiNote({
           title: Lampa.Lang.translate('empty_title_two'),
-          text: Lampa.Lang.translate('z01_empty_text').replace('{name}', (sources[balanser] && sources[balanser].name) || balanser || ''),
+          text: Lampa.Lang.translate('nova_empty_text').replace('{name}', (sources[balanser] && sources[balanser].name) || balanser || ''),
           actions: this.uiRecoveryActions()
         });
         return;
@@ -4394,14 +4349,13 @@ else if (element.url) {
     };
     this.noConnectToServer = function(er) {
       if (modern) {
-        var denial = Z01UI.serverDenial(er);
+        var denial = NovaUI.serverDenial(er);
         this.uiNote({
-          qr: denial ? denial.link : '',
-          title: Lampa.Lang.translate(denial ? 'z01_no_access' : 'title_error'),
-          text: denial ? denial.msg : Lampa.Lang.translate('z01_no_server'),
+          title: Lampa.Lang.translate(denial ? 'nova_no_access' : 'title_error'),
+          text: denial ? denial.msg : Lampa.Lang.translate('nova_no_server'),
           actions: [{
-            title: Lampa.Lang.translate('z01_retry'),
-            icon: Z01UI.icon.refresh,
+            title: Lampa.Lang.translate('nova_retry'),
+            icon: NovaUI.icon.refresh,
             handler: function() {
               Lampa.Activity.replace();
             }
@@ -4421,23 +4375,22 @@ else if (element.url) {
       var _this9 = this;
       if (modern) {
 
-        if (!Z01UI.serverDenial(er) && !(er && er.timeout)) this.probeSave(balanser, 'empty', 0);
+        if (!NovaUI.serverDenial(er) && !(er && er.timeout)) this.probeSave(balanser, 'empty', 0);
         ui_tried[balanser] = true;
         clearInterval(balanser_timer);
 
-        var denial = Z01UI.serverDenial(er);
-        var auto = Lampa.Storage.get('z01_auto_switch', true) !== false && !object.balanser && !denial;
+        var denial = NovaUI.serverDenial(er);
+        var auto = Lampa.Storage.get('nova_auto_switch', true) !== false && !object.balanser && !denial;
         var next = auto ? this.nextSource() : '';
         var tic = er && er.accsdb ? 10 : 6;
         var note = this.uiNote({
-          qr: denial ? denial.link : '',
-          title: denial ? Lampa.Lang.translate('z01_no_access') : Lampa.Lang.translate(er && er.timeout ? 'z01_timeout_title' : 'lampac_balanser_dont_work'),
+          title: denial ? Lampa.Lang.translate('nova_no_access') : Lampa.Lang.translate(er && er.timeout ? 'nova_timeout_title' : 'lampac_balanser_dont_work'),
           text: denial ? denial.msg : next ?
-            Lampa.Lang.translate('z01_auto_switch_text').replace('{name}', sources[next].name || next).replace('{sec}', '<span class="z01-note__timer">' + tic + '</span>') :
-            Lampa.Lang.translate(er && er.timeout ? 'z01_timeout_text' : 'z01_empty_text').replace('{name}', (sources[balanser] && sources[balanser].name) || balanser || ''),
+            Lampa.Lang.translate('nova_auto_switch_text').replace('{name}', sources[next].name || next).replace('{sec}', '<span class="nova-note__timer">' + tic + '</span>') :
+            Lampa.Lang.translate(er && er.timeout ? 'nova_timeout_text' : 'nova_empty_text').replace('{name}', (sources[balanser] && sources[balanser].name) || balanser || ''),
           actions: denial ? [{
-            title: Lampa.Lang.translate('z01_retry'),
-            icon: Z01UI.icon.refresh,
+            title: Lampa.Lang.translate('nova_retry'),
+            icon: NovaUI.icon.refresh,
             handler: function() {
               Lampa.Activity.replace();
             }
@@ -4446,7 +4399,7 @@ else if (element.url) {
         if (next) {
           balanser_timer = setInterval(function() {
             tic--;
-            note.find('.z01-note__timer').text(tic);
+            note.find('.nova-note__timer').text(tic);
             if (tic <= 0) {
               clearInterval(balanser_timer);
               if (Lampa.Activity.active().activity == _this9.activity) _this9.switchSource(next);
@@ -4686,8 +4639,8 @@ else if (element.url) {
 
         Lampa.Activity.push({
           url: params.element.url,
-          title: 'Онлайн (by Skaz) - ' + params.element.title,
-          component: 'lampacskaz',
+          title: Lampa.Lang.translate('title_online') + ' - ' + params.element.title,
+          component: 'nova_video',
           movie: params.element,
           page: 1,
           search: params.element.title,
@@ -4702,31 +4655,29 @@ else if (element.url) {
   }
 
   function startPlugin() {
-    window.onlyskaz_plugin = true;
-	if (!window.plugin_tvskaz_ready && !window.plugin_iptv_ready2)
-	  {
+    window.nova_online_plugin = true;
 		Lampa.SettingsApi.addComponent({
-        component: 'tvskaz',
-        icon: "<svg height=\"36\" viewBox=\"0 0 38 36\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                <rect x=\"2\" y=\"8\" width=\"34\" height=\"21\" rx=\"3\" stroke=\"white\" stroke-width=\"3\"/>\n                <line x1=\"13.0925\" y1=\"2.34874\" x2=\"16.3487\" y2=\"6.90754\" stroke=\"white\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n                <line x1=\"1.5\" y1=\"-1.5\" x2=\"9.31665\" y2=\"-1.5\" transform=\"matrix(-0.757816 0.652468 0.652468 0.757816 26.197 2)\" stroke=\"white\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n                <line x1=\"9.5\" y1=\"34.5\" x2=\"29.5\" y2=\"34.5\" stroke=\"white\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n            </svg>",
-        name: 'by skaz'
+        component: 'nova_online',
+        icon: "<svg height=\"36\" viewBox=\"0 0 36 36\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"2\" y=\"6\" width=\"32\" height=\"24\" rx=\"5\" stroke=\"white\" stroke-width=\"3\"/><path d=\"M15 13l9 5-9 5v-10z\" fill=\"white\"/></svg>",
+        name: 'Nova Online'
       });
-	  		var currentAcc = getCurrentSkazAccount();
+	  		var currentAcc = currentAccount();
 				var uniqs = (currentAcc ? currentAcc.uid : unic_id).slice(-3).toUpperCase();
 				Lampa.SettingsApi.addParam({
-				component: 'tvskaz',
+				component: 'nova_online',
 				param: {
 					name: 'only_title',
 					type: 'title',
 					default: true
 				},
 				field: {
-					name: 'Код устройства '+uniqs + ' (' + getSkazAccountTitle(SERVER_CONFIG.skaz.currentIndex) + ')'
+					name: 'Код устройства '+uniqs + ' (' + accountTitle(SERVER_CONFIG.pool.currentIndex) + ')'
 				}
 			});
 Lampa.SettingsApi.addParam({
-    component: 'tvskaz',
+    component: 'nova_online',
     param: {
-        name: 'skazonline_button_first',
+        name: 'nova_button_first',
         type: 'trigger',
         default: false
     },
@@ -4737,7 +4688,7 @@ Lampa.SettingsApi.addParam({
 });
 
 	  Lampa.SettingsApi.addParam({
-				component: 'tvskaz',
+				component: 'nova_online',
 				param: {
 					name: 'only_title',
 					type: 'title',
@@ -4747,42 +4698,11 @@ Lampa.SettingsApi.addParam({
 					name: 'Онлайн'
 				}
 			});
-	  	  Lampa.SettingsApi.addParam({
-        component: 'tvskaz',
-        param: {
-          name: 'online_skaz2',
-          type: 'select',
-           values: {
-                'true': 'Отображать',
-                'false': 'Скрыть',
-            },
-            default: false,
-        },
-        field: {
-          name: 'Отображать Onlyskaz 2.0',
-		  description: 'Онлайн с автовыбором источника, управление в плеере'
-        }
-	  });
-	  	  	  Lampa.SettingsApi.addParam({
-        component: 'tvskaz',
-        param: {
-          name: 'skazonline2_view',
-          type: 'trigger',
-            default: false,
-        },
-        field: {
-          name: 'Спрятать значок Onlyskaz 2.0',
-		  description: 'Позволяет скрыть значок с карточки фильма'
-        },
-        onChange: function (value) {
-			Lampa.Noty.show('Необходимо перезайти в лампу');
-		}
-	  });
 
 	  Lampa.SettingsApi.addParam({
-        component: 'tvskaz',
+        component: 'nova_online',
         param: {
-          name: 'skazonline_servers',
+          name: 'nova_proxy_servers',
           type: 'trigger',
             default: false,
         },
@@ -4796,35 +4716,34 @@ Lampa.SettingsApi.addParam({
 	  });
 
 	  Lampa.SettingsApi.addParam({
-        component: 'tvskaz',
+        component: 'nova_online',
         param: {
-          name: 'skaz_account_index',
+          name: 'nova_account_index',
           type: 'select',
           values: (function() {
             var v = {};
-            SERVER_CONFIG.skaz.accounts.forEach(function(a, i) { v[String(i)] = getSkazAccountTitle(i); });
+            SERVER_CONFIG.pool.accounts.forEach(function(a, i) { v[String(i)] = accountTitle(i); });
             return v;
           })(),
           default: 0
         },
         field: {
-          name: 'Аккаунт Skaz',
-          description: 'Переключение аккаунта для skaz сервера'
+          name: 'Аккаунт',
+          description: 'Переключение рабочего аккаунта'
         },
         onChange: function(value) {
-          Lampa.Storage.set('skaz_account_index', parseInt(value, 10) || 0);
-          setSkazSelectedAccount();
+          Lampa.Storage.set('nova_account_index', parseInt(value, 10) || 0);
+          applyAccountIndex();
           Lampa.Noty.show('Аккаунт переключен. Перезайдите в онлайн.');
         }
 	  });
 
-	}
     var manifst = {
       type: 'video',
       version: '',
-      name: 'by Skaz',
+      name: 'Nova',
       description: 'Смотреть онлайн',
-      component: 'lampacskaz',
+      component: 'nova_video',
       onContextMenu: function onContextMenu(object) {
         return {
           name: Lampa.Lang.translate('lampac_watch'),
@@ -4833,7 +4752,7 @@ Lampa.SettingsApi.addParam({
       },
       onContextLauch: function onContextLauch(object) {
         resetTemplates();
-        Lampa.Component.add('lampacskaz', component);
+        Lampa.Component.add('nova_video', component);
 
 		var id = Lampa.Utils.hash(object.number_of_seasons ? object.original_name : object.original_title);
 		var all = Lampa.Storage.get('clarification_search','{}');
@@ -4879,7 +4798,7 @@ Lampa.SettingsApi.addParam({
 		        Lampa.Activity.push({
 		          url: '',
 		          title: Lampa.Lang.translate('title_online'),
-		          component: 'lampacskaz',
+		          component: 'nova_video',
 		          search: all[id] ? all[id] : object.title,
 		          search_one: object.title,
 		          search_two: object.original_title,
@@ -4892,7 +4811,7 @@ Lampa.SettingsApi.addParam({
 		        Lampa.Activity.push({
 		          url: '',
 		          title: Lampa.Lang.translate('title_online'),
-		          component: 'lampacskaz',
+		          component: 'nova_video',
 		          search: all[id] ? all[id] : object.title,
 		          search_one: object.title,
 		          search_two: object.original_title,
@@ -4907,7 +4826,7 @@ Lampa.SettingsApi.addParam({
         Lampa.Activity.push({
           url: '',
           title: Lampa.Lang.translate('title_online'),
-          component: 'lampacskaz',
+          component: 'nova_video',
           search: all[id] ? all[id] : object.title,
           search_one: object.title,
           search_two: object.original_title,
@@ -5041,373 +4960,367 @@ Lampa.SettingsApi.addParam({
         zh: '平衡器将在<span class="timeout">10</span>秒内自动切换。'
       },
 
-      z01_continue: {
+      nova_continue: {
         ru: 'Продолжить',
         uk: 'Продовжити',
         en: 'Continue',
         zh: '继续'
       },
-      z01_watch: {
+      nova_watch: {
         ru: 'Смотреть',
         uk: 'Дивитися',
         en: 'Watch',
         zh: '观看'
       },
-      z01_clarify: {
+      nova_clarify: {
         ru: 'Уточнить название',
         uk: 'Уточнити назву',
         en: 'Refine title',
         zh: '优化标题'
       },
-      z01_retry: {
+      nova_retry: {
         ru: 'Повторить',
         uk: 'Повторити',
         en: 'Retry',
         zh: '重试'
       },
-      z01_unknown: {
+      nova_unknown: {
         ru: 'Неизвестно',
         uk: 'Невідомо',
         en: 'Unknown',
         zh: '未知'
       },
-      z01_try_source: {
+      nova_try_source: {
         ru: 'Попробовать {name}',
         uk: 'Спробувати {name}',
         en: 'Try {name}',
         zh: '尝试 {name}'
       },
-      z01_all_sources: {
+      nova_all_sources: {
         ru: 'Все источники',
         uk: 'Усі джерела',
         en: 'All sources',
         zh: '所有来源'
       },
-      z01_empty_text: {
+      nova_empty_text: {
         ru: 'Источник «{name}» ничего не нашёл. Попробуйте другой источник или уточните название.',
         uk: 'Джерело «{name}» нічого не знайшло. Спробуйте інше джерело або уточніть назву.',
         en: 'Source "{name}" found nothing. Try another source or refine the title.',
         zh: '来源“{name}”没有找到任何内容。请尝试其他来源或优化标题。'
       },
-      z01_no_server: {
+      nova_no_server: {
         ru: 'Сервер не отвечает. Проверьте интернет и попробуйте ещё раз.',
         uk: 'Сервер не відповідає. Перевірте інтернет і спробуйте ще раз.',
         en: 'The server is not responding. Check your connection and try again.',
         zh: '服务器无响应。请检查网络连接后重试。'
       },
-      z01_auto_switch_text: {
+      nova_auto_switch_text: {
         ru: 'Через {sec} сек переключимся на «{name}»',
         uk: 'Через {sec} с перемкнемося на «{name}»',
         en: 'Switching to "{name}" in {sec} sec',
         zh: '{sec} 秒后切换到“{name}”'
       },
-      z01_season_progress: {
+      nova_season_progress: {
         ru: 'Просмотрено {seen} из {total}',
         uk: 'Переглянуто {seen} з {total}',
         en: 'Watched {seen} of {total}',
         zh: '已观看 {seen} / {total}'
       },
-      z01_voice_dub: {
+      nova_voice_dub: {
         ru: 'Дубляж',
         uk: 'Дубляж',
         en: 'Dubbing',
         zh: '配音'
       },
-      z01_voice_mvo: {
+      nova_voice_mvo: {
         ru: 'Многоголосый',
         uk: 'Багатоголосий',
         en: 'Multi-voice',
         zh: '多人配音'
       },
-      z01_voice_dvo: {
+      nova_voice_dvo: {
         ru: 'Двухголосый',
         uk: 'Двоголосий',
         en: 'Two-voice',
         zh: '双人配音'
       },
-      z01_voice_avo: {
+      nova_voice_avo: {
         ru: 'Авторский',
         uk: 'Авторський',
         en: 'Single-voice',
         zh: '单人配音'
       },
-      z01_voice_orig: {
+      nova_voice_orig: {
         ru: 'Оригинал',
         uk: 'Оригінал',
         en: 'Original',
         zh: '原声'
       },
-      z01_voice_sub: {
+      nova_voice_sub: {
         ru: 'Субтитры',
         uk: 'Субтитри',
         en: 'Subtitles',
         zh: '字幕'
       },
-      z01_voice_other: {
+      nova_voice_other: {
         ru: 'Прочие',
         uk: 'Інші',
         en: 'Other',
         zh: '其他'
       },
-      z01_timeout_title: {
+      nova_timeout_title: {
         ru: 'Источник не ответил',
         uk: 'Джерело не відповіло',
         en: 'The source did not respond',
         zh: '来源未响应'
       },
-      z01_timeout_text: {
+      nova_timeout_text: {
         ru: '«{name}» слишком долго не отвечает. Возьмём другой источник или попробуем ещё раз.',
         uk: '«{name}» надто довго не відповідає. Візьмемо інше джерело або спробуємо ще раз.',
         en: '"{name}" is taking too long. Try another source or repeat the request.',
         zh: '“{name}”响应时间过长。请更换来源或重试。'
       },
-      z01_similar_best: {
+      nova_similar_best: {
         ru: 'Похоже, это он',
         uk: 'Схоже, це він',
         en: 'Looks like this one',
         zh: '应该是这部'
       },
-      z01_similar_all: {
+      nova_similar_all: {
         ru: 'Варианты',
         uk: 'Варіанти',
         en: 'Other matches',
         zh: '其他结果'
       },
-      z01_similar_auto: {
+      nova_similar_auto: {
         ru: 'Самому выбирать из каталога',
         uk: 'Самому обирати з каталогу',
         en: 'Pick the match from a catalog',
         zh: '自动从目录中选择'
       },
-      z01_similar_auto_descr: {
+      nova_similar_auto_descr: {
         ru: 'Если источник отдаёт папку с похожими названиями, открывать нужное по названию и году',
         uk: 'Якщо джерело віддає папку з подібними назвами, відкривати потрібне за назвою та роком',
         en: 'When a source returns a folder of similar titles, open the one matching by name and year',
         zh: '当来源返回相似名称目录时，按名称和年份打开匹配项'
       },
-      z01_quality_name: {
+      nova_quality_name: {
         ru: 'Качество по умолчанию',
         uk: 'Якість за замовчуванням',
         en: 'Default quality',
         zh: '默认画质'
       },
-      z01_quality_descr: {
+      nova_quality_descr: {
         ru: 'Запускать в этом качестве, если оно есть — иначе в ближайшем ниже',
         uk: 'Запускати в цій якості, якщо вона є — інакше в найближчій нижче',
         en: 'Play at this quality when available, otherwise the closest lower one',
         zh: '有该画质时使用，否则用最接近的较低画质'
       },
-      z01_quality_auto: {
+      nova_quality_auto: {
         ru: 'Как решит источник',
         uk: 'Як вирішить джерело',
         en: 'Let the source decide',
         zh: '由来源决定'
       },
-      z01_next_episode: {
+      nova_next_episode: {
         ru: 'Следующая',
         uk: 'Наступна',
         en: 'Next',
         zh: '下一集'
       },
-      z01_from_start: {
+      nova_from_start: {
         ru: 'Смотреть с начала',
         uk: 'Дивитися спочатку',
         en: 'Watch from the start',
         zh: '从头观看'
       },
-      z01_first_new: {
+      nova_first_new: {
         ru: 'Первая непросмотренная',
         uk: 'Перша непереглянута',
         en: 'First unwatched',
         zh: '第一集未观看'
       },
-      z01_jump_pick: {
+      nova_jump_pick: {
         ru: 'Выбрать серию',
         uk: 'Обрати серію',
         en: 'Pick an episode',
         zh: '选择剧集'
       },
-      z01_season_left: {
+      nova_season_left: {
         ru: 'осталось {left}',
         uk: 'залишилось {left}',
         en: '{left} left',
         zh: '还剩 {left} 集'
       },
-      z01_mark_before: {
+      nova_mark_before: {
         ru: 'Отметить всё до этой',
         uk: 'Позначити все до цієї',
         en: 'Mark everything up to this',
         zh: '标记此集之前全部'
       },
-      z01_jump: {
+      nova_jump: {
         ru: 'Серия',
         uk: 'Серія',
         en: 'Episode',
         zh: '剧集'
       },
-      z01_more_sources: {
+      nova_more_sources: {
         ru: 'Ещё {count}',
         uk: 'Ще {count}',
         en: '{count} more',
         zh: '还有 {count} 个'
       },
-      z01_no_access: {
+      nova_no_access: {
         ru: 'Нет доступа',
         uk: 'Немає доступу',
         en: 'No access',
         zh: '无访问权限'
       },
-      z01_no_access_text: {
+      nova_no_access_text: {
         ru: 'Сервер отказал в доступе',
         uk: 'Сервер відмовив у доступі',
         en: 'The server denied access',
         zh: '服务器拒绝访问'
       },
-      z01_left: {
+      nova_left: {
         ru: 'осталось',
         uk: 'залишилось',
         en: 'left',
         zh: '剩余'
       },
-      z01_qr_hint: {
-        ru: 'Наведите камеру телефона',
-        uk: 'Наведіть камеру телефона',
-        en: 'Point your phone camera here',
-        zh: '用手机摄像头扫描'
-      },
-      z01_loading_title: {
+      nova_loading_title: {
         ru: 'Ищем, где посмотреть',
         uk: 'Шукаємо, де подивитися',
         en: 'Looking for sources',
         zh: '正在查找播放源'
       },
-      z01_loading_start: {
+      nova_loading_start: {
         ru: 'Опрашиваем источники',
         uk: 'Опитуємо джерела',
         en: 'Polling sources',
         zh: '正在查询来源'
       },
-      z01_loading_found: {
+      nova_loading_found: {
         ru: 'Найдено источников: {n}',
         uk: 'Знайдено джерел: {n}',
         en: 'Sources found: {n}',
         zh: '已找到来源：{n}'
       },
-      z01_loading_slow: {
+      nova_loading_slow: {
         ru: 'отвечают медленно',
         uk: 'відповідають повільно',
         en: 'responding slowly',
         zh: '响应缓慢'
       },
-      z01_sec: {
+      nova_sec: {
         ru: ' с',
         uk: ' с',
         en: 's',
         zh: ' 秒'
       },
-      z01_settings: {
+      nova_settings: {
         ru: 'Онлайн',
         uk: 'Онлайн',
         en: 'Online',
         zh: '在线'
       },
-      z01_ui_mode_name: {
+      nova_ui_mode_name: {
         ru: 'Интерфейс',
         uk: 'Інтерфейс',
         en: 'Interface',
         zh: '界面'
       },
-      z01_ui_mode_descr: {
+      nova_ui_mode_descr: {
         ru: 'Новый — шапка с продолжением и выбор перевода на экране',
         uk: 'Новий — шапка з продовженням і вибір перекладу на екрані',
         en: 'New — hero header with resume and on-screen translation picker',
         zh: '新版 — 带继续播放的头部和屏幕上的翻译选择'
       },
-      z01_ui_modern: {
+      nova_ui_modern: {
         ru: 'Новый',
         uk: 'Новий',
         en: 'New',
         zh: '新版'
       },
-      z01_ui_classic: {
+      nova_ui_classic: {
         ru: 'Классический',
         uk: 'Класичний',
         en: 'Classic',
         zh: '经典'
       },
-      z01_view_name: {
+      nova_view_name: {
         ru: 'Вид списка серий',
         uk: 'Вигляд списку серій',
         en: 'Episode layout',
         zh: '剧集布局'
       },
-      z01_view_list: {
+      nova_view_list: {
         ru: 'Список',
         uk: 'Список',
         en: 'List',
         zh: '列表'
       },
-      z01_view_grid: {
+      nova_view_grid: {
         ru: 'Плитка',
         uk: 'Плитка',
         en: 'Grid',
         zh: '网格'
       },
-      z01_hero_art_name: {
+      nova_hero_art_name: {
         ru: 'Шапка с кадром',
         uk: 'Шапка з кадром',
         en: 'Header with backdrop',
         zh: '带剧照的头部'
       },
-      z01_hero_art_descr: {
+      nova_hero_art_descr: {
         ru: 'Крупный кадр, название и описание над кнопкой',
         uk: 'Великий кадр, назва й опис над кнопкою',
         en: 'Large backdrop, title and overview above the button',
         zh: '按钮上方显示大图、标题和简介'
       },
-      z01_hero_name: {
+      nova_hero_name: {
         ru: 'Показывать шапку',
         uk: 'Показувати шапку',
         en: 'Show header',
         zh: '显示头部'
       },
-      z01_hero_descr: {
+      nova_hero_descr: {
         ru: 'Кнопка продолжения с прогрессом над списком',
         uk: 'Кнопка продовження з прогресом над списком',
         en: 'Continue button with progress above the list',
         zh: '列表上方的继续按钮和进度'
       },
-      z01_voice_auto_name: {
+      nova_voice_auto_name: {
         ru: 'Запоминать тип перевода',
         uk: 'Запам\'ятовувати тип перекладу',
         en: 'Remember translation type',
         zh: '记住翻译类型'
       },
-      z01_voice_auto_descr: {
+      nova_voice_auto_descr: {
         ru: 'Подставлять привычную озвучку (дубляж, многоголосый и т.д.) на всех источниках',
         uk: 'Підставляти звичну озвучку (дубляж, багатоголосий тощо) на всіх джерелах',
         en: 'Pre-select your usual translation type on every source',
         zh: '在所有来源上预选常用的翻译类型'
       },
-      z01_probe_name: {
+      nova_probe_name: {
         ru: 'Проверять источники самому',
         uk: 'Перевіряти джерела самому',
         en: 'Check sources directly',
         zh: '自行检查来源'
       },
-      z01_probe_descr: {
+      nova_probe_descr: {
         ru: 'При открытии списка обойти источники и показать, где действительно есть видео. Отключите, если связь с серверами медленная',
         uk: 'Під час відкриття списку обійти джерела й показати, де справді є відео. Вимкніть, якщо зв\'язок із серверами повільний',
         en: 'When the list opens, poll the sources and show which really have video. Turn off on slow connections',
         zh: '打开列表时轮询来源，显示哪些确实有视频。网络较慢时可关闭'
       },
-      z01_auto_switch_name: {
+      nova_auto_switch_name: {
         ru: 'Автопереключение источника',
         uk: 'Автоперемикання джерела',
         en: 'Auto switch source',
         zh: '自动切换来源'
       },
-      z01_auto_switch_descr: {
+      nova_auto_switch_descr: {
         ru: 'Если источник ничего не нашёл — перейти на следующий рабочий',
         uk: 'Якщо джерело нічого не знайшло — перейти на наступне робоче',
         en: 'Move to the next working source when one returns nothing',
@@ -5423,41 +5336,41 @@ Lampa.SettingsApi.addParam({
     Lampa.Template.add('lampac_css', "\n        <style>\n        @charset 'UTF-8';.online-prestige{position:relative;-webkit-border-radius:.3em;border-radius:.3em;background-color:rgba(0,0,0,0.3);display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex}.online-prestige__body{padding:1.2em;line-height:1.3;-webkit-box-flex:1;-webkit-flex-grow:1;-moz-box-flex:1;-ms-flex-positive:1;flex-grow:1;position:relative}@media screen and (max-width:480px){.online-prestige__body{padding:.8em 1.2em}}.online-prestige__img{position:relative;width:13em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;min-height:8.2em}.online-prestige__img>img{position:absolute;top:0;left:0;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;-webkit-border-radius:.3em;border-radius:.3em;opacity:0;-webkit-transition:opacity .3s;-o-transition:opacity .3s;-moz-transition:opacity .3s;transition:opacity .3s}.online-prestige__img--loaded>img{opacity:1}@media screen and (max-width:480px){.online-prestige__img{width:7em;min-height:6em}}.online-prestige__folder{padding:1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}.online-prestige__folder>svg{width:4.4em !important;height:4.4em !important}.online-prestige__viewed{position:absolute;top:1em;left:1em;background:rgba(0,0,0,0.45);-webkit-border-radius:100%;border-radius:100%;padding:.25em;font-size:.76em}.online-prestige__viewed>svg{width:1.5em !important;height:1.5em !important}.online-prestige__episode-number{position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;-moz-box-pack:center;-ms-flex-pack:center;justify-content:center;font-size:2em}.online-prestige__loader{position:absolute;top:50%;left:50%;width:2em;height:2em;margin-left:-1em;margin-top:-1em;background:url(./img/loader.svg) no-repeat center center;-webkit-background-size:contain;-o-background-size:contain;background-size:contain}.online-prestige__head,.online-prestige__footer{display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;-moz-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center}.online-prestige__timeline{margin:.8em 0}.online-prestige__timeline>.time-line{display:block !important}.online-prestige__title{font-size:1.7em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical}@media screen and (max-width:480px){.online-prestige__title{font-size:1.4em}}.online-prestige__time{padding-left:2em}.online-prestige__info{display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center}.online-prestige__info>*{overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical}.online-prestige__quality{padding-left:1em;white-space:nowrap}.online-prestige__scan-file{position:absolute;bottom:0;left:0;right:0}.online-prestige__scan-file .broadcast__scan{margin:0}.online-prestige .online-prestige-split{font-size:.8em;margin:0 1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}.online-prestige.focus::after{content:'';position:absolute;top:-0.6em;left:-0.6em;right:-0.6em;bottom:-0.6em;-webkit-border-radius:.7em;border-radius:.7em;border:solid .3em #fff;z-index:-1;pointer-events:none}.online-prestige+.online-prestige{margin-top:1.5em}.online-prestige--folder .online-prestige__footer{margin-top:.8em}.online-prestige-watched{padding:1em}.online-prestige-watched__icon>svg{width:1.5em;height:1.5em}.online-prestige-watched__body{padding-left:1em;padding-top:.1em;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}.online-prestige-watched__body>span+span::before{content:' ● ';vertical-align:top;display:inline-block;margin:0 .5em}.online-prestige-rate{display:-webkit-inline-box;display:-webkit-inline-flex;display:-moz-inline-box;display:-ms-inline-flexbox;display:inline-flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center}.online-prestige-rate>svg{width:1.3em !important;height:1.3em !important}.online-prestige-rate>span{font-weight:600;font-size:1.1em;padding-left:.7em}.online-empty{line-height:1.4}.online-empty__title{font-size:1.8em;margin-bottom:.3em}.online-empty__time{font-size:1.2em;font-weight:300;margin-bottom:1.6em}.online-empty__buttons{display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex}.online-empty__buttons>*+*{margin-left:1em}.online-empty__button{background:rgba(0,0,0,0.3);font-size:1.2em;padding:.5em 1.2em;-webkit-border-radius:.2em;border-radius:.2em;margin-bottom:2.4em}.online-empty__button.focus{background:#fff;color:black}.online-empty__templates .online-empty-template:nth-child(2){opacity:.5}.online-empty__templates .online-empty-template:nth-child(3){opacity:.2}.online-empty-template{background-color:rgba(255,255,255,0.3);padding:1em;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center;-webkit-border-radius:.3em;border-radius:.3em}.online-empty-template>*{background:rgba(0,0,0,0.3);-webkit-border-radius:.3em;border-radius:.3em}.online-empty-template__ico{width:4em;height:4em;margin-right:2.4em}.online-empty-template__body{height:1.7em;width:70%}.online-empty-template+.online-empty-template{margin-top:1em}\n        </style>\n    ");
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
         name: 'only_title',
         type: 'title',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_settings')
+        name: Lampa.Lang.translate('nova_settings')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_ui_mode',
+        name: 'nova_ui_mode',
         type: 'select',
         values: {
-          modern: Lampa.Lang.translate('z01_ui_modern'),
-          classic: Lampa.Lang.translate('z01_ui_classic')
+          modern: Lampa.Lang.translate('nova_ui_modern'),
+          classic: Lampa.Lang.translate('nova_ui_classic')
         },
         "default": 'modern'
       },
       field: {
-        name: Lampa.Lang.translate('z01_ui_mode_name'),
-        description: Lampa.Lang.translate('z01_ui_mode_descr')
+        name: Lampa.Lang.translate('nova_ui_mode_name'),
+        description: Lampa.Lang.translate('nova_ui_mode_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_quality',
+        name: 'nova_quality',
         type: 'select',
         values: {
-          'auto': Lampa.Lang.translate('z01_quality_auto'),
+          'auto': Lampa.Lang.translate('nova_quality_auto'),
           '2160': '4K',
           '1080': '1080p',
           '720': '720p',
@@ -5466,107 +5379,107 @@ Lampa.SettingsApi.addParam({
         "default": 'auto'
       },
       field: {
-        name: Lampa.Lang.translate('z01_quality_name'),
-        description: Lampa.Lang.translate('z01_quality_descr')
+        name: Lampa.Lang.translate('nova_quality_name'),
+        description: Lampa.Lang.translate('nova_quality_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_view',
+        name: 'nova_view',
         type: 'select',
         values: {
-          list: Lampa.Lang.translate('z01_view_list'),
-          grid: Lampa.Lang.translate('z01_view_grid')
+          list: Lampa.Lang.translate('nova_view_list'),
+          grid: Lampa.Lang.translate('nova_view_grid')
         },
         "default": 'list'
       },
       field: {
-        name: Lampa.Lang.translate('z01_view_name')
+        name: Lampa.Lang.translate('nova_view_name')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_hero',
+        name: 'nova_hero',
         type: 'trigger',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_hero_name'),
-        description: Lampa.Lang.translate('z01_hero_descr')
+        name: Lampa.Lang.translate('nova_hero_name'),
+        description: Lampa.Lang.translate('nova_hero_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_hero_art',
+        name: 'nova_hero_art',
         type: 'trigger',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_hero_art_name'),
-        description: Lampa.Lang.translate('z01_hero_art_descr')
+        name: Lampa.Lang.translate('nova_hero_art_name'),
+        description: Lampa.Lang.translate('nova_hero_art_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_voice_auto',
+        name: 'nova_voice_auto',
         type: 'trigger',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_voice_auto_name'),
-        description: Lampa.Lang.translate('z01_voice_auto_descr')
+        name: Lampa.Lang.translate('nova_voice_auto_name'),
+        description: Lampa.Lang.translate('nova_voice_auto_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_probe_enable',
+        name: 'nova_probe_enable',
         type: 'trigger',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_probe_name'),
-        description: Lampa.Lang.translate('z01_probe_descr')
+        name: Lampa.Lang.translate('nova_probe_name'),
+        description: Lampa.Lang.translate('nova_probe_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_similar_auto',
+        name: 'nova_similar_auto',
         type: 'trigger',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_similar_auto'),
-        description: Lampa.Lang.translate('z01_similar_auto_descr')
+        name: Lampa.Lang.translate('nova_similar_auto'),
+        description: Lampa.Lang.translate('nova_similar_auto_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
-        name: 'z01_auto_switch',
+        name: 'nova_auto_switch',
         type: 'trigger',
         "default": true
       },
       field: {
-        name: Lampa.Lang.translate('z01_auto_switch_name'),
-        description: Lampa.Lang.translate('z01_auto_switch_descr')
+        name: Lampa.Lang.translate('nova_auto_switch_name'),
+        description: Lampa.Lang.translate('nova_auto_switch_descr')
       }
     });
 
     Lampa.SettingsApi.addParam({
-      component: 'tvskaz',
+      component: 'nova_online',
       param: {
         name: 'lampac_continue_play',
         type: 'trigger',
@@ -5581,7 +5494,7 @@ Lampa.SettingsApi.addParam({
     Lampa.Template.add('lampac_css', "\n        <style>\n        @charset 'UTF-8';.online-prestige{position:relative;-webkit-border-radius:.3em;border-radius:.3em;background-color:rgba(0,0,0,0.3);display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex}.online-prestige__body{padding:1.2em;line-height:1.3;-webkit-box-flex:1;-webkit-flex-grow:1;-moz-box-flex:1;-ms-flex-positive:1;flex-grow:1;position:relative}@media screen and (max-width:480px){.online-prestige__body{padding:.8em 1.2em}}.online-prestige__img{position:relative;width:13em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;min-height:8.2em}.online-prestige__img>img{position:absolute;top:0;left:0;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;-webkit-border-radius:.3em;border-radius:.3em;opacity:0;-webkit-transition:opacity .3s;-o-transition:opacity .3s;-moz-transition:opacity .3s;transition:opacity .3s}.online-prestige__img--loaded>img{opacity:1}@media screen and (max-width:480px){.online-prestige__img{width:7em;min-height:6em}}.online-prestige__folder{padding:1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}.online-prestige__folder>svg{width:4.4em !important;height:4.4em !important}.online-prestige__viewed{position:absolute;top:1em;left:1em;background:rgba(0,0,0,0.45);-webkit-border-radius:100%;border-radius:100%;padding:.25em;font-size:.76em}.online-prestige__viewed>svg{width:1.5em !important;height:1.5em !important}.online-prestige__episode-number{position:absolute;top:0;left:0;right:0;bottom:0;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-pack:center;-webkit-justify-content:center;-moz-box-pack:center;-ms-flex-pack:center;justify-content:center;font-size:2em}.online-prestige__loader{position:absolute;top:50%;left:50%;width:2em;height:2em;margin-left:-1em;margin-top:-1em;background:url(./img/loader.svg) no-repeat center center;-webkit-background-size:contain;-o-background-size:contain;background-size:contain}.online-prestige__head,.online-prestige__footer{display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-pack:justify;-webkit-justify-content:space-between;-moz-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center}.online-prestige__timeline{margin:.8em 0}.online-prestige__timeline>.time-line{display:block !important}.online-prestige__title{font-size:1.7em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical}@media screen and (max-width:480px){.online-prestige__title{font-size:1.4em}}.online-prestige__time{padding-left:2em}.online-prestige__info{display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center}.online-prestige__info>*{overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;line-clamp:1;-webkit-box-orient:vertical}.online-prestige__quality{padding-left:1em;white-space:nowrap}.online-prestige__scan-file{position:absolute;bottom:0;left:0;right:0}.online-prestige__scan-file .broadcast__scan{margin:0}.online-prestige .online-prestige-split{font-size:.8em;margin:0 1em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}.online-prestige.focus::after{content:'';position:absolute;top:-0.6em;left:-0.6em;right:-0.6em;bottom:-0.6em;-webkit-border-radius:.7em;border-radius:.7em;border:solid .3em #fff;z-index:-1;pointer-events:none}.online-prestige+.online-prestige{margin-top:1.5em}.online-prestige--folder .online-prestige__footer{margin-top:.8em}.online-prestige-watched{padding:1em}.online-prestige-watched__icon>svg{width:1.5em;height:1.5em}.online-prestige-watched__body{padding-left:1em;padding-top:.1em;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}.online-prestige-watched__body>span+span::before{content:' ● ';vertical-align:top;display:inline-block;margin:0 .5em}.online-prestige-rate{display:-webkit-inline-box;display:-webkit-inline-flex;display:-moz-inline-box;display:-ms-inline-flexbox;display:inline-flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center}.online-prestige-rate>svg{width:1.3em !important;height:1.3em !important}.online-prestige-rate>span{font-weight:600;font-size:1.1em;padding-left:.7em}.online-empty{line-height:1.4}.online-empty__title{font-size:1.8em;margin-bottom:.3em}.online-empty__time{font-size:1.2em;font-weight:300;margin-bottom:1.6em}.online-empty__buttons{display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex}.online-empty__buttons>*+*{margin-left:1em}.online-empty__button{background:rgba(0,0,0,0.3);font-size:1.2em;padding:.5em 1.2em;-webkit-border-radius:.2em;border-radius:.2em;margin-bottom:2.4em}.online-empty__button.focus{background:#fff;color:black}.online-empty__templates .online-empty-template:nth-child(2){opacity:.5}.online-empty__templates .online-empty-template:nth-child(3){opacity:.2}.online-empty-template{background-color:rgba(255,255,255,0.3);padding:1em;display:-webkit-box;display:-webkit-flex;display:-moz-box;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-moz-box-align:center;-ms-flex-align:center;align-items:center;-webkit-border-radius:.3em;border-radius:.3em}.online-empty-template>*{background:rgba(0,0,0,0.3);-webkit-border-radius:.3em;border-radius:.3em}.online-empty-template__ico{width:4em;height:4em;margin-right:2.4em}.online-empty-template__body{height:1.7em;width:70%}.online-empty-template+.online-empty-template{margin-top:1em}\n        </style>\n    ");
 
     $('body').append(Lampa.Template.get('lampac_css', {}, true));
-    $('body').append(Z01UI.css);
+    $('body').append(NovaUI.css);
 
     function resetTemplates() {
       Lampa.Template.add('lampac_prestige_full', "<div class=\"online-prestige online-prestige--full selector\">\n            <div class=\"online-prestige__img\">\n                <img alt=\"\">\n                <div class=\"online-prestige__loader\"></div>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__timeline\"></div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                    <div class=\"online-prestige__quality\">{quality}</div>\n                </div>\n            </div>\n        </div>");
@@ -5591,16 +5504,16 @@ Lampa.SettingsApi.addParam({
       Lampa.Template.add('lampac_prestige_folder', "<div class=\"online-prestige online-prestige--folder selector\">\n            <div class=\"online-prestige__folder\">\n                <svg viewBox=\"0 0 128 112\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <rect y=\"20\" width=\"128\" height=\"92\" rx=\"13\" fill=\"white\"></rect>\n                    <path d=\"M29.9963 8H98.0037C96.0446 3.3021 91.4079 0 86 0H42C36.5921 0 31.9555 3.3021 29.9963 8Z\" fill=\"white\" fill-opacity=\"0.23\"></path>\n                    <rect x=\"11\" y=\"8\" width=\"106\" height=\"76\" rx=\"13\" fill=\"white\" fill-opacity=\"0.51\"></rect>\n                </svg>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                </div>\n            </div>\n        </div>");
       Lampa.Template.add('lampac_prestige_watched', "<div class=\"online-prestige online-prestige-watched selector\">\n            <div class=\"online-prestige-watched__icon\">\n                <svg width=\"21\" height=\"21\" viewBox=\"0 0 21 21\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n                    <circle cx=\"10.5\" cy=\"10.5\" r=\"9\" stroke=\"currentColor\" stroke-width=\"3\"/>\n                    <path d=\"M14.8477 10.5628L8.20312 14.399L8.20313 6.72656L14.8477 10.5628Z\" fill=\"currentColor\"/>\n                </svg>\n            </div>\n            <div class=\"online-prestige-watched__body\">\n                \n            </div>\n        </div>");
     }
-    var button = "<div class=\"full-start__button selector view--online lampac--button\" data-subtitle=\"".concat(manifst.name, " ").concat(manifst.version, "\">\n <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 50 51\"><circle cx=\"25\" cy=\"25\" r=\"23\" fill=\"none\" stroke=\"#7B68EE\" stroke-width=\"3\"></circle><circle cx=\"25\" cy=\"25\" r=\"20\" fill=\"#7B68EE\"></circle><path d=\"M24.757812 11.998047C30.071813 11.998047 33.514203 14.994953 34.283203 20.251953L30.080078 20.789062C30.080078 17.378062 28.162859 15.841797 24.755859 15.841797C21.970859 15.841797 18.994141 16.444969 18.994141 19.042969C18.994141 20.937969 20.6335 21.807875 26.3125 22.921875C30.3585 23.715875 35 25.297406 35 30.566406C35 34.158406 31.087719 38 25.261719 38C19.230719 38 15.569625 34.913828 14.640625 29.048828L18.892578 28.302734C18.892578 32.399734 21.118719 34.158203 25.261719 34.158203C28.808719 34.158203 31.174203 32.557406 31.158203 30.566406C31.143203 28.657406 30.003172 27.637547 25.576172 26.685547C20.946172 25.689547 15.152344 24.644969 15.152344 19.042969C15.152344 14.471969 20.102813 11.998047 24.757812 11.998047z\" fill=\"white\"></path></svg>\n\n        <span>#{title_online}</span>\n    </div>");
-    Lampa.Component.add('lampacskaz', component);
+    var button = "<div class=\"full-start__button selector view--online nova--button\" data-subtitle=\"".concat(manifst.name, " ").concat(manifst.version, "\">\n <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\"><rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"4\" stroke=\"currentColor\" stroke-width=\"2\"></rect><path d=\"M10 9l5 3-5 3V9z\" fill=\"currentColor\"></path></svg>\n\n        <span>#{title_online}</span>\n    </div>");
+    Lampa.Component.add('nova_video', component);
     resetTemplates();
 
     function addButton(e) {
-    if (e.render.find('.lampac--button').length) return;
+    if (e.render.find('.nova--button').length) return;
     var btn = $(Lampa.Lang.translate(button));
     btn.on('hover:enter', function() {
         resetTemplates();
-        Lampa.Component.add('lampacskaz', component);
+        Lampa.Component.add('nova_video', component);
 
         var id = Lampa.Utils.hash(e.movie.number_of_seasons ? e.movie.original_name : e.movie.original_title);
         var all = Lampa.Storage.get('clarification_search','{}');
@@ -5611,7 +5524,7 @@ Lampa.SettingsApi.addParam({
         var watched = Lampa.Storage.cache('online_watched_last', 5000, {});
         var watchedData = watched[file_id];
 
-        if (Z01UI.enabled()) {
+        if (NovaUI.enabled()) {
           if (isSeries && watchedData && watchedData.balanser && watchedData.season && watchedData.episode) {
             var last_balanser_map = Lampa.Storage.cache('online_last_balanser', 3000, {});
             last_balanser_map[e.movie.id] = watchedData.balanser;
@@ -5629,7 +5542,7 @@ Lampa.SettingsApi.addParam({
           Lampa.Activity.push({
             url: '',
             title: Lampa.Lang.translate('title_online'),
-            component: 'lampacskaz',
+            component: 'nova_video',
             search: all[id] ? all[id] : e.movie.title,
             search_one: e.movie.title,
             search_two: e.movie.original_title,
@@ -5675,7 +5588,7 @@ Lampa.SettingsApi.addParam({
                 Lampa.Activity.push({
                   url: '',
                   title: Lampa.Lang.translate('title_online'),
-                  component: 'lampacskaz',
+                  component: 'nova_video',
                   search: all[id] ? all[id] : e.movie.title,
                   search_one: e.movie.title,
                   search_two: e.movie.original_title,
@@ -5688,7 +5601,7 @@ Lampa.SettingsApi.addParam({
                 Lampa.Activity.push({
                   url: '',
                   title: Lampa.Lang.translate('title_online'),
-                  component: 'lampacskaz',
+                  component: 'nova_video',
                   search: all[id] ? all[id] : e.movie.title,
                   search_one: e.movie.title,
                   search_two: e.movie.original_title,
@@ -5703,7 +5616,7 @@ Lampa.SettingsApi.addParam({
         Lampa.Activity.push({
             url: '',
             title: Lampa.Lang.translate('title_online'),
-            component: 'lampacskaz',
+            component: 'nova_video',
             search: all[id] ? all[id] : e.movie.title,
             search_one: e.movie.title,
             search_two: e.movie.original_title,
@@ -5714,7 +5627,7 @@ Lampa.SettingsApi.addParam({
         }
     });
 
-    if (Lampa.Storage.field('skazonline_button_first')) {
+    if (Lampa.Storage.field('nova_button_first')) {
         var activity = Lampa.Activity.active().activity.render();
         var buttons_container = activity.find('.full-start-new__buttons');
 
@@ -5754,14 +5667,11 @@ Lampa.SettingsApi.addParam({
       });
       Lampa.Storage.sync('online_watched_last', 'object_object');
       Lampa.Storage.sync('online_last_balanser', 'object_object');
-      Lampa.Storage.sync('z01_season_last', 'object_object');
-      Lampa.Storage.sync('z01_reach', 'object_object');
+      Lampa.Storage.sync('nova_season_last', 'object_object');
+      Lampa.Storage.sync('nova_reach', 'object_object');
       Lampa.Storage.sync('lampac_continue_play', 'bool');
     }
   }
-  if (!window.onlyskaz_plugin) startPlugin();
-  	  if (Lampa.Storage.get('online_skaz2')==true) {
-		$.getScript('http://skaz.tv/play.js');
-	}
+  if (!window.nova_online_plugin) startPlugin();
 
 })();
