@@ -599,8 +599,6 @@
             Lampa.Controller.enable('content');
             this.loading(false);
 
-            this.filter({ source: [] }, this.getChoice());
-
             if (object.balanser) {
                 files.render().find('.filter--search').remove();
                 sources = {};
@@ -896,7 +894,7 @@
                     runRequest();
                 }, function() {
                     runRequest();
-                });
+                }, false, { dataType: 'text' });
             } else {
                 runRequest();
             }
@@ -2081,7 +2079,7 @@
                 onChange: function(value) {
                     Lampa.Storage.set('skaz_account_index', parseInt(value, 10) || 0);
                     refreshSkazAccountState();
-                    Lampa.Noty.show('Аккаунт Skaz переключен');
+                    Lampa.Noty.show('Аккаунт Skaz переключен. Перезайдите в онлайн.');
                 }
             });
 
@@ -2098,6 +2096,175 @@
                 },
                 onChange: function(value) {
                     Lampa.Noty.show('Необходимо перезайти в лампу');
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'skazonline_button_first',
+                    type: 'trigger',
+                    default: false
+                },
+                field: {
+                    name: 'Кнопка Онлайн первой',
+                    description: 'Показывать кнопку онлайн перед остальными'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'only_title',
+                    type: 'title',
+                    default: true
+                },
+                field: {
+                    name: 'Интерфейс онлайн'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_ui_mode',
+                    type: 'select',
+                    values: {
+                        modern: 'Новый',
+                        classic: 'Классический'
+                    },
+                    default: 'modern'
+                },
+                field: {
+                    name: 'Интерфейс',
+                    description: 'Новый — шапка с продолжением и выбор перевода на экране'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_quality',
+                    type: 'select',
+                    values: {
+                        'auto': 'Как решит источник',
+                        '2160': '4K',
+                        '1080': '1080p',
+                        '720': '720p',
+                        '480': '480p'
+                    },
+                    default: 'auto'
+                },
+                field: {
+                    name: 'Качество по умолчанию',
+                    description: 'Запускать в этом качестве, если оно есть — иначе в ближайшем ниже'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_view',
+                    type: 'select',
+                    values: {
+                        list: 'Список',
+                        grid: 'Плитка'
+                    },
+                    default: 'list'
+                },
+                field: {
+                    name: 'Вид списка серий'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_hero',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Показывать шапку',
+                    description: 'Кнопка продолжения с прогрессом над списком'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_hero_art',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Шапка с кадром',
+                    description: 'Крупный кадр, название и описание над кнопкой'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_voice_auto',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Запоминать тип перевода',
+                    description: 'Подставлять привычную озвучку (дубляж, многоголосый и т.д.) на всех источниках'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_probe_enable',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Проверять источники самому',
+                    description: 'При открытии списка обойти источники и показать, где есть видео. Отключите при медленной связи'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_similar_auto',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Самому выбирать из каталога',
+                    description: 'Если источник отдаёт папку с похожими названиями, открывать нужное по названию и году'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'z01_auto_switch',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Автопереключение источника',
+                    description: 'Если источник ничего не нашёл — перейти на следующий рабочий'
+                }
+            });
+
+            Lampa.SettingsApi.addParam({
+                component: 'iptvskaz',
+                param: {
+                    name: 'lampac_continue_play',
+                    type: 'trigger',
+                    default: true
+                },
+                field: {
+                    name: 'Предлагать продолжение',
+                    description: 'Показывать диалог продолжения при входе в сериал'
                 }
             });
         }
