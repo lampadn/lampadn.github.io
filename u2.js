@@ -901,6 +901,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero__descr{opacity:.8}',
     '.nova-hero__body{position:relative;padding:2.2em;max-width:64%}',
     '.nova-hero__title{font-size:2.3em;font-weight:600;line-height:1.15;margin-bottom:.35em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '.nova-hero__title--logo{display:block;margin-bottom:.5em;line-height:1}',
+    '.nova-hero__title--logo>img{display:block;max-height:2.1em;max-width:70%;width:auto;height:auto;-o-object-fit:contain;object-fit:contain;-webkit-filter:drop-shadow(0 .06em .35em rgba(0,0,0,.7));filter:drop-shadow(0 .06em .35em rgba(0,0,0,.7))}',
     '.nova-hero__meta{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.1em;margin-bottom:.7em}',
     '.nova-hero__meta>*{margin:0 .7em .3em 0;opacity:.8}',
     '.nova-hero__meta>.nova-badge{opacity:1}',
@@ -1061,6 +1063,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova__list--grid .nova-card{width:50%}',
     '.nova-hero__body{max-width:100%;padding:1.3em}',
     '.nova-hero__title{font-size:1.7em}',
+    '.nova-hero__title--logo>img{max-height:1.9em;max-width:80%}',
     '.nova-hero__descr{display:none}',
     '.nova-card__side{display:block;text-align:right;padding-right:.2em;max-width:6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
     '.nova-card__quality{font-size:.66em;padding:.15em .4em}',
@@ -1560,6 +1563,110 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       });
     };
 
+    this.uiLogoOn = function() {
+      return Lampa.Storage.get('nova_logo', true) !== false;
+    };
+
+    this.uiLogoBox = function() {
+      var box;
+      try { box = Lampa.Storage.cache('nova_logo_cache', 500, {}); } catch (e) { box = null; }
+      if (!box || typeof box !== 'object') box = {};
+      return box;
+    };
+
+    this.uiLogoPick = function(list) {
+      if (!list || !list.length) return '';
+      var lang = Lampa.Storage.get('language', 'ru') || 'ru';
+      var i;
+      for (i = 0; i < list.length; i++) {
+        if (list[i] && list[i].iso_639_1 === lang && list[i].file_path) return list[i].file_path;
+      }
+      for (i = 0; i < list.length; i++) {
+        if (list[i] && list[i].iso_639_1 === 'en' && list[i].file_path) return list[i].file_path;
+      }
+      for (i = 0; i < list.length; i++) {
+        if (list[i] && list[i].file_path) return list[i].file_path;
+      }
+      return '';
+    };
+
+    this.uiLogoUrl = function(path) {
+      if (!path) return '';
+      try {
+        return Lampa.TMDB.image('t/p/w500' + String(path).replace('.svg', '.png'));
+      } catch (e) {
+        return '';
+      }
+    };
+
+    this.uiLogoLoad = function(done) {
+      var _this = this;
+      var movie = object.movie;
+      if (!this.uiLogoOn() || !movie || !movie.id) return done('');
+
+      var all = this.uiLogoBox();
+      var mine = all[movie.id];
+      if (typeof mine === 'string') return done(mine);
+
+      var kind = movie.name || movie.number_of_seasons ? 'tv' : 'movie';
+      var url = '';
+      try {
+        url = Lampa.TMDB.api(kind + '/' + movie.id + '/images?api_key=' + Lampa.TMDB.key() +
+          '&include_image_language=' + (Lampa.Storage.get('language', 'ru') || 'ru') + ',en,null');
+      } catch (e) {
+        url = '';
+      }
+      if (!url) return done('');
+
+      var net = null;
+      try { net = new Lampa.Reguest(); } catch (e) { net = null; }
+      if (!net) return done('');
+
+      var keep = function(path) {
+        var box = _this.uiLogoBox();
+        if (movie && movie.id) {
+          box[movie.id] = path || '';
+          try { Lampa.Storage.set('nova_logo_cache', box); } catch (e) {}
+        }
+        done(path || '');
+      };
+
+      try { net.timeout(8000); } catch (e) {}
+      net.silent(url, function(answer) {
+        keep(_this.uiLogoPick(answer && answer.logos));
+      }, function() {
+        done('');
+      });
+    };
+
+    this.uiHeroLogo = function() {
+      var _this = this;
+      if (!ui.hero) return;
+      var movie = object.movie;
+      var slot = ui.hero.find('.nova-hero__title');
+      if (!slot.length || !movie) return;
+
+      var name = movie.title || movie.name || '';
+      if (!this.uiLogoOn()) return slot.removeClass('nova-hero__title--logo').text(name);
+
+      var want = movie.id;
+      this.uiLogoLoad(function(path) {
+        if (!ui.hero || !object.movie || object.movie.id !== want) return;
+        var box = ui.hero.find('.nova-hero__title');
+        if (!box.length) return;
+
+        var src = _this.uiLogoUrl(path);
+        if (!src) return box.removeClass('nova-hero__title--logo').text(name);
+
+        var picture = $('<img alt="">');
+        picture.on('error', function() {
+          box.removeClass('nova-hero__title--logo').text(name);
+        });
+        picture.attr('src', src);
+        box.addClass('nova-hero__title--logo').empty().append(picture);
+      });
+    };
+
     this.uiHero = function(items) {
       var _this = this;
       if (Lampa.Storage.get('nova_hero', true) === false) {
@@ -1583,6 +1690,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (with_art) {
           ui.hero.find('.nova-hero__title').text(movie.title || movie.name || '');
           ui.hero.find('.nova-hero__descr').text(movie.overview || '');
+          this.uiHeroLogo();
         }
         var art = movie.backdrop_path || movie.poster_path;
         if (art) {
@@ -5323,6 +5431,18 @@ Lampa.SettingsApi.addParam({
         en: 'Large backdrop, title and overview above the button',
         zh: '按钮上方显示大图、标题和简介'
       },
+      nova_logo_name: {
+        ru: 'Логотип вместо названия',
+        uk: 'Логотип замість назви',
+        en: 'Logo instead of title',
+        zh: '用标识代替标题'
+      },
+      nova_logo_descr: {
+        ru: 'Показывать логотип фильма в шапке, если он есть',
+        uk: 'Показувати логотип фільму в шапці, якщо він є',
+        en: 'Show the movie logo in the header when available',
+        zh: '如果有，在头部显示影片标识'
+      },
       nova_hero_name: {
         ru: 'Показывать шапку',
         uk: 'Показувати шапку',
@@ -5468,6 +5588,19 @@ Lampa.SettingsApi.addParam({
       field: {
         name: Lampa.Lang.translate('nova_hero_art_name'),
         description: Lampa.Lang.translate('nova_hero_art_descr')
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
+        name: 'nova_logo',
+        type: 'trigger',
+        "default": true
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_logo_name'),
+        description: Lampa.Lang.translate('nova_logo_descr')
       }
     });
 
