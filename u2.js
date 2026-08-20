@@ -1025,11 +1025,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova__list--grid .nova-card__thumb{width:100%;height:0;padding-top:56%}',
     '.nova__list--grid .nova-card--file .nova-card__thumb{width:100%;height:0;padding-top:56%}',
     '.nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .2em #fff;box-shadow:0 0 0 .2em #fff}',
-    '.nova__list--grid .nova-card__body{padding:.6em .1em 0 .1em}',
-    '.nova__list--grid .nova-card__title{font-size:1.1em}',
+    '.nova__list--grid .nova-card__body{padding:.5em .1em 0 .1em}',
+    '.nova__list--grid .nova-card__title{font-size:.92em;line-height:1.3;margin-bottom:.15em;-webkit-line-clamp:2}',
+    '.nova__list--grid .nova-card__meta{font-size:.78em;line-height:1.35;-webkit-line-clamp:2}',
+    '.nova__list--grid .nova-card__meta .nova-dot{margin:0 .3em}',
+    '.nova__list--grid .nova-card__match{margin-top:.25em;font-size:.72em;padding:.1em .45em}',
     '.nova__list--grid .nova-card__side{position:absolute;top:.5em;right:.9em;text-align:right}',
     '.nova__list--grid .nova-card__time{display:none}',
-    '.nova__list--grid .nova-card__num{-webkit-box-pack:start;-webkit-justify-content:flex-start;-ms-flex-pack:start;justify-content:flex-start;-webkit-box-align:start;-webkit-align-items:flex-start;-ms-flex-align:start;align-items:flex-start;padding:.4em 0 0 .55em;font-size:1.2em}',
+    '.nova__list--grid .nova-card__num{-webkit-box-pack:start;-webkit-justify-content:flex-start;-ms-flex-pack:start;justify-content:flex-start;-webkit-box-align:start;-webkit-align-items:flex-start;-ms-flex-align:start;align-items:flex-start;padding:.4em 0 0 .55em;font-size:1.05em}',
 
     '.nova-hero__season{font-size:.95em;opacity:.55;margin-top:.8em}',
 
