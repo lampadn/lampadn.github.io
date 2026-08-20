@@ -357,13 +357,64 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   var _accountRotateAttempts = 0;
   var _accountRotateMax = SERVER_CONFIG.pool.accounts.length;
+  var _accountTried = {};
+  var ACCOUNT_DEAD_TTL = 21600000;
 
   function accountTitle(index) { return '\u0410\u043a\u043a\u0430\u0443\u043d\u0442 ' + (index + 1); }
 
+  function accountAuto() {
+    return String(Lampa.Storage.get('nova_account_index', 'auto')) === 'auto';
+  }
+
+  function accountDeadBox() {
+    var box;
+    try { box = Lampa.Storage.cache('nova_account_dead', 200, {}); } catch (e) { box = null; }
+    if (!box || typeof box !== 'object') box = {};
+    return box;
+  }
+
+  function accountDead(index) {
+    var box = accountDeadBox();
+    var stamp = box[index];
+    if (!stamp) return false;
+    if (Date.now() - stamp > ACCOUNT_DEAD_TTL) {
+      delete box[index];
+      try { Lampa.Storage.set('nova_account_dead', box); } catch (e) {}
+      return false;
+    }
+    return true;
+  }
+
+  function markAccountDead(index) {
+    var box = accountDeadBox();
+    box[index] = Date.now();
+    try { Lampa.Storage.set('nova_account_dead', box); } catch (e) {}
+  }
+
+  function pickRandomAccount(skip) {
+    var total = SERVER_CONFIG.pool.accounts.length;
+    var fresh = [];
+    var any = [];
+    for (var i = 0; i < total; i++) {
+      if (skip && skip[i]) continue;
+      any.push(i);
+      if (!accountDead(i)) fresh.push(i);
+    }
+    var pool = fresh.length ? fresh : any;
+    if (!pool.length) return -1;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
   function applyAccountIndex() {
     var cfg = SERVER_CONFIG.pool;
-    var saved = Lampa.Storage.get('nova_account_index', 0);
-    var index = parseInt(saved, 10);
+
+    if (accountAuto()) {
+      var pick = pickRandomAccount(null);
+      cfg.currentIndex = pick === -1 ? 0 : pick;
+      return;
+    }
+
+    var index = parseInt(Lampa.Storage.get('nova_account_index', 0), 10);
     if (isNaN(index) || index < 0 || index >= cfg.accounts.length) index = 0;
     cfg.currentIndex = index;
   }
@@ -373,17 +424,31 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return SERVER_CONFIG.pool.accounts[SERVER_CONFIG.pool.currentIndex] || SERVER_CONFIG.pool.accounts[0];
   }
 
-  function rotateToNextAccount() {
+  function markAccountAlive(index) {
+    var box = accountDeadBox();
+    if (!box[index]) return;
+    delete box[index];
+    try { Lampa.Storage.set('nova_account_dead', box); } catch (e) {}
+  }
+
+  function rotateToNextAccount(soft) {
     var cfg = SERVER_CONFIG.pool;
-    var next = (cfg.currentIndex + 1) % cfg.accounts.length;
-    cfg.currentIndex = next;
-    Lampa.Storage.set('nova_account_index', next);
+
+    if (!soft) markAccountDead(cfg.currentIndex);
+    _accountTried[cfg.currentIndex] = true;
     _accountRotateAttempts++;
+
+    var next = pickRandomAccount(_accountTried);
+    if (next === -1) return false;
+
+    cfg.currentIndex = next;
+    if (!accountAuto()) Lampa.Storage.set('nova_account_index', next);
     return _accountRotateAttempts < _accountRotateMax;
   }
 
   function resetAccountRotation() {
     _accountRotateAttempts = 0;
+    _accountTried = {};
   }
 
   function account(url) {
@@ -3286,6 +3351,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.createSource = function() {
       var _this4 = this;
       resetAccountRotation();
+      if (accountAuto()) applyAccountIndex();
       return new Promise(function(resolve, reject) {
         function tryWithAccount() {
           var url = _this4.requestParams(Defined.localhost + 'lite/events?life=true');
@@ -3299,6 +3365,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               }
               return;
             }
+            markAccountAlive(SERVER_CONFIG.pool.currentIndex);
             resetAccountRotation();
             if (json.life) {
               _this4.memkey = json.memkey;
@@ -3314,7 +3381,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               _this4.startSource(json).then(resolve)["catch"](reject);
             }
           }, function(err) {
-            if (rotateToNextAccount()) {
+            if (rotateToNextAccount(true)) {
               tryWithAccount();
             } else {
               reject(err);
@@ -4874,18 +4941,19 @@ Lampa.SettingsApi.addParam({
           name: 'nova_account_index',
           type: 'select',
           values: (function() {
-            var v = {};
+            var v = { auto: 'Случайный' };
             SERVER_CONFIG.pool.accounts.forEach(function(a, i) { v[String(i)] = accountTitle(i); });
             return v;
           })(),
-          default: 0
+          default: 'auto'
         },
         field: {
           name: 'Аккаунт',
-          description: 'Переключение рабочего аккаунта'
+          description: 'Случайный выбор или конкретный аккаунт'
         },
         onChange: function(value) {
-          Lampa.Storage.set('nova_account_index', parseInt(value, 10) || 0);
+          Lampa.Storage.set('nova_account_index', String(value) === 'auto' ? 'auto' : (parseInt(value, 10) || 0));
+          resetAccountRotation();
           applyAccountIndex();
           Lampa.Noty.show('Аккаунт переключен. Перезайдите в онлайн.');
         }
