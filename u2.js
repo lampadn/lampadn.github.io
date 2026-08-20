@@ -891,12 +891,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero--compact .nova-btn--main{margin-bottom:0}',
     '.nova-hero--compact .nova-hero__season{margin:.6em 0 0 .2em;font-size:.95em;opacity:.55}',
     '.nova-hero--compact .nova-hero__progress{position:absolute;left:0;right:0;bottom:0;width:auto;height:.3em;margin:0;-webkit-border-radius:0;border-radius:0}',
-    '.nova-hero--compact .nova-hero__shade{background:-webkit-linear-gradient(left,rgba(10,11,17,.94) 0%,rgba(10,11,17,.8) 45%,rgba(10,11,17,.3) 100%);background:linear-gradient(90deg,rgba(10,11,17,.94) 0%,rgba(10,11,17,.8) 45%,rgba(10,11,17,.3) 100%)}',
+    '.nova-hero--compact .nova-hero__shade{background:-webkit-linear-gradient(left,rgba(10,11,17,.88) 0%,rgba(10,11,17,.6) 45%,rgba(10,11,17,.15) 100%);background:linear-gradient(90deg,rgba(10,11,17,.88) 0%,rgba(10,11,17,.6) 45%,rgba(10,11,17,.15) 100%)}',
     '.nova-hero--compact .nova-hero__progress{margin-top:.8em}',
     '.nova-hero__bg{position:absolute;top:0;left:0;right:0;bottom:0}',
     '.nova-hero__bg img{display:block;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;-webkit-transition:opacity .35s;transition:opacity .35s}',
     '.nova-hero__bg--loaded img{opacity:1}',
-    '.nova-hero__shade{position:absolute;top:0;left:0;right:0;bottom:0;background:-webkit-linear-gradient(left,rgba(10,11,17,.97) 0%,rgba(10,11,17,.9) 36%,rgba(10,11,17,.45) 68%,rgba(10,11,17,.1) 100%);background:linear-gradient(90deg,rgba(10,11,17,.97) 0%,rgba(10,11,17,.9) 36%,rgba(10,11,17,.45) 68%,rgba(10,11,17,.1) 100%)}',
+    '.nova-hero__shade{position:absolute;top:0;left:0;right:0;bottom:0;background:-webkit-linear-gradient(left,rgba(10,11,17,.9) 0%,rgba(10,11,17,.62) 32%,rgba(10,11,17,.2) 62%,rgba(10,11,17,0) 84%);background:linear-gradient(90deg,rgba(10,11,17,.9) 0%,rgba(10,11,17,.62) 32%,rgba(10,11,17,.2) 62%,rgba(10,11,17,0) 84%)}',
+    '.nova-hero__title,.nova-hero__meta,.nova-hero__descr,.nova-hero__hint,.nova-hero__season{text-shadow:0 .06em .5em rgba(0,0,0,.8)}',
+    '.nova-hero__descr{opacity:.8}',
     '.nova-hero__body{position:relative;padding:2.2em;max-width:64%}',
     '.nova-hero__title{font-size:2.3em;font-weight:600;line-height:1.15;margin-bottom:.35em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
     '.nova-hero__meta{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.1em;margin-bottom:.7em}',
@@ -1039,14 +1041,29 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '@media screen and (max-width:1200px){',
     '.nova__list--grid .nova-card{width:33.3333%}',
     '}',
+    '@media screen and (max-width:600px) and (orientation:portrait){',
+    '.nova-toolbar{-webkit-flex-wrap:nowrap;-ms-flex-wrap:nowrap;flex-wrap:nowrap;overflow:hidden;min-width:0;font-size:.92em}',
+    '.nova-toolbar>*{margin-bottom:0}',
+    '.nova-toolbar__label{display:none}',
+    '.nova-toolbar .nova-chip{-webkit-flex-shrink:1;-ms-flex-negative:1;flex-shrink:1;min-width:4.2em;max-width:none;margin:0 .5em 0 0;padding:.5em .9em}',
+    '.nova-toolbar .nova-chip__label{overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;min-width:0}',
+    '.nova-toolbar .nova-chip__badge{margin-right:.4em}',
+    '.nova-toolbar .nova-btn--main{margin:0 .8em 0 0;font-size:1.05em;padding:.5em 1.1em}',
+    '.nova-hero__actions{-webkit-flex-wrap:nowrap;-ms-flex-wrap:nowrap;flex-wrap:nowrap;min-width:0}',
+    '.nova-hero__actions>.nova-btn{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;margin:0 .6em 0 0}',
+    '.nova-hero__hint{margin:0 0 0 .6em;min-width:0;-webkit-flex-shrink:1;-ms-flex-negative:1;flex-shrink:1;max-width:none}',
+    '.nova-drop{-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap}',
+    '}',
     '@media screen and (max-width:580px){',
     '.nova__list--grid .nova-card{width:50%}',
     '.nova-hero__body{max-width:100%;padding:1.3em}',
     '.nova-hero__title{font-size:1.7em}',
     '.nova-hero__descr{display:none}',
-    '.nova-hero__shade{background:-webkit-linear-gradient(top,rgba(10,11,17,.55) 0%,rgba(10,11,17,.94) 60%);background:linear-gradient(180deg,rgba(10,11,17,.55) 0%,rgba(10,11,17,.94) 60%)}',
+    '.nova-card__side{display:block;text-align:right;padding-right:.2em;max-width:6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-card__quality{font-size:.66em;padding:.15em .4em}',
+    '.nova-card__time{font-size:.78em;margin-top:.3em;display:block}',
+    '.nova-hero__shade{background:-webkit-linear-gradient(top,rgba(10,11,17,0) 0%,rgba(10,11,17,.35) 42%,rgba(10,11,17,.86) 100%);background:linear-gradient(180deg,rgba(10,11,17,0) 0%,rgba(10,11,17,.35) 42%,rgba(10,11,17,.86) 100%)}',
     '.nova-card__thumb{width:7em;height:4.4em}',
-    '.nova-card__side{display:none}',
     '.nova-chip{max-width:16em}',
     '}',
     '</style>'
@@ -1343,9 +1360,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (!keys.length) return;
       filter_sources = keys;
       sources_stale = true;
-      var last_map = Lampa.Storage.cache('online_last_balanser', 3000, {});
-      var want = last_map[object.movie.id] || Lampa.Storage.get('online_balanser', '');
-      balanser = sources[want] ? want : keys[0];
+      balanser = startBalanser() || keys[0];
       this.uiRows();
     };
 
@@ -2408,7 +2423,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             element.quality = Lampa.Arrays.getKeys(element.quality)[0];
           }
           element.voice_name = voice_name;
-          var runtime = episode ? episode.runtime : object.movie.runtime;
+          var runtime = parseInt((episode && episode.runtime) || 0, 10) || 0;
+          if (!runtime && serial) runtime = parseInt((object.movie.episode_run_time || [])[0], 10) || 0;
+          if (!runtime) runtime = parseInt(object.movie.runtime, 10) || 0;
           element.time = runtime ? Lampa.Utils.secondsToTime(runtime * 60, true) : '';
 
           var hash_timeline = Lampa.Utils.hash(element.season ? [element.season, element.season > 10 ? ':' : '', element.episode, object.movie.original_title].join('') : object.movie.original_title);
@@ -2513,7 +2530,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           html.find('.nova-card__num').text(NovaUI.episodeNumber(episode_num));
           html.find('.nova-card__time').text(element.time || '');
 
-          var badge = NovaUI.shortQuality(element.quality);
+          var badge = NovaUI.shortQuality(element.quality) ||
+            NovaUI.bestQualityFromText(element.title || element.text || '', true) ||
+            NovaUI.knownQuality(balanser) ||
+            NovaUI.splitSourceName((sources[balanser] && sources[balanser].name) || '').badge;
           if (badge) html.find('.nova-card__quality').addClass('nova-badge').text(badge);
           else html.find('.nova-card__quality').remove();
 
@@ -3012,6 +3032,33 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return !NovaUI.isMovieOnlySource(key, title);
     };
 
+    var shownSource = function(name) {
+      var info = sources[name];
+      return !!(info && info.show);
+    };
+
+    var firstShownSource = function() {
+      var keys = Object.prototype.toString.call(filter_sources) === '[object Array]' ? filter_sources : [];
+      for (var i = 0; i < keys.length; i++) {
+        if (shownSource(keys[i])) return keys[i];
+      }
+      return keys[0] || '';
+    };
+
+    var startBalanser = function() {
+      var pinned_map = Lampa.Storage.cache('online_last_balanser', 3000, {});
+      var pinned = object.lampac_custom_select || pinned_map[object.movie.id] || '';
+      if (pinned && sources[pinned]) return pinned;
+
+      var global = Lampa.Storage.get('online_balanser', '');
+      if (global && shownSource(global)) return global;
+
+      var shown = firstShownSource();
+      if (shown) return shown;
+      if (global && sources[global]) return global;
+      return filter_sources[0] || '';
+    };
+
     this.startSource = function(json) {
 
       var _self_src = this && this.sourcesCacheSave ? this : null;
@@ -3035,16 +3082,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           };
         }));
         if (filter_sources.length) {
-          var last_select_balanser = Lampa.Storage.cache('online_last_balanser', 3000, {});
-          if (last_select_balanser[object.movie.id]) {
-            balanser = last_select_balanser[object.movie.id];
-          } else {
-            balanser = Lampa.Storage.get('online_balanser', filter_sources[0]);
-          }
+          balanser = startBalanser();
           if (!sources[balanser]) balanser = filter_sources[0];
-
-          var kept = last_select_balanser[object.movie.id] == balanser || !!NovaUI.knownQuality(balanser);
-          if (!sources[balanser].show && !object.lampac_custom_select && !kept) balanser = filter_sources[0];
           source = sources[balanser].url;
           Lampa.Storage.set('active_balanser', balanser);
           if (_self_src) _self_src.sourcesLive();
