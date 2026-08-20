@@ -440,7 +440,7 @@
         var life_wait_times = 0;
         var life_wait_timer;
         var unavailable_connection_sources = {};
-        var filter_sources = {};
+        var filter_sources = [];
         var filter_translate = {
             season: Lampa.Lang.translate('torrent_serial_season'),
             voice: Lampa.Lang.translate('torrent_parser_voice'),
