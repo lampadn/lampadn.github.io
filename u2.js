@@ -1091,7 +1091,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var episodes_cache = {};
     var life_wait_times = 0;
     var life_wait_timer;
-    var filter_sources = {};
+    var filter_sources = [];
     var filter_translate = {
       season: Lampa.Lang.translate('torrent_serial_season'),
       voice: Lampa.Lang.translate('torrent_parser_voice'),
@@ -1184,6 +1184,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	}
 
     var modern = Z01UI.enabled();
+    console.log('Skaz', 'modern mode:', modern, 'z01_ui_mode:', Lampa.Storage.get('z01_ui_mode', 'modern'));
     var ui = {};
     var ui_items = [];
     var ui_enter = null;
