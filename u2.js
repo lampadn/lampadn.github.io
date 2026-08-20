@@ -1147,6 +1147,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     'body.nova-focus-ring .nova__list--grid .nova-card.focus{background:none!important;color:inherit!important;-webkit-box-shadow:none!important;box-shadow:none!important}',
     'body.nova-focus-ring .nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .12em #fff!important;box-shadow:0 0 0 .12em #fff!important}',
     'body.nova-focus-ring .nova-chip--active.focus,body.nova-focus-ring .nova-group--open.focus{-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
+
+    'body.nova-full .nova-scope .explorer__left{display:none!important}',
+    'body.nova-full .nova-scope .explorer__files{width:100%!important;left:0!important}',
+
+    'body.nova-fade .nova-scope .nova-hero{background:transparent;-webkit-border-radius:0;border-radius:0}',
+    'body.nova-fade .nova-scope .nova-hero__bg,body.nova-fade .nova-scope .nova-hero__shade{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%}',
     '</style>'
   ].join('');
 
@@ -1163,6 +1169,38 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var body = $('body');
       if (novaFocusRing()) body.addClass('nova-focus-ring');
       else body.removeClass('nova-focus-ring');
+    } catch (e) {}
+  }
+
+  function novaFullScreen() {
+    try {
+      return Lampa.Storage.get('nova_fullscreen', false) === true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function novaApplyFullScreen() {
+    try {
+      var body = $('body');
+      if (novaFullScreen()) body.addClass('nova-full');
+      else body.removeClass('nova-full');
+    } catch (e) {}
+  }
+
+  function novaEdgeFade() {
+    try {
+      return Lampa.Storage.get('nova_fade', false) === true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function novaApplyEdgeFade() {
+    try {
+      var body = $('body');
+      if (novaEdgeFade()) body.addClass('nova-fade');
+      else body.removeClass('nova-fade');
     } catch (e) {}
   }
 
@@ -3109,6 +3147,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       scroll.minus(files.render().find('.explorer__files-head'));
       if (modern) {
 
+        files.render().addClass('nova-scope');
         files.render().find('.explorer__files-head').addClass('nova-hidden-head').css('display', 'none');
         scroll.minus(files.render().find('.explorer__files-head'));
         this.uiLoadingPanel();
@@ -5537,6 +5576,30 @@ Lampa.SettingsApi.addParam({
         en: 'White fill',
         zh: '白色填充'
       },
+      nova_fullscreen_name: {
+        ru: 'Во всю ширину экрана',
+        uk: 'На всю ширину екрана',
+        en: 'Full width',
+        zh: '全屏宽度'
+      },
+      nova_fullscreen_descr: {
+        ru: 'Скрыть маленький постер и описание слева',
+        uk: 'Сховати маленький постер і опис ліворуч',
+        en: 'Hide the small poster and overview on the left',
+        zh: '隐藏左侧的小海报和简介'
+      },
+      nova_fade_name: {
+        ru: 'Размытые края постера',
+        uk: 'Розмиті краї постера',
+        en: 'Faded poster edges',
+        zh: '海报边缘渐隐'
+      },
+      nova_fade_descr: {
+        ru: 'Растворять постер вверху по краям со всех сторон',
+        uk: 'Розчиняти постер угорі по краях з усіх боків',
+        en: 'Fade the header artwork out on every side',
+        zh: '让顶部剧照四边渐隐'
+      },
       nova_hero_art_name: {
         ru: 'Шапка с кадром',
         uk: 'Шапка з кадром',
@@ -5719,6 +5782,38 @@ Lampa.SettingsApi.addParam({
     Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
+        name: 'nova_fullscreen',
+        type: 'trigger',
+        "default": false
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_fullscreen_name'),
+        description: Lampa.Lang.translate('nova_fullscreen_descr')
+      },
+      onChange: function () {
+        novaApplyFullScreen();
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
+        name: 'nova_fade',
+        type: 'trigger',
+        "default": false
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_fade_name'),
+        description: Lampa.Lang.translate('nova_fade_descr')
+      },
+      onChange: function () {
+        novaApplyEdgeFade();
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
         name: 'nova_hero_art',
         type: 'trigger',
         "default": true
@@ -5812,6 +5907,8 @@ Lampa.SettingsApi.addParam({
     $('body').append(Lampa.Template.get('lampac_css', {}, true));
     $('body').append(NovaUI.css);
     novaApplyFocusStyle();
+    novaApplyFullScreen();
+    novaApplyEdgeFade();
 
     function resetTemplates() {
       Lampa.Template.add('lampac_prestige_full', "<div class=\"online-prestige online-prestige--full selector\">\n            <div class=\"online-prestige__img\">\n                <img alt=\"\">\n                <div class=\"online-prestige__loader\"></div>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__timeline\"></div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                    <div class=\"online-prestige__quality\">{quality}</div>\n                </div>\n            </div>\n        </div>");
