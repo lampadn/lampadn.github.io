@@ -261,17 +261,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       }
 
       if (url == 'eval') {
-        console.log('RCH', url, data);
         result(eval(data));
       } else if (url == 'evalrun') {
-        console.log('RCH', url, data);
         eval(data);
       } else if (url == 'ping') {
         result('pong');
       } else {
-        console.log('RCH', url);
         network["native"](url, result, function(e) {
-          console.log('RCH', 'result empty, ' + e.status);
           result('');
         }, data, {
           dataType: 'text',
@@ -283,14 +279,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     });
 
     client.on('Connected', function(connectionId) {
-      console.log('RCH', 'ConnectionId: ' + connectionId);
       window.rch_nws[hostkey].connectionId = connectionId;
     });
     client.on('Closed', function() {
-      console.log('RCH', 'Connection closed');
     });
     client.on('Error', function(err) {
-      console.log('RCH', 'error:', err);
     });
   });
 };
@@ -374,7 +367,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     cfg.currentIndex = next;
     Lampa.Storage.set('skaz_account_index', next);
     _accountRotateAttempts++;
-    console.log('Skaz', 'Account rotated to', getSkazAccountTitle(next), '(attempt ' + _accountRotateAttempts + ')');
     return _accountRotateAttempts < _accountRotateMax;
   }
 
@@ -1184,7 +1176,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	}
 
     var modern = Z01UI.enabled();
-    console.log('Skaz', 'modern mode:', modern, 'z01_ui_mode:', Lampa.Storage.get('z01_ui_mode', 'modern'));
     var ui = {};
     var ui_items = [];
     var ui_enter = null;
@@ -1597,10 +1588,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var target = this.uiPickResume(items);
       var button = this.uiPlayButton();
       var serial_now = movie.name ? true : false;
-      var line_now = target ? target.timeline : null;
-      var unfinished = line_now && line_now.percent > 0 && line_now.percent < 90;
-
-      ui.play_show = !!target && !ui_nav && (serial_now || unfinished);
+      ui.play_show = !!target && !ui_nav;
       if (!ui.play_show) {
 
         button.detach();
@@ -3090,7 +3078,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var gou = function gou(json, any) {
           if (json.accsdb || Z01UI.serverDenial(json)) {
             if (rotateToNextAccount()) {
-              console.log('Skaz', 'lifeSource: account denied, rotating...');
               url = _this3.requestParams(Defined.localhost + 'lifeevents?memkey=' + (_this3.memkey || ''));
               life_wait_timer = setTimeout(fin, 300);
               return;
@@ -3172,7 +3159,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           network.silent(account(url), function(json) {
             if (json.accsdb || Z01UI.serverDenial(json)) {
               if (rotateToNextAccount()) {
-                console.log('Skaz', 'Account denied, trying next...');
                 tryWithAccount();
               } else {
                 reject(json);
@@ -3195,7 +3181,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             }
           }, function(err) {
             if (rotateToNextAccount()) {
-              console.log('Skaz', 'Network error, trying next account...');
               tryWithAccount();
             } else {
               reject(err);
