@@ -120,7 +120,6 @@ var randomUrl = vybor[randomIndex];
   var ONLINE_CACHE_TTL = 5 * 60 * 1000;
   var _pm_a = 'con', _pm_b = 'tinue', _pm_c = '_play';
 
-
   function _markMedia(el, isSeries) {
     if (!el) return;
     el.isonline = true;
@@ -485,8 +484,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   NovaUI.PROBE_TIMEOUT = 7000;
   NovaUI.PROBE_PARALLEL = 2;
-  NovaUI.PROBE_LIMIT = 26;
-  NovaUI.PROBE_BUDGET = 45000;
+  NovaUI.PROBE_LIMIT = 12;
+  NovaUI.PROBE_BUDGET = 20000;
   NovaUI.PROBE_TTL_OK = 21600000;
   NovaUI.PROBE_TTL_EMPTY = 1800000;
   NovaUI.PROBE_DELAY = 1500;
@@ -677,7 +676,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return /^xvideocdn/i.test(key || '') && /ultra|60\s*\/?\s*120|60fps/i.test(title || '');
   };
 
-
   NovaUI.serverDenial = function(answer) {
     if (!answer || typeof answer !== 'object') return null;
     var denied = !!(answer.accsdb || answer.blocked || answer.error ||
@@ -698,7 +696,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     if (typeof error.status === 'number') return error.status === 0 || error.status >= 500;
     return false;
   };
-
 
   NovaUI.providerName = function(url) {
     var path = String(url || '').split('?')[0].split('#')[0];
@@ -941,7 +938,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4" stroke-linecap="round"></path></svg>',
     refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 11a8 8 0 10-2.3 5.7" stroke-linecap="round"></path><path d="M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
-    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4l9 16H3z" stroke-linejoin="round"></path><path d="M12 10v4" stroke-linecap="round"></path><circle cx="12" cy="17" r="0.6" fill="currentColor"></circle></svg>'
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4l9 16H3z" stroke-linejoin="round"></path><path d="M12 10v4" stroke-linecap="round"></path><circle cx="12" cy="17" r="0.6" fill="currentColor"></circle></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="2.6"></circle></svg>'
   };
 
   NovaUI.css = [
@@ -1056,6 +1054,15 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-card--slim .nova-card__line{position:static;height:.25em;margin-top:.5em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.16)}',
     '.nova-card--slim.focus .nova-card__line{background:rgba(0,0,0,.15)}',
     '.nova-card--slim.focus .nova-card__line .time-line>div{background:#000}',
+    '.nova-card__line--full{position:absolute;left:.7em;right:.7em;bottom:.32em;height:.25em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.18)}',
+    '.nova-card.focus .nova-card__line--full{background:rgba(0,0,0,.16)}',
+    '.nova-card.focus .nova-card__line--full .time-line>div{background:#000}',
+    '.nova-card--file .nova-card__line--full{bottom:.28em}',
+    '.nova-card__viewed{top:auto;bottom:.55em;left:.55em;width:1.15em;height:1.15em;-webkit-border-radius:0;border-radius:0;background:none;opacity:.8;-webkit-box-shadow:none;box-shadow:none}',
+    '.nova-card__viewed>svg{display:block;width:100%;height:100%;-webkit-filter:drop-shadow(0 0 .2em rgba(0,0,0,.9));filter:drop-shadow(0 0 .2em rgba(0,0,0,.9))}',
+    '.nova-card__eye{display:block;margin-top:.4em;opacity:.5}',
+    '.nova-card__eye>svg{display:block;width:1.2em;height:1.2em;margin-left:auto}',
+    '.nova-card.focus .nova-card__eye{opacity:.65}',
     '.nova-list-group{font-size:.9em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:1.2em 0 .55em .2em}',
     '.nova-list-group:first-child{margin-top:0}',
     '.nova-card--file .nova-card__thumb{width:4.4em;height:4.4em}',
@@ -1137,8 +1144,74 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-card__thumb{width:7em;height:4.4em}',
     '.nova-chip{max-width:16em}',
     '}',
+    'body.nova-focus-ring .nova-btn.focus,body.nova-focus-ring .nova-chip.focus,body.nova-focus-ring .nova-card.focus,body.nova-focus-ring .nova-group.focus{background:rgba(255,255,255,.16)!important;color:#fff!important;-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
+    'body.nova-focus-ring .nova-btn--main{background:rgba(255,255,255,.16);color:#fff;-webkit-box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5);box-shadow:inset 0 0 0 .1em rgba(255,255,255,.5)}',
+    'body.nova-focus-ring .nova-chip.focus .nova-chip__badge{background:rgba(255,255,255,.2)!important;color:#fff!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--body{background:rgba(255,255,255,.2)!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--body .time-line>div{background:#fff!important}',
+    'body.nova-focus-ring .nova-card--slim.focus .nova-card__line{background:rgba(255,255,255,.2)!important}',
+    'body.nova-focus-ring .nova-card--slim.focus .nova-card__line .time-line>div{background:#fff!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--full{background:rgba(255,255,255,.2)!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--full .time-line>div{background:#fff!important}',
+    'body.nova-focus-ring .nova__list--grid .nova-card.focus{background:none!important;color:inherit!important;-webkit-box-shadow:none!important;box-shadow:none!important}',
+    'body.nova-focus-ring .nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .12em #fff!important;box-shadow:0 0 0 .12em #fff!important}',
+    'body.nova-focus-ring .nova-chip--active.focus,body.nova-focus-ring .nova-group--open.focus{-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
+
+    'body.nova-full .nova-scope .explorer__left{display:none!important}',
+    'body.nova-full .nova-scope .explorer__files{width:100%!important;left:0!important}',
+
+    'body.nova-fade .nova-scope .nova-hero{background:transparent;-webkit-border-radius:0;border-radius:0}',
+    'body.nova-fade .nova-scope .nova-hero__bg,body.nova-fade .nova-scope .nova-hero__shade{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%}',
     '</style>'
   ].join('');
+
+  function novaFocusRing() {
+    try {
+      return Lampa.Storage.get('nova_focus_style', 'ring') !== 'fill';
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function novaApplyFocusStyle() {
+    try {
+      var body = $('body');
+      if (novaFocusRing()) body.addClass('nova-focus-ring');
+      else body.removeClass('nova-focus-ring');
+    } catch (e) {}
+  }
+
+  function novaFullScreen() {
+    try {
+      return Lampa.Storage.get('nova_fullscreen', true) === true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function novaApplyFullScreen() {
+    try {
+      var body = $('body');
+      if (novaFullScreen()) body.addClass('nova-full');
+      else body.removeClass('nova-full');
+    } catch (e) {}
+  }
+
+  function novaEdgeFade() {
+    try {
+      return Lampa.Storage.get('nova_fade', true) === true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function novaApplyEdgeFade() {
+    try {
+      var body = $('body');
+      if (novaEdgeFade()) body.addClass('nova-fade');
+      else body.removeClass('nova-fade');
+    } catch (e) {}
+  }
 
   function component(object) {
     var network = new Network();
@@ -1279,6 +1352,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var pending_source = '';
     var ui_page = -1;
     var ui_page_focus = -1;
+    var ui_grid = false;
     var ui_draw_params;
     var probe_auto = false;
     var probe_timer;
@@ -1817,10 +1891,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (target.voice_name && target.voice_name !== Lampa.Lang.translate('nova_unknown')) hint.push(target.voice_name);
       ui.hero.find('.nova-hero__hint').text(hint.join(' · '));
 
-      var progress = ui.hero.find('.nova-hero__progress').empty();
-      if (line && line.percent > 0) progress.show().append(Lampa.Timeline.render(line));
-      else progress.hide();
-
+      var season_percent = -1;
       var season_line = ui.hero.find('.nova-hero__season');
       if (serial && !ui_nav && items.length > 1) {
         var viewed = Lampa.Storage.cache('online_view', 5000, []);
@@ -1834,7 +1905,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           progress_text += ' · ' + Lampa.Lang.translate('nova_season_left').replace('{left}', items.length - seen);
         }
         season_line.text(progress_text).show();
+        season_percent = Math.round(seen / items.length * 100);
       } else season_line.hide();
+
+      var progress = ui.hero.find('.nova-hero__progress').empty();
+      if (season_percent >= 0) {
+        if (season_percent > 0) {
+          progress.show().append('<div class="time-line"><div style="width:' + Math.min(100, season_percent) + '%"></div></div>');
+        } else progress.hide();
+      } else if (line && line.percent > 0) progress.show().append(Lampa.Timeline.render(line));
+      else progress.hide();
 
       return button;
     };
@@ -2030,7 +2110,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.probeBackground = function() {
       var _this = this;
       if (!modern || probe_auto || object.balanser) return;
-      if (Lampa.Storage.get('nova_probe_enable', true) === false) return;
+      if (Lampa.Storage.get('nova_probe_enable', false) !== true) return;
       clearTimeout(probe_timer);
 
       probe_timer = setTimeout(function() {
@@ -2079,7 +2159,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.probeSources = function(names) {
       var _this = this;
-      if (Lampa.Storage.get('nova_probe_enable', true) === false) return;
+      if (Lampa.Storage.get('nova_probe_enable', false) !== true) return;
       this.probeStop();
       probe_busy = true;
 
@@ -2330,7 +2410,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var known = this.probeCache().list[name];
       if (known) {
         if (known.s == 'empty') chip.addClass('nova-chip--empty');
-        else if (known.s == 'ok') chip.append('<span class="nova-chip__dot"></span>');
+        else if (known.s == 'ok' && Lampa.Storage.get('nova_probe_enable', false) === true) chip.append('<span class="nova-chip__dot"></span>');
       }
       chip.on('hover:enter', function() {
         ui_open = '';
@@ -2560,6 +2640,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
         var grid = !ui_nav && items.length > 3 && Lampa.Storage.get('nova_view', 'list') === 'grid';
         var compact = !serial && !ui_nav && !grid && items.length > 1;
+        ui_grid = grid;
         if (grid) list.addClass('nova__list--grid');
         else list.removeClass('nova__list--grid');
 
@@ -2636,10 +2717,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
           var addViewed = function() {
             if (!element.__html) return;
-            var box = element.__html.find('.nova-card__thumb');
-            if (box.length && !box.find('.nova-card__viewed').length) {
-
-              box.append('<div class="nova-card__viewed"></div>');
+            if (grid) {
+              var box = element.__html.find('.nova-card__thumb');
+              if (box.length && !box.find('.nova-card__viewed').length) {
+                box.append('<div class="nova-card__viewed">' + NovaUI.icon.eye + '</div>');
+              }
+              return;
+            }
+            var side = element.__html.find('.nova-card__side');
+            if (side.length && !side.find('.nova-card__eye').length) {
+              side.append('<div class="nova-card__eye">' + NovaUI.icon.eye + '</div>');
             }
           };
           element.mark = function() {
@@ -2674,7 +2761,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               Lampa.Arrays.remove(viewed, hash_behold);
               Lampa.Storage.set('online_view', viewed);
               Lampa.Storage.remove('online_view', hash_behold);
-              if (element.__html) element.__html.find('.nova-card__viewed').remove();
+              if (element.__html) element.__html.find('.nova-card__viewed,.nova-card__eye').remove();
             }
             _this.uiRefreshMarks();
           };
@@ -2718,6 +2805,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
           if (compact) {
             line_box.addClass('nova-card__line--body').appendTo(html.find('.nova-card__body'));
+          } else if (!grid && !ui_nav) {
+            line_box.addClass('nova-card__line--full').appendTo(html);
           }
           if (!serial || ui_nav) html.find('.nova-card__num').remove();
           if (ui_nav) {
@@ -2934,9 +3023,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             return '<span>' + NovaUI.esc(part) + '</span>';
           }).join('<span class="nova-dot">\u25cf</span>'));
         }
-        var thumb = html.find('.nova-card__thumb');
-        if (thumb.length && NovaUI.isSeen(element, viewed) && !thumb.find('.nova-card__viewed').length) {
-          thumb.append('<div class="nova-card__viewed"></div>');
+        if (NovaUI.isSeen(element, viewed)) {
+          if (ui_grid) {
+            var thumb = html.find('.nova-card__thumb');
+            if (thumb.length && !thumb.find('.nova-card__viewed').length) {
+              thumb.append('<div class="nova-card__viewed">' + NovaUI.icon.eye + '</div>');
+            }
+          } else {
+            var side = html.find('.nova-card__side');
+            if (side.length && !side.find('.nova-card__eye').length) {
+              side.append('<div class="nova-card__eye">' + NovaUI.icon.eye + '</div>');
+            }
+          }
         }
       });
       this.uiHero(ui_items);
@@ -3083,6 +3181,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       scroll.minus(files.render().find('.explorer__files-head'));
       if (modern) {
 
+        files.render().addClass('nova-scope');
         files.render().find('.explorer__files-head').addClass('nova-hidden-head').css('display', 'none');
         scroll.minus(files.render().find('.explorer__files-head'));
         this.uiLoadingPanel();
@@ -5487,6 +5586,54 @@ Lampa.SettingsApi.addParam({
         en: 'Grid',
         zh: '网格'
       },
+      nova_focus_name: {
+        ru: 'Выделение',
+        uk: 'Виділення',
+        en: 'Highlight style',
+        zh: '高亮样式'
+      },
+      nova_focus_descr: {
+        ru: 'Чем подсвечивать выбранную кнопку, серию или озвучку',
+        uk: 'Чим підсвічувати вибрану кнопку, серію або озвучення',
+        en: 'How the focused button, episode or voice is highlighted',
+        zh: '如何高亮所选按钮、剧集或配音'
+      },
+      nova_focus_ring: {
+        ru: 'Ободок',
+        uk: 'Обідок',
+        en: 'Outline',
+        zh: '描边'
+      },
+      nova_focus_fill: {
+        ru: 'Белая заливка',
+        uk: 'Біла заливка',
+        en: 'White fill',
+        zh: '白色填充'
+      },
+      nova_fullscreen_name: {
+        ru: 'Во всю ширину экрана',
+        uk: 'На всю ширину екрана',
+        en: 'Full width',
+        zh: '全屏宽度'
+      },
+      nova_fullscreen_descr: {
+        ru: 'Скрыть маленький постер и описание слева',
+        uk: 'Сховати маленький постер і опис ліворуч',
+        en: 'Hide the small poster and overview on the left',
+        zh: '隐藏左侧的小海报和简介'
+      },
+      nova_fade_name: {
+        ru: 'Размытые края постера',
+        uk: 'Розмиті краї постера',
+        en: 'Faded poster edges',
+        zh: '海报边缘渐隐'
+      },
+      nova_fade_descr: {
+        ru: 'Растворять постер вверху по краям со всех сторон',
+        uk: 'Розчиняти постер угорі по краях з усіх боків',
+        en: 'Fade the header artwork out on every side',
+        zh: '让顶部剧照四边渐隐'
+      },
       nova_hero_art_name: {
         ru: 'Шапка с кадром',
         uk: 'Шапка з кадром',
@@ -5636,6 +5783,26 @@ Lampa.SettingsApi.addParam({
     Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
+        name: 'nova_focus_style',
+        type: 'select',
+        values: {
+          ring: Lampa.Lang.translate('nova_focus_ring'),
+          fill: Lampa.Lang.translate('nova_focus_fill')
+        },
+        "default": 'ring'
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_focus_name'),
+        description: Lampa.Lang.translate('nova_focus_descr')
+      },
+      onChange: function () {
+        novaApplyFocusStyle();
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
         name: 'nova_hero',
         type: 'trigger',
         "default": true
@@ -5643,6 +5810,38 @@ Lampa.SettingsApi.addParam({
       field: {
         name: Lampa.Lang.translate('nova_hero_name'),
         description: Lampa.Lang.translate('nova_hero_descr')
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
+        name: 'nova_fullscreen',
+        type: 'trigger',
+        "default": true
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_fullscreen_name'),
+        description: Lampa.Lang.translate('nova_fullscreen_descr')
+      },
+      onChange: function () {
+        novaApplyFullScreen();
+      }
+    });
+
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
+        name: 'nova_fade',
+        type: 'trigger',
+        "default": true
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_fade_name'),
+        description: Lampa.Lang.translate('nova_fade_descr')
+      },
+      onChange: function () {
+        novaApplyEdgeFade();
       }
     });
 
@@ -5690,7 +5889,7 @@ Lampa.SettingsApi.addParam({
       param: {
         name: 'nova_probe_enable',
         type: 'trigger',
-        "default": true
+        "default": false
       },
       field: {
         name: Lampa.Lang.translate('nova_probe_name'),
@@ -5741,6 +5940,9 @@ Lampa.SettingsApi.addParam({
 
     $('body').append(Lampa.Template.get('lampac_css', {}, true));
     $('body').append(NovaUI.css);
+    novaApplyFocusStyle();
+    novaApplyFullScreen();
+    novaApplyEdgeFade();
 
     function resetTemplates() {
       Lampa.Template.add('lampac_prestige_full', "<div class=\"online-prestige online-prestige--full selector\">\n            <div class=\"online-prestige__img\">\n                <img alt=\"\">\n                <div class=\"online-prestige__loader\"></div>\n            </div>\n            <div class=\"online-prestige__body\">\n                <div class=\"online-prestige__head\">\n                    <div class=\"online-prestige__title\">{title}</div>\n                    <div class=\"online-prestige__time\">{time}</div>\n                </div>\n\n                <div class=\"online-prestige__timeline\"></div>\n\n                <div class=\"online-prestige__footer\">\n                    <div class=\"online-prestige__info\">{info}</div>\n                    <div class=\"online-prestige__quality\">{quality}</div>\n                </div>\n            </div>\n        </div>");
