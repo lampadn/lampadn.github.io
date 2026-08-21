@@ -925,10 +925,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero__descr{opacity:.8}',
     '.nova-hero__body{position:relative;padding:2.2em;max-width:64%}',
     '.nova-hero__title{font-size:2.3em;font-weight:600;line-height:1.15;margin-bottom:.35em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
-    '.nova-hero__title--logo{display:block;margin-bottom:.5em;line-height:1}',
-    '.nova-hero__title--logo>img{display:block;max-height:2.1em;max-width:70%;width:auto;height:auto;-o-object-fit:contain;object-fit:contain;-webkit-filter:drop-shadow(0 .06em .35em rgba(0,0,0,.7));filter:drop-shadow(0 .06em .35em rgba(0,0,0,.7))}',
-    '.nova-hero__title--logo>img.nova-logo--invert{-webkit-filter:invert(1) brightness(1.1) drop-shadow(0 .06em .35em rgba(0,0,0,.6));filter:invert(1) brightness(1.1) drop-shadow(0 .06em .35em rgba(0,0,0,.6))}',
-    '.nova-hero__title--logo>img.nova-logo--glow{-webkit-filter:drop-shadow(0 0 .05em rgba(255,255,255,.95)) drop-shadow(0 0 .16em rgba(255,255,255,.7)) drop-shadow(0 .06em .3em rgba(0,0,0,.55));filter:drop-shadow(0 0 .05em rgba(255,255,255,.95)) drop-shadow(0 0 .16em rgba(255,255,255,.7)) drop-shadow(0 .06em .3em rgba(0,0,0,.55))}',
+    '.nova-hero__title--logo{display:block;overflow:visible;-webkit-line-clamp:none;-webkit-box-orient:horizontal;padding:.08em 0 .06em;margin-bottom:.5em;line-height:1}',
+    '.nova-hero__title--logo>img{display:block;max-height:2.1em;max-width:70%;width:auto;height:auto;-o-object-fit:contain;object-fit:contain;-webkit-filter:drop-shadow(0 .04em .12em rgba(0,0,0,.55));filter:drop-shadow(0 .04em .12em rgba(0,0,0,.55))}',
+    '.nova-hero__title--logo>img.nova-logo--invert{-webkit-filter:invert(1) brightness(1.1) drop-shadow(0 .04em .12em rgba(0,0,0,.5));filter:invert(1) brightness(1.1) drop-shadow(0 .04em .12em rgba(0,0,0,.5))}',
+    '.nova-hero__title--logo>img.nova-logo--glow{-webkit-filter:drop-shadow(0 0 .02em rgba(255,255,255,.9)) drop-shadow(0 0 .04em rgba(255,255,255,.75));filter:drop-shadow(0 0 .02em rgba(255,255,255,.9)) drop-shadow(0 0 .04em rgba(255,255,255,.75))}',
     '.nova-hero__meta{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.1em;margin-bottom:.7em}',
     '.nova-hero__meta>*{margin:0 .7em .3em 0;opacity:.8}',
     '.nova-hero__meta>.nova-badge{opacity:1}',
@@ -1666,7 +1666,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiLogoUrl = function(path) {
       if (!path) return '';
       try {
-        return Lampa.TMDB.image('t/p/w500' + String(path).replace('.svg', '.png'));
+        return Lampa.TMDB.image('t/p/w780' + String(path).replace('.svg', '.png'));
       } catch (e) {
         return '';
       }
