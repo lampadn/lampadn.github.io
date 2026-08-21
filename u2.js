@@ -809,8 +809,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return isNaN(value) || value < 0 ? 0 : value;
   };
 
+  NovaUI.isMarked = function(element) {
+    if (!element || !element.hash_behold) return false;
+    try {
+      return Lampa.Storage.cache('online_view', 5000, []).indexOf(element.hash_behold) !== -1;
+    } catch (e) {
+      return false;
+    }
+  };
+
   NovaUI.isSeen = function(element) {
-    return NovaUI.percentOf(element) >= NovaUI.SEEN_PERCENT;
+    if (NovaUI.percentOf(element) >= NovaUI.SEEN_PERCENT) return true;
+    return NovaUI.isMarked(element);
   };
 
   NovaUI.isStarted = function(element) {
@@ -1508,6 +1518,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
         }
         return items[0];
+      }
+      for (i = 0; i < items.length; i++) {
+        if (NovaUI.isStarted(items[i])) return items[i];
       }
       for (i = 0; i < items.length; i++) {
         if (!NovaUI.isSeen(items[i])) return items[i];
