@@ -801,11 +801,25 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   NovaUI.LOGO_DARK = 0.4;
   NovaUI.LOGO_DARK_SHARE = 0.45;
 
-  NovaUI.isSeen = function(element, viewed) {
-    if (!element) return false;
-    if (element.hash_behold && viewed && viewed.indexOf(element.hash_behold) !== -1) return true;
+  NovaUI.percentOf = function(element) {
+    if (!element) return 0;
     var line = element.timeline;
-    return !!(line && line.percent >= NovaUI.SEEN_PERCENT);
+    if (!line) return 0;
+    var value = parseFloat(line.percent);
+    return isNaN(value) || value < 0 ? 0 : value;
+  };
+
+  NovaUI.isSeen = function(element) {
+    return NovaUI.percentOf(element) >= NovaUI.SEEN_PERCENT;
+  };
+
+  NovaUI.isStarted = function(element) {
+    var value = NovaUI.percentOf(element);
+    return value > 0 && value < NovaUI.SEEN_PERCENT;
+  };
+
+  NovaUI.isFresh = function(element) {
+    return NovaUI.percentOf(element) === 0;
   };
 
   NovaUI.QUALITY_RANK = {
@@ -869,70 +883,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return NovaUI.knownQuality(name) || (parts ? parts.badge : '');
   };
 
-  NovaUI.reachKey = function(movie) {
-    if (!movie) return '';
-    return Lampa.Utils.hash(movie.original_name || movie.original_title || movie.name || movie.title || '');
-  };
-
-  NovaUI.reachEntry = function(movie, season) {
-    var all = Lampa.Storage.cache('nova_reach', 2000, {});
-    var mine = all[NovaUI.reachKey(movie)] || {};
-    var value = mine[season || 1];
-    if (typeof value === 'number') return {
-      e: value,
-      l: value,
-      r: 2
-    };
-    if (value && typeof value === 'object') return {
-      e: parseInt(value.e, 10) || 0,
-      l: parseInt(value.l, 10) || 0,
-      r: parseInt(value.r, 10) || 0
-    };
-    return {
-      e: 0,
-      l: 0,
-      r: 0
-    };
-  };
-
-  NovaUI.reached = function(movie, season) {
-    return NovaUI.reachEntry(movie, season).e;
-  };
-
-  NovaUI.setReach = function(movie, season, episode) {
-    episode = parseInt(episode, 10) || 0;
-    var key = NovaUI.reachKey(movie);
-    if (!key) return;
-    var all = Lampa.Storage.cache('nova_reach', 2000, {});
-    var mine = all[key] || {};
-    mine[season || 1] = {
-      e: episode,
-      l: episode,
-      r: episode ? 2 : 0
-    };
-    all[key] = mine;
-    Lampa.Storage.set('nova_reach', all);
-  };
-
-  NovaUI.rememberReach = function(movie, season, episode) {
-    episode = parseInt(episode, 10) || 0;
-    var key = NovaUI.reachKey(movie);
-    if (!episode || !key) return;
-    var entry = NovaUI.reachEntry(movie, season);
-    if (episode === entry.l || episode === entry.l + 1) entry.r = (entry.r || 0) + 1;
-    else entry.r = 1;
-    entry.l = episode;
-    if (!entry.e || entry.r >= 2 || episode === entry.e + 1) entry.e = episode;
-    var all = Lampa.Storage.cache('nova_reach', 2000, {});
-    var mine = all[key] || {};
-    mine[season || 1] = {
-      e: entry.e,
-      l: entry.l,
-      r: entry.r
-    };
-    all[key] = mine;
-    Lampa.Storage.set('nova_reach', all);
-  };
 
   NovaUI.icon = {
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>',
@@ -1358,7 +1308,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var ui_grid = false;
     var ui_season_planned = 0;
     var ui_keep = '';
-    var ui_back = '';
     var ui_draw_params;
     var probe_auto = false;
     var probe_timer;
@@ -1560,60 +1509,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         }
         return items[0];
       }
-      var choice = this.getChoice();
-      var season = items[0].season;
-
-      var reached = parseInt(NovaUI.reached(object.movie, season), 10) || 0;
-      var mark = choice.episodes_view ? parseInt(choice.episodes_view[season], 10) || 0 : 0;
-      if (mark > reached) reached = mark;
-      var history = this.watched();
-      if (history && history.episode && (!history.season || history.season == season)) {
-        var last_seen = parseInt(history.episode, 10) || 0;
-        if (last_seen > reached) reached = last_seen;
-      }
       for (i = 0; i < items.length; i++) {
-        if (NovaUI.isSeen(items[i], viewed)) {
-          var num = parseInt(items[i].episode, 10) || 0;
-          if (num > reached) reached = num;
-        }
+        if (!NovaUI.isSeen(items[i])) return items[i];
       }
-
-      var started = null;
-      for (i = 0; i < items.length; i++) {
-        if (NovaUI.isSeen(items[i], viewed)) continue;
-        var progress = items[i].timeline;
-        if (progress && progress.percent > 0 && progress.percent < NovaUI.SEEN_PERCENT) started = items[i];
-      }
-      if (started && (parseInt(started.episode, 10) || 0) >= reached) return started;
-
-      if (reached) {
-        for (i = 0; i < items.length; i++) {
-          if (items[i].episode == reached) {
-            for (var j = i + 1; j < items.length; j++) {
-              if (!NovaUI.isSeen(items[j], viewed)) return items[j];
-            }
-            for (var k = 0; k < i; k++) {
-              if (!NovaUI.isSeen(items[k], viewed)) return items[k];
-            }
-            return items[i + 1] || started || items[i];
-          }
-        }
-
-        var best = null;
-        for (i = 0; i < items.length; i++) {
-          var value = parseInt(items[i].episode, 10) || 0;
-          if (value > reached && (!best || value < (parseInt(best.episode, 10) || 0))) best = items[i];
-        }
-        if (best) return best;
-        if (started) return started;
-        return items[items.length - 1];
-      }
-
-      if (started) return started;
-      for (i = 0; i < items.length; i++) {
-        if (!NovaUI.isSeen(items[i], viewed)) return items[i];
-      }
-      return items[0];
+      return items[items.length - 1];
     };
 
     this.uiPlayButton = function() {
@@ -1650,7 +1549,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.uiFreshItem = function() {
       var viewed = Lampa.Storage.cache('online_view', 5000, []);
       for (var i = 0; i < ui_items.length; i++) {
-        if (!NovaUI.isSeen(ui_items[i], viewed)) return ui_items[i];
+        if (!NovaUI.isSeen(ui_items[i])) return ui_items[i];
       }
       return null;
     };
@@ -1987,7 +1886,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var viewed = Lampa.Storage.cache('online_view', 5000, []);
         var seen = 0;
         items.forEach(function(item) {
-          if (NovaUI.isSeen(item, viewed)) seen++;
+          if (NovaUI.isSeen(item)) seen++;
         });
         var progress_text = Lampa.Lang.translate('nova_season_progress').replace('{seen}', seen).replace('{total}', items.length);
 
@@ -2395,20 +2294,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return true;
     };
 
-    this.uiReturnTarget = function() {
-      if (!modern || ui_nav || ui_open || !ui.root) return this.uiFocusTarget();
-      if (this.uiToolbarFocused() || (last && ui.rows && ui.rows.find(last).length)) return this.uiFocusTarget();
-      var item = this.uiPickResume(ui_items);
-      if (item) {
-        if (item.__html && item.__html.length && this.uiShown(item.__html[0])) return item.__html[0];
-        if (this.uiResumePage()) return false;
-      }
-      var kept = this.uiSeekKey(ui_keep);
-      if (kept) return kept;
-      if (this.uiKeepIndex() >= 0 && this.uiPreselectPage()) return false;
-      return this.uiFocusTarget();
-    };
-
     this.uiKeepIndex = function() {
       if (!ui_keep || ui_keep.indexOf('item:') !== 0) return -1;
       var index = parseInt(ui_keep.slice(5), 10);
@@ -2443,6 +2328,132 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (this.uiResumePage()) return false;
       if (ui.list) return ui.list.find('.nova-card.selector')[0] || false;
       return this.uiAlive(last) ? last : false;
+    };
+
+    this.uiDropRow = function() {
+      if (!modern || !ui.rows) return null;
+      var row = ui.rows.find('.nova-drop');
+      return row.length ? row : null;
+    };
+
+    this.uiDropFocused = function() {
+      var row = this.uiDropRow();
+      return !!(row && last && row.find(last).length);
+    };
+
+    this.uiDropOwner = function() {
+      if (!modern || !ui.rows || !ui_open) return false;
+      var bar = ui.rows.find('.nova-toolbar');
+      var chip = bar.find('[data-nova-focus="' + ui_open + '"]')[0];
+      if (!chip) chip = bar.find('.nova-chip--active')[0];
+      if (!chip) chip = bar.find('.nova-chip')[0];
+      return chip || false;
+    };
+
+    this.uiFocusNode = function(node) {
+      if (!node) return false;
+      last = node;
+      ui_focus = node.getAttribute ? (node.getAttribute('data-nova-focus') || '') : '';
+      try { scroll.update($(node), true); } catch (e) {}
+      try { Lampa.Controller.collectionFocus(node, scroll.render()); } catch (e) {}
+      return true;
+    };
+
+    this.uiDropItems = function() {
+      var row = this.uiDropRow();
+      if (!row) return [];
+      var _this = this;
+      var out = [];
+      row.find('.selector').each(function() {
+        if (_this.uiShown(this)) out.push(this);
+      });
+      return out;
+    };
+
+    this.uiRowStep = function(dir) {
+      var nodes = this.uiDropItems();
+      if (!nodes.length || !last) return false;
+      var from = last.getBoundingClientRect();
+      if (!from.width && !from.height) return false;
+      var mid = from.left + from.width / 2;
+      var tol = Math.max(6, from.height / 2);
+      var line = false;
+      var i, box, edge, dist;
+      for (i = 0; i < nodes.length; i++) {
+        if (nodes[i] === last) continue;
+        box = nodes[i].getBoundingClientRect();
+        if (!box.width && !box.height) continue;
+        if (dir === 'up') {
+          if (box.bottom > from.top + tol) continue;
+          if (line === false || box.bottom > line) line = box.bottom;
+        } else {
+          if (box.top < from.bottom - tol) continue;
+          if (line === false || box.top < line) line = box.top;
+        }
+      }
+      if (line === false) return false;
+      var best = false;
+      var gap = 0;
+      for (i = 0; i < nodes.length; i++) {
+        if (nodes[i] === last) continue;
+        box = nodes[i].getBoundingClientRect();
+        if (!box.width && !box.height) continue;
+        edge = dir === 'up' ? box.bottom : box.top;
+        if (Math.abs(edge - line) > tol) continue;
+        dist = Math.abs(box.left + box.width / 2 - mid);
+        if (best === false || dist < gap) {
+          best = nodes[i];
+          gap = dist;
+        }
+      }
+      return best;
+    };
+
+    this.uiDropEntry = function() {
+      var nodes = this.uiDropItems();
+      if (!nodes.length) return false;
+      var row = this.uiDropRow();
+      var active = row ? row.find('.nova-chip--active')[0] : false;
+      if (active && this.uiShown(active)) return active;
+      var mid = false;
+      var from;
+      if (last) {
+        from = last.getBoundingClientRect();
+        if (from.width || from.height) mid = from.left + from.width / 2;
+      }
+      var top = false;
+      var i, box, dist;
+      for (i = 0; i < nodes.length; i++) {
+        box = nodes[i].getBoundingClientRect();
+        if (top === false || box.top < top) top = box.top;
+      }
+      var best = false;
+      var gap = 0;
+      for (i = 0; i < nodes.length; i++) {
+        box = nodes[i].getBoundingClientRect();
+        if (box.top - top > Math.max(6, box.height / 2)) continue;
+        if (mid === false) return nodes[i];
+        dist = Math.abs(box.left + box.width / 2 - mid);
+        if (best === false || dist < gap) {
+          best = nodes[i];
+          gap = dist;
+        }
+      }
+      return best || nodes[0];
+    };
+
+    this.uiDropUp = function() {
+      if (!this.uiDropFocused()) return false;
+      var above = this.uiRowStep('up');
+      if (above) return this.uiFocusNode(above);
+      return this.uiFocusNode(this.uiDropOwner());
+    };
+
+    this.uiDropDown = function() {
+      if (!modern || !ui_open) return false;
+      if (this.uiDropFocused()) return this.uiFocusNode(this.uiRowStep('down'));
+      if (!this.uiToolbarFocused()) return false;
+      return this.uiFocusNode(this.uiDropEntry());
     };
 
     this.uiToolbarFocus = function() {
@@ -2936,14 +2947,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (viewed.indexOf(hash_behold) == -1) {
               viewed.push(hash_behold);
               Lampa.Storage.set('online_view', viewed);
-              addViewed();
             }
             choice = _this.getChoice();
             if (!serial) choice.movie_view = hash_behold;
-            else {
-              choice.episodes_view[element.season] = episode_num;
-              NovaUI.rememberReach(object.movie, element.season, episode_num);
-            }
             _this.saveChoice(choice);
             var voice_text = choice.voice_name || element.voice_name || element.title;
             if (voice_text.length > 30) voice_text = voice_text.slice(0, 30) + '...';
@@ -2957,14 +2963,21 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             });
             _this.uiRefreshMarks();
           };
+          element.markSeen = function() {
+            element.mark();
+            _this.timelineSet(element, 100);
+            addViewed();
+            _this.uiRefreshMarks();
+          };
           element.unmark = function() {
             viewed = Lampa.Storage.cache('online_view', 5000, []);
             if (viewed.indexOf(hash_behold) !== -1) {
               Lampa.Arrays.remove(viewed, hash_behold);
               Lampa.Storage.set('online_view', viewed);
               Lampa.Storage.remove('online_view', hash_behold);
-              if (element.__html) element.__html.find('.nova-card__viewed,.nova-card__eye').remove();
             }
+            _this.timelineSet(element, 0);
+            if (element.__html) element.__html.find('.nova-card__viewed,.nova-card__eye').remove();
             _this.uiRefreshMarks();
           };
           element.timeclear = function() {
@@ -3046,7 +3059,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (!art_fallback) element.thumbnail = art;
           }
 
-          if (!ui_nav && NovaUI.isSeen(element, viewed)) {
+          if (!ui_nav && NovaUI.isSeen(element)) {
             focus_mark = html;
             addViewed();
           }
@@ -3168,6 +3181,29 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       });
     };
 
+    this.timelineSet = function(item, percent) {
+      if (!item) return;
+      var line = item.timeline;
+      if (!line) {
+        if (!item.hash_timeline) return;
+        line = Lampa.Timeline.view(item.hash_timeline);
+        item.timeline = line;
+      }
+      if (!line) return;
+      var duration = parseInt(line.duration, 10) || 0;
+      if (percent >= 100) {
+        if (!duration) duration = 100;
+        line.duration = duration;
+        line.time = duration;
+        line.percent = 100;
+      } else {
+        line.time = 0;
+        line.duration = 0;
+        line.percent = 0;
+      }
+      Lampa.Timeline.update(line);
+    };
+
     this.markUpTo = function(element) {
       if (!element) return;
       var upto = parseInt(element.episode, 10) || 0;
@@ -3177,32 +3213,23 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       for (var i = 0; i < ui_items.length; i++) {
         var item = ui_items[i];
         var num = parseInt(item.episode, 10) || 0;
-        if (!num || !item.hash_behold) continue;
+        if (!num) continue;
         if (num <= upto) {
-          if (viewed.indexOf(item.hash_behold) === -1) {
+          if (item.hash_behold && viewed.indexOf(item.hash_behold) === -1) {
             viewed.push(item.hash_behold);
             changed = true;
           }
+          this.timelineSet(item, 100);
         } else {
-          if (viewed.indexOf(item.hash_behold) !== -1) {
+          if (item.hash_behold && viewed.indexOf(item.hash_behold) !== -1) {
             Lampa.Arrays.remove(viewed, item.hash_behold);
             Lampa.Storage.remove('online_view', item.hash_behold);
             changed = true;
           }
-          var line = item.timeline;
-          if (line && (line.percent || line.time)) {
-            line.percent = 0;
-            line.time = 0;
-            line.duration = 0;
-            Lampa.Timeline.update(line);
-          }
+          this.timelineSet(item, 0);
         }
       }
       if (changed) Lampa.Storage.set('online_view', viewed);
-      NovaUI.setReach(object.movie, element.season, upto);
-      var choice = this.getChoice();
-      if (element.season) choice.episodes_view[element.season] = upto;
-      this.saveChoice(choice);
       this.uiRefreshMarks();
     };
 
@@ -3225,7 +3252,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             return '<span>' + NovaUI.esc(part) + '</span>';
           }).join('<span class="nova-dot">\u25cf</span>'));
         }
-        if (NovaUI.isSeen(element, viewed)) {
+        if (NovaUI.isSeen(element)) {
           if (ui_grid) {
             var thumb = html.find('.nova-card__thumb');
             if (thumb.length && !thumb.find('.nova-card__viewed').length) {
@@ -4769,7 +4796,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               Lampa.Controller.toggle(enabled);
             },
             onSelect: function onSelect(a) {
-              if (a.mark) params.element.mark();
+              if (a.mark) {
+                if (params.element.markSeen) params.element.markSeen();
+                else params.element.mark();
+              }
               if (a.unmark) params.element.unmark();
               if (a.markbefore) _self.markUpTo(params.element);
               if (a.timeclear) params.element.timeclear();
@@ -5020,9 +5050,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       Lampa.Controller.add('content', {
         toggle: function toggle() {
           Lampa.Controller.collectionSet(scroll.render(), files.render());
-          var back = ui_back;
-          ui_back = '';
-          var target = modern && back ? _this.uiReturnTarget() : _this.uiFocusTarget();
+          var target = _this.uiFocusTarget();
           if (modern && !target) return;
           Lampa.Controller.collectionFocus(target || false, scroll.render());
           if (modern && target) {
@@ -5040,11 +5068,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             }, 0);
           }
         },
-        gone: function gone(name) {
+        gone: function gone() {
           clearTimeout(balanser_timer);
-          if (name === 'head' || name === 'menu') ui_back = name;
         },
         up: function up() {
+          if (modern && _this.uiDropUp()) return;
           if (Navigator.canmove('up')) {
             Navigator.move('up');
             return;
@@ -5055,6 +5083,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         },
         down: function down() {
 
+          if (modern && _this.uiDropDown()) return;
           if (modern && !ui_open && ui_items.length > 1 && _this.uiToolbarFocused()) {
             if (_this.uiGoToItem(_this.uiPickResume(ui_items))) return;
           }
@@ -6372,7 +6401,6 @@ Lampa.SettingsApi.addParam({
       Lampa.Storage.sync('online_watched_last', 'object_object');
       Lampa.Storage.sync('online_last_balanser', 'object_object');
       Lampa.Storage.sync('nova_season_last', 'object_object');
-      Lampa.Storage.sync('nova_reach', 'object_object');
       Lampa.Storage.sync('lampac_continue_play', 'bool');
     }
   }
