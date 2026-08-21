@@ -5147,17 +5147,63 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       refresh_timers.forEach(function(id) { clearTimeout(id); });
       refresh_timers = [];
     };
+
+    var soft_timer = null;
+    var player_soft = function() {
+      clearTimeout(soft_timer);
+      soft_timer = setTimeout(function() {
+        try {
+          if (Lampa.Player && typeof Lampa.Player.opened === 'function' && Lampa.Player.opened()) return;
+        } catch (e) {}
+        try {
+          if (Lampa.Activity.active().activity !== self_marks.activity) return;
+        } catch (e) {}
+        try { self_marks.uiRefreshMarks(); } catch (e) {}
+      }, 250);
+    };
+
+    var player_outside = false;
+    var player_external = function() {
+      player_outside = true;
+    };
+
+    var page_back = function() {
+      try {
+        if (document.visibilityState && document.visibilityState !== 'visible') return;
+      } catch (e) {}
+      if (!player_outside) return;
+      player_outside = false;
+      player_close();
+    };
+
     if (Lampa.Player && Lampa.Player.listener && Lampa.Player.listener.follow) {
       Lampa.Player.listener.follow('destroy', player_close);
+      Lampa.Player.listener.follow('external', player_external);
     }
+    if (Lampa.Timeline && Lampa.Timeline.listener && Lampa.Timeline.listener.follow) {
+      Lampa.Timeline.listener.follow('update', player_soft);
+    }
+    try {
+      document.addEventListener('visibilitychange', page_back, false);
+      window.addEventListener('focus', page_back, false);
+    } catch (e) {}
 
     this.pause = function() {};
     this.stop = function() {};
     this.destroy = function() {
       this.uiStopRefresh();
+      clearTimeout(soft_timer);
       if (Lampa.Player && Lampa.Player.listener && Lampa.Player.listener.remove) {
         Lampa.Player.listener.remove('destroy', player_close);
+        Lampa.Player.listener.remove('external', player_external);
       }
+      if (Lampa.Timeline && Lampa.Timeline.listener && Lampa.Timeline.listener.remove) {
+        Lampa.Timeline.listener.remove('update', player_soft);
+      }
+      try {
+        document.removeEventListener('visibilitychange', page_back);
+        window.removeEventListener('focus', page_back);
+      } catch (e) {}
       this.probeStop();
       network.clear();
       if (prefetch_timer) { clearTimeout(prefetch_timer); prefetch_timer = null; }
