@@ -1846,6 +1846,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         ui.hero_box.empty().append(ui.hero);
       }
 
+      (items || []).forEach(function(item) {
+        if (item && item.hash_timeline) {
+          try { item.timeline = Lampa.Timeline.view(item.hash_timeline); } catch (e) {}
+        }
+      });
       var target = this.uiPickResume(items);
       var button = this.uiPlayButton();
       var serial_now = movie.name ? true : false;
@@ -5125,8 +5130,22 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     var self_marks = this;
+    var refresh_timers = [];
     var player_close = function() {
-      self_marks.uiRefreshMarks();
+      var run = function() {
+        try {
+          if (Lampa.Activity.active().activity !== self_marks.activity) return;
+        } catch (e) {}
+        try { self_marks.uiRefreshMarks(); } catch (e) {}
+      };
+      run();
+      [80, 400, 1200].forEach(function(wait) {
+        refresh_timers.push(setTimeout(run, wait));
+      });
+    };
+    this.uiStopRefresh = function() {
+      refresh_timers.forEach(function(id) { clearTimeout(id); });
+      refresh_timers = [];
     };
     if (Lampa.Player && Lampa.Player.listener && Lampa.Player.listener.follow) {
       Lampa.Player.listener.follow('destroy', player_close);
@@ -5135,6 +5154,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.pause = function() {};
     this.stop = function() {};
     this.destroy = function() {
+      this.uiStopRefresh();
       if (Lampa.Player && Lampa.Player.listener && Lampa.Player.listener.remove) {
         Lampa.Player.listener.remove('destroy', player_close);
       }
