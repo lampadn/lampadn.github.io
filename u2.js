@@ -955,7 +955,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero--compact .nova-hero__season{margin:.6em 0 0 .2em;font-size:.95em;opacity:.55}',
     '.nova-hero--compact .nova-hero__progress{position:absolute;left:0;right:0;bottom:0;width:auto;height:.3em;margin:0;-webkit-border-radius:0;border-radius:0}',
     '.nova-hero--compact .nova-hero__shade{background:-webkit-linear-gradient(left,rgba(10,11,17,.88) 0%,rgba(10,11,17,.6) 45%,rgba(10,11,17,.15) 100%);background:linear-gradient(90deg,rgba(10,11,17,.88) 0%,rgba(10,11,17,.6) 45%,rgba(10,11,17,.15) 100%)}',
-    '.nova-hero--compact .nova-hero__progress{margin-top:.8em}',
     '.nova-hero__bg{position:absolute;top:0;left:0;right:0;bottom:0}',
     '.nova-hero__bg img{display:block;width:100%;height:100%;-o-object-fit:cover;object-fit:cover;opacity:0;-webkit-transition:opacity .35s;transition:opacity .35s}',
     '.nova-hero__bg--loaded img{opacity:1}',
@@ -976,7 +975,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '@media screen and (max-width:900px){',
     '.nova-hero__hint{-webkit-flex:1 0 100%;-ms-flex:1 0 100%;flex:1 0 100%;margin:.3em 0 0 .15em;white-space:normal}',
     '}',
-    '.nova-hero__progress{position:relative;height:.3em;width:16em;max-width:100%;-webkit-border-radius:.3em;border-radius:.3em;background:rgba(255,255,255,.2);margin-top:.9em;overflow:hidden}',
+    '.nova-hero__progress{position:absolute;left:0;right:0;bottom:0;height:.3em;width:auto;-webkit-border-radius:0;border-radius:0;background:rgba(255,255,255,.2);margin:0;overflow:hidden}',
     '.nova-hero__progress .time-line{display:block !important;height:100%;margin:0;background:none}',
     '.nova-hero__progress .time-line>div{height:100%;background:#fff}',
 
@@ -1347,6 +1346,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var ui_page = -1;
     var ui_page_focus = -1;
     var ui_grid = false;
+    var ui_season_planned = 0;
     var ui_draw_params;
     var probe_auto = false;
     var probe_timer;
@@ -1707,9 +1707,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return box;
     };
 
+    this.uiLogoLang = function() {
+      var lang = Lampa.Storage.get('language', 'ru') || 'ru';
+      var map = { ua: 'uk', ukr: 'uk', rus: 'ru', eng: 'en', cn: 'zh', cs: 'cs', by: 'be' };
+      lang = String(lang).toLowerCase();
+      return map[lang] || lang;
+    };
+
     this.uiLogoPick = function(list) {
       if (!list || !list.length) return '';
-      var lang = Lampa.Storage.get('language', 'ru') || 'ru';
+      var lang = this.uiLogoLang();
       var i;
       for (i = 0; i < list.length; i++) {
         if (list[i] && list[i].iso_639_1 === lang && list[i].file_path) return list[i].file_path;
@@ -1737,15 +1744,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var movie = object.movie;
       if (!this.uiLogoOn() || !movie || !movie.id) return done('');
 
+      var lang = this.uiLogoLang();
+      var cache_key = movie.id + ':' + lang;
       var all = this.uiLogoBox();
-      var mine = all[movie.id];
+      var mine = all[cache_key];
       if (typeof mine === 'string') return done(mine);
 
       var kind = movie.name || movie.number_of_seasons ? 'tv' : 'movie';
       var url = '';
+      var langs = lang === 'en' ? 'en,null' : lang + ',en,null';
       try {
         url = Lampa.TMDB.api(kind + '/' + movie.id + '/images?api_key=' + Lampa.TMDB.key() +
-          '&include_image_language=' + (Lampa.Storage.get('language', 'ru') || 'ru') + ',en,null');
+          '&include_image_language=' + langs);
       } catch (e) {
         url = '';
       }
@@ -1758,7 +1768,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var keep = function(path) {
         var box = _this.uiLogoBox();
         if (movie && movie.id) {
-          box[movie.id] = path || '';
+          box[cache_key] = path || '';
           try { Lampa.Storage.set('nova_logo_cache', box); } catch (e) {}
         }
         done(path || '');
@@ -1817,8 +1827,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           (with_art ? '<div class="nova-hero__title"></div><div class="nova-hero__meta"></div><div class="nova-hero__descr"></div>' : '') +
           '<div class="nova-hero__actions"><div class="nova-hero__hint"></div></div>' +
           '<div class="nova-hero__season" style="display:none"></div>' +
+          '</div>' +
           '<div class="nova-hero__progress" style="display:none"></div>' +
-          '</div></div>');
+          '</div>');
         if (!with_art) ui.hero.addClass('nova-hero--compact');
         if (with_art) {
           ui.hero.find('.nova-hero__title').text(movie.title || movie.name || '');
@@ -1897,6 +1908,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
         if (seen < items.length) {
           progress_text += ' · ' + Lampa.Lang.translate('nova_season_left').replace('{left}', items.length - seen);
+        }
+        if (ui_season_planned > items.length) {
+          progress_text += ' · ' + Lampa.Lang.translate('nova_season_planned').replace('{planned}', ui_season_planned);
         }
         season_line.text(progress_text).show();
         season_percent = Math.round(seen / items.length * 100);
@@ -2240,6 +2254,25 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       this.uiRows();
       this.uiFocusRestore(false);
       Lampa.Controller.enable('content');
+    };
+
+    this.uiAlive = function(element) {
+      try {
+        return !!element && !!element.nodeType && document.body.contains(element);
+      } catch (e) {
+        return !!element;
+      }
+    };
+
+    this.uiFocusTarget = function() {
+      if (this.uiAlive(last)) return last;
+      if (!modern) return last || false;
+      if (ui.play && ui.play.length && ui.play.parent().length &&
+        Lampa.Storage.get('lampac_continue_play', true) !== false) return ui.play[0];
+      var item = this.uiPickResume(ui_items);
+      if (item && item.__html && item.__html.length) return item.__html[0];
+      if (ui.list) return ui.list.find('.nova-card.selector')[0] || false;
+      return last || false;
     };
 
     this.uiToolbarFocus = function() {
@@ -2635,6 +2668,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var grid = !ui_nav && items.length > 3 && Lampa.Storage.get('nova_view', 'list') === 'grid';
         var compact = !serial && !ui_nav && !grid && items.length > 1;
         ui_grid = grid;
+        ui_season_planned = 0;
+        if (!ui_nav && !params.similars && serial) {
+          if (episodes && episodes.length) ui_season_planned = episodes.length;
+          else ui_season_planned = _this.seasonPlannedFallback(items[0] && items[0].season);
+        }
         if (grid) list.addClass('nova__list--grid');
         else list.removeClass('nova__list--grid');
 
@@ -3029,7 +3067,15 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
         }
       });
+      var keep = last;
       this.uiHero(ui_items);
+      if (this.uiAlive(keep)) {
+        last = keep;
+        try {
+          var now = Lampa.Controller.enabled();
+          if (now && now.name === 'content') Lampa.Controller.collectionFocus(keep, scroll.render());
+        } catch (e) {}
+      }
     };
 
     this.uiSimilars = function(json, manual) {
@@ -4161,6 +4207,27 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       filter.chosen('filter', select);
       filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
     };
+
+    this.seasonPlannedFallback = function(season) {
+      var movie = object.movie;
+      if (!movie) return 0;
+      var want = parseInt(season, 10);
+      var list = movie.seasons;
+      var i;
+      if (want && list && list.length) {
+        for (i = 0; i < list.length; i++) {
+          if (!list[i]) continue;
+          if (parseInt(list[i].season_number, 10) === want) {
+            return parseInt(list[i].episode_count, 10) || 0;
+          }
+        }
+      }
+      if (parseInt(movie.number_of_seasons, 10) === 1) {
+        return parseInt(movie.number_of_episodes, 10) || 0;
+      }
+      return 0;
+    };
+
     this.getEpisodes = function(season, call) {
       var episodes = [];
 	  var tmdb_id = object.movie.id;
@@ -4780,7 +4847,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       Lampa.Controller.add('content', {
         toggle: function toggle() {
           Lampa.Controller.collectionSet(scroll.render(), files.render());
-          Lampa.Controller.collectionFocus(last || false, scroll.render());
+          var target = _this.uiFocusTarget();
+          Lampa.Controller.collectionFocus(target || false, scroll.render());
+          if (modern && target) {
+            last = target;
+            try { scroll.update($(target), true); } catch (e) {}
+          }
         },
         gone: function gone() {
           clearTimeout(balanser_timer);
@@ -4813,9 +4885,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         },
         back: this.back.bind(this)
       });
-      Lampa.Controller.toggle('content');
-
       this.uiRefreshMarks();
+      Lampa.Controller.toggle('content');
     };
     this.render = function() {
       return files.render();
@@ -5196,7 +5267,7 @@ Lampa.SettingsApi.addParam({
       lampac_no_watch_history: {
         ru: 'Нет истории просмотра',
         en: 'No browsing history',
-        ua: 'Немає історії перегляду',
+        uk: 'Немає історії перегляду',
         zh: '没有浏览历史'
       },
       lampac_nolink: {
@@ -5457,6 +5528,12 @@ Lampa.SettingsApi.addParam({
         uk: 'Обрати серію',
         en: 'Pick an episode',
         zh: '选择剧集'
+      },
+      nova_season_planned: {
+        ru: 'всего в сезоне {planned}',
+        uk: 'усього в сезоні {planned}',
+        en: '{planned} in the season',
+        zh: '本季共 {planned} 集'
       },
       nova_season_left: {
         ru: 'осталось {left}',
