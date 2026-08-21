@@ -1035,7 +1035,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-card__meta .nova-dot{margin:0 .5em;opacity:.6}',
     '.nova-card__match{display:inline-block;margin-top:.4em;padding:.15em .6em;-webkit-border-radius:.35em;border-radius:.35em;background:rgba(126,217,150,.2);color:#8fe0a4;font-size:.82em;font-weight:600}',
     '.nova-card--match .nova-card__thumb{-webkit-box-shadow:inset 0 0 0 .13em rgba(126,217,150,.75);box-shadow:inset 0 0 0 .13em rgba(126,217,150,.75)}',
-    '.nova-card__side{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;text-align:right;padding-right:.7em}',
+    '.nova-card__side{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;text-align:center;padding-right:.7em}',
     '.nova-card__time{font-size:.95em;opacity:.6;margin-top:.4em}',
     '.nova-card--soon{opacity:.45}',
     '.nova-card--nav .nova-card__body{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center}',
@@ -1054,14 +1054,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-card--slim .nova-card__line{position:static;height:.25em;margin-top:.5em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.16)}',
     '.nova-card--slim.focus .nova-card__line{background:rgba(0,0,0,.15)}',
     '.nova-card--slim.focus .nova-card__line .time-line>div{background:#000}',
-    '.nova-card__line--full{position:absolute;left:.7em;right:.7em;bottom:.32em;height:.25em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.18)}',
-    '.nova-card.focus .nova-card__line--full{background:rgba(0,0,0,.16)}',
-    '.nova-card.focus .nova-card__line--full .time-line>div{background:#000}',
-    '.nova-card--file .nova-card__line--full{bottom:.28em}',
     '.nova-card__viewed{top:auto;bottom:.55em;left:.55em;width:1.15em;height:1.15em;-webkit-border-radius:0;border-radius:0;background:none;opacity:.8;-webkit-box-shadow:none;box-shadow:none}',
     '.nova-card__viewed>svg{display:block;width:100%;height:100%;-webkit-filter:drop-shadow(0 0 .2em rgba(0,0,0,.9));filter:drop-shadow(0 0 .2em rgba(0,0,0,.9))}',
     '.nova-card__eye{display:block;margin-top:.4em;opacity:.5}',
-    '.nova-card__eye>svg{display:block;width:1.2em;height:1.2em;margin-left:auto}',
+    '.nova-card__eye>svg{display:block;width:1.2em;height:1.2em;margin:0 auto}',
     '.nova-card.focus .nova-card__eye{opacity:.65}',
     '.nova-list-group{font-size:.9em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:1.2em 0 .55em .2em}',
     '.nova-list-group:first-child{margin-top:0}',
@@ -1137,7 +1133,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero__title{font-size:1.7em}',
     '.nova-hero__title--logo>img{max-height:1.9em;max-width:80%}',
     '.nova-hero__descr{display:none}',
-    '.nova-card__side{display:block;text-align:right;padding-right:.2em;max-width:6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-card__side{display:block;text-align:center;padding-right:.2em;max-width:6em;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
     '.nova-card__quality{font-size:.66em;padding:.15em .4em}',
     '.nova-card__time{font-size:.78em;margin-top:.3em;display:block}',
     '.nova-hero__shade{background:-webkit-linear-gradient(top,rgba(10,11,17,0) 0%,rgba(10,11,17,.35) 42%,rgba(10,11,17,.86) 100%);background:linear-gradient(180deg,rgba(10,11,17,0) 0%,rgba(10,11,17,.35) 42%,rgba(10,11,17,.86) 100%)}',
@@ -1151,8 +1147,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     'body.nova-focus-ring .nova-card.focus .nova-card__line--body .time-line>div{background:#fff!important}',
     'body.nova-focus-ring .nova-card--slim.focus .nova-card__line{background:rgba(255,255,255,.2)!important}',
     'body.nova-focus-ring .nova-card--slim.focus .nova-card__line .time-line>div{background:#fff!important}',
-    'body.nova-focus-ring .nova-card.focus .nova-card__line--full{background:rgba(255,255,255,.2)!important}',
-    'body.nova-focus-ring .nova-card.focus .nova-card__line--full .time-line>div{background:#fff!important}',
     'body.nova-focus-ring .nova__list--grid .nova-card.focus{background:none!important;color:inherit!important;-webkit-box-shadow:none!important;box-shadow:none!important}',
     'body.nova-focus-ring .nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .12em #fff!important;box-shadow:0 0 0 .12em #fff!important}',
     'body.nova-focus-ring .nova-chip--active.focus,body.nova-focus-ring .nova-group--open.focus{-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
@@ -2803,10 +2797,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           var line_box = html.find('.nova-card__line').show();
           line_box.append(Lampa.Timeline.render(element.timeline));
 
-          if (compact) {
+          if (!grid && !ui_nav) {
             line_box.addClass('nova-card__line--body').appendTo(html.find('.nova-card__body'));
-          } else if (!grid && !ui_nav) {
-            line_box.addClass('nova-card__line--full').appendTo(html);
           }
           if (!serial || ui_nav) html.find('.nova-card__num').remove();
           if (ui_nav) {
