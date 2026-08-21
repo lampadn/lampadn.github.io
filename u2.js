@@ -938,7 +938,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4" stroke-linecap="round"></path></svg>',
     refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 11a8 8 0 10-2.3 5.7" stroke-linecap="round"></path><path d="M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
-    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4l9 16H3z" stroke-linejoin="round"></path><path d="M12 10v4" stroke-linecap="round"></path><circle cx="12" cy="17" r="0.6" fill="currentColor"></circle></svg>'
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 4l9 16H3z" stroke-linejoin="round"></path><path d="M12 10v4" stroke-linecap="round"></path><circle cx="12" cy="17" r="0.6" fill="currentColor"></circle></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="2.6"></circle></svg>'
   };
 
   NovaUI.css = [
@@ -1053,6 +1054,15 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-card--slim .nova-card__line{position:static;height:.25em;margin-top:.5em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.16)}',
     '.nova-card--slim.focus .nova-card__line{background:rgba(0,0,0,.15)}',
     '.nova-card--slim.focus .nova-card__line .time-line>div{background:#000}',
+    '.nova-card__line--full{position:absolute;left:.7em;right:.7em;bottom:.32em;height:.25em;-webkit-border-radius:.2em;border-radius:.2em;background:rgba(255,255,255,.18)}',
+    '.nova-card.focus .nova-card__line--full{background:rgba(0,0,0,.16)}',
+    '.nova-card.focus .nova-card__line--full .time-line>div{background:#000}',
+    '.nova-card--file .nova-card__line--full{bottom:.28em}',
+    '.nova-card__viewed{top:auto;bottom:.55em;left:.55em;width:1.15em;height:1.15em;-webkit-border-radius:0;border-radius:0;background:none;opacity:.8;-webkit-box-shadow:none;box-shadow:none}',
+    '.nova-card__viewed>svg{display:block;width:100%;height:100%;-webkit-filter:drop-shadow(0 0 .2em rgba(0,0,0,.9));filter:drop-shadow(0 0 .2em rgba(0,0,0,.9))}',
+    '.nova-card__eye{display:block;margin-top:.4em;opacity:.5}',
+    '.nova-card__eye>svg{display:block;width:1.2em;height:1.2em;margin-left:auto}',
+    '.nova-card.focus .nova-card__eye{opacity:.65}',
     '.nova-list-group{font-size:.9em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:1.2em 0 .55em .2em}',
     '.nova-list-group:first-child{margin-top:0}',
     '.nova-card--file .nova-card__thumb{width:4.4em;height:4.4em}',
@@ -1141,6 +1151,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     'body.nova-focus-ring .nova-card.focus .nova-card__line--body .time-line>div{background:#fff!important}',
     'body.nova-focus-ring .nova-card--slim.focus .nova-card__line{background:rgba(255,255,255,.2)!important}',
     'body.nova-focus-ring .nova-card--slim.focus .nova-card__line .time-line>div{background:#fff!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--full{background:rgba(255,255,255,.2)!important}',
+    'body.nova-focus-ring .nova-card.focus .nova-card__line--full .time-line>div{background:#fff!important}',
     'body.nova-focus-ring .nova__list--grid .nova-card.focus{background:none!important;color:inherit!important;-webkit-box-shadow:none!important;box-shadow:none!important}',
     'body.nova-focus-ring .nova__list--grid .nova-card.focus .nova-card__thumb{-webkit-box-shadow:0 0 0 .12em #fff!important;box-shadow:0 0 0 .12em #fff!important}',
     'body.nova-focus-ring .nova-chip--active.focus,body.nova-focus-ring .nova-group--open.focus{-webkit-box-shadow:inset 0 0 0 .12em #fff!important;box-shadow:inset 0 0 0 .12em #fff!important}',
@@ -1171,9 +1183,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function novaFullScreen() {
     try {
-      return Lampa.Storage.get('nova_fullscreen', false) === true;
+      return Lampa.Storage.get('nova_fullscreen', true) === true;
     } catch (e) {
-      return false;
+      return true;
     }
   }
 
@@ -1187,9 +1199,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function novaEdgeFade() {
     try {
-      return Lampa.Storage.get('nova_fade', false) === true;
+      return Lampa.Storage.get('nova_fade', true) === true;
     } catch (e) {
-      return false;
+      return true;
     }
   }
 
@@ -1340,6 +1352,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var pending_source = '';
     var ui_page = -1;
     var ui_page_focus = -1;
+    var ui_grid = false;
     var ui_draw_params;
     var probe_auto = false;
     var probe_timer;
@@ -1878,10 +1891,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (target.voice_name && target.voice_name !== Lampa.Lang.translate('nova_unknown')) hint.push(target.voice_name);
       ui.hero.find('.nova-hero__hint').text(hint.join(' · '));
 
-      var progress = ui.hero.find('.nova-hero__progress').empty();
-      if (line && line.percent > 0) progress.show().append(Lampa.Timeline.render(line));
-      else progress.hide();
-
+      var season_percent = -1;
       var season_line = ui.hero.find('.nova-hero__season');
       if (serial && !ui_nav && items.length > 1) {
         var viewed = Lampa.Storage.cache('online_view', 5000, []);
@@ -1895,7 +1905,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           progress_text += ' · ' + Lampa.Lang.translate('nova_season_left').replace('{left}', items.length - seen);
         }
         season_line.text(progress_text).show();
+        season_percent = Math.round(seen / items.length * 100);
       } else season_line.hide();
+
+      var progress = ui.hero.find('.nova-hero__progress').empty();
+      if (season_percent >= 0) {
+        if (season_percent > 0) {
+          progress.show().append('<div class="time-line"><div style="width:' + Math.min(100, season_percent) + '%"></div></div>');
+        } else progress.hide();
+      } else if (line && line.percent > 0) progress.show().append(Lampa.Timeline.render(line));
+      else progress.hide();
 
       return button;
     };
@@ -2091,7 +2110,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.probeBackground = function() {
       var _this = this;
       if (!modern || probe_auto || object.balanser) return;
-      if (Lampa.Storage.get('nova_probe_enable', true) === false) return;
+      if (Lampa.Storage.get('nova_probe_enable', false) !== true) return;
       clearTimeout(probe_timer);
 
       probe_timer = setTimeout(function() {
@@ -2140,7 +2159,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.probeSources = function(names) {
       var _this = this;
-      if (Lampa.Storage.get('nova_probe_enable', true) === false) return;
+      if (Lampa.Storage.get('nova_probe_enable', false) !== true) return;
       this.probeStop();
       probe_busy = true;
 
@@ -2391,7 +2410,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var known = this.probeCache().list[name];
       if (known) {
         if (known.s == 'empty') chip.addClass('nova-chip--empty');
-        else if (known.s == 'ok') chip.append('<span class="nova-chip__dot"></span>');
+        else if (known.s == 'ok' && Lampa.Storage.get('nova_probe_enable', false) === true) chip.append('<span class="nova-chip__dot"></span>');
       }
       chip.on('hover:enter', function() {
         ui_open = '';
@@ -2621,6 +2640,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
         var grid = !ui_nav && items.length > 3 && Lampa.Storage.get('nova_view', 'list') === 'grid';
         var compact = !serial && !ui_nav && !grid && items.length > 1;
+        ui_grid = grid;
         if (grid) list.addClass('nova__list--grid');
         else list.removeClass('nova__list--grid');
 
@@ -2697,10 +2717,16 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
           var addViewed = function() {
             if (!element.__html) return;
-            var box = element.__html.find('.nova-card__thumb');
-            if (box.length && !box.find('.nova-card__viewed').length) {
-
-              box.append('<div class="nova-card__viewed"></div>');
+            if (grid) {
+              var box = element.__html.find('.nova-card__thumb');
+              if (box.length && !box.find('.nova-card__viewed').length) {
+                box.append('<div class="nova-card__viewed">' + NovaUI.icon.eye + '</div>');
+              }
+              return;
+            }
+            var side = element.__html.find('.nova-card__side');
+            if (side.length && !side.find('.nova-card__eye').length) {
+              side.append('<div class="nova-card__eye">' + NovaUI.icon.eye + '</div>');
             }
           };
           element.mark = function() {
@@ -2735,7 +2761,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               Lampa.Arrays.remove(viewed, hash_behold);
               Lampa.Storage.set('online_view', viewed);
               Lampa.Storage.remove('online_view', hash_behold);
-              if (element.__html) element.__html.find('.nova-card__viewed').remove();
+              if (element.__html) element.__html.find('.nova-card__viewed,.nova-card__eye').remove();
             }
             _this.uiRefreshMarks();
           };
@@ -2779,6 +2805,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
           if (compact) {
             line_box.addClass('nova-card__line--body').appendTo(html.find('.nova-card__body'));
+          } else if (!grid && !ui_nav) {
+            line_box.addClass('nova-card__line--full').appendTo(html);
           }
           if (!serial || ui_nav) html.find('.nova-card__num').remove();
           if (ui_nav) {
@@ -2995,9 +3023,18 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             return '<span>' + NovaUI.esc(part) + '</span>';
           }).join('<span class="nova-dot">\u25cf</span>'));
         }
-        var thumb = html.find('.nova-card__thumb');
-        if (thumb.length && NovaUI.isSeen(element, viewed) && !thumb.find('.nova-card__viewed').length) {
-          thumb.append('<div class="nova-card__viewed"></div>');
+        if (NovaUI.isSeen(element, viewed)) {
+          if (ui_grid) {
+            var thumb = html.find('.nova-card__thumb');
+            if (thumb.length && !thumb.find('.nova-card__viewed').length) {
+              thumb.append('<div class="nova-card__viewed">' + NovaUI.icon.eye + '</div>');
+            }
+          } else {
+            var side = html.find('.nova-card__side');
+            if (side.length && !side.find('.nova-card__eye').length) {
+              side.append('<div class="nova-card__eye">' + NovaUI.icon.eye + '</div>');
+            }
+          }
         }
       });
       this.uiHero(ui_items);
@@ -5781,7 +5818,7 @@ Lampa.SettingsApi.addParam({
       param: {
         name: 'nova_fullscreen',
         type: 'trigger',
-        "default": false
+        "default": true
       },
       field: {
         name: Lampa.Lang.translate('nova_fullscreen_name'),
@@ -5797,7 +5834,7 @@ Lampa.SettingsApi.addParam({
       param: {
         name: 'nova_fade',
         type: 'trigger',
-        "default": false
+        "default": true
       },
       field: {
         name: Lampa.Lang.translate('nova_fade_name'),
@@ -5852,7 +5889,7 @@ Lampa.SettingsApi.addParam({
       param: {
         name: 'nova_probe_enable',
         type: 'trigger',
-        "default": true
+        "default": false
       },
       field: {
         name: Lampa.Lang.translate('nova_probe_name'),
