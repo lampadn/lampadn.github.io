@@ -1154,6 +1154,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     'body.nova-full .nova-scope .explorer__files{width:100%!important;left:0!important}',
 
     'body.nova-fade .nova-scope .nova-hero{background:transparent;-webkit-border-radius:0;border-radius:0}',
+    'body.nova-fade .nova-scope .nova-hero__progress{left:2.2em;right:2.2em;bottom:1.5em;width:auto;-webkit-border-radius:.3em;border-radius:.3em}',
+    'body.nova-fade .nova-scope .nova-hero--compact .nova-hero__progress{left:1.4em;right:1.4em;bottom:.9em}',
+    '@media screen and (max-width:580px){body.nova-fade .nova-scope .nova-hero__progress{left:1.3em;right:1.3em;bottom:1em}}',
     'body.nova-fade .nova-scope .nova-hero__bg,body.nova-fade .nova-scope .nova-hero__shade{-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 10%,#000 90%,transparent 100%),linear-gradient(180deg,transparent 0,#000 14%,#000 86%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%}',
     '</style>'
   ].join('');
@@ -1347,6 +1350,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var ui_page_focus = -1;
     var ui_grid = false;
     var ui_season_planned = 0;
+    var ui_keep = '';
     var ui_draw_params;
     var probe_auto = false;
     var probe_timer;
@@ -2264,9 +2268,35 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       }
     };
 
+    this.uiKeepIndex = function() {
+      if (!ui_keep || ui_keep.indexOf('item:') !== 0) return -1;
+      var index = parseInt(ui_keep.slice(5), 10);
+      if (isNaN(index) || index < 0 || index >= ui_items.length) return -1;
+      return index;
+    };
+
+    this.uiPreselectPage = function() {
+      var index = this.uiKeepIndex();
+      if (index < 0 || ui_nav) return false;
+      var item = ui_items[index];
+      if (!item || (item.__html && item.__html.length)) return false;
+      if (ui_items.length <= NovaUI.JUMP_FROM) return false;
+      var page = NovaUI.pageAt(NovaUI.pages(ui_items.length), index);
+      if (page.start === ui_page) return false;
+      this.uiShowPage(page.start, index);
+      return true;
+    };
+
     this.uiFocusTarget = function() {
       if (this.uiAlive(last)) return last;
       if (!modern) return last || false;
+
+      if (ui_keep && ui.root) {
+        var kept = ui.root.find('[data-nova-focus="' + ui_keep + '"]');
+        if (kept.length) return kept[0];
+      }
+      if (this.uiPreselectPage()) return false;
+
       if (ui.play && ui.play.length && ui.play.parent().length &&
         Lampa.Storage.get('lampac_continue_play', true) !== false) return ui.play[0];
       var item = this.uiPickResume(ui_items);
@@ -2815,6 +2845,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             '<div class="nova-card__side"><div class="nova-card__quality"></div><div class="nova-card__time"></div></div>' +
             '</div>');
           element.__html = html;
+          if (!ui_nav) html.attr('data-nova-focus', 'item:' + index);
           if (!serial) html.addClass('nova-card--file');
 
           if (ui_nav) html.addClass('nova-card--nav');
@@ -2899,6 +2930,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             if (params.onEnter) params.onEnter(element, html, data);
           }).on('hover:focus', function(e) {
             last = e.target;
+            if (!ui_nav) ui_keep = 'item:' + index;
             if (params.onFocus) params.onFocus(element, html, data);
             scroll.update($(e.target), true);
           });
@@ -4127,6 +4159,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.reset = function() {
       last = false;
+      ui_keep = '';
       clearInterval(balanser_timer);
       network.clear();
       this.clearImages();
@@ -4848,10 +4881,20 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         toggle: function toggle() {
           Lampa.Controller.collectionSet(scroll.render(), files.render());
           var target = _this.uiFocusTarget();
+          if (modern && !target) return;
           Lampa.Controller.collectionFocus(target || false, scroll.render());
           if (modern && target) {
             last = target;
             try { scroll.update($(target), true); } catch (e) {}
+            setTimeout(function() {
+              try {
+                var now = Lampa.Controller.enabled();
+                if (!now || now.name !== 'content') return;
+                if (!_this.uiAlive(target) || $(target).hasClass('focus')) return;
+                Lampa.Controller.collectionFocus(target, scroll.render());
+                scroll.update($(target), true);
+              } catch (e) {}
+            }, 0);
           }
         },
         gone: function gone() {
