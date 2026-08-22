@@ -1238,6 +1238,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var episodes_cache = {};
     var life_wait_times = 0;
     var life_wait_timer;
+    var life_done = false;
+    var life_started = 0;
     var filter_sources = [];
     var filter_translate = {
       season: Lampa.Lang.translate('torrent_serial_season'),
@@ -2585,6 +2587,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var state = known ? known.s : '';
       if (state == 'empty') chip.addClass('nova-chip--empty');
       else if (state == 'ok' || info.show) chip.append('<span class="nova-chip__dot"></span>');
+      else if (!life_done) chip.addClass('nova-chip--checking');
       chip.on('hover:enter', function() {
         ui_open = '';
         if (name == balanser) {
@@ -2613,7 +2616,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (name == balanser) return true;
         if (state == 'ok') return true;
         if (state == 'empty') return false;
-
+        if (!life_done) return true;
         if (NovaUI.knownQuality(name)) return true;
         return info.show;
       });
@@ -3022,7 +3025,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
 
           if (!ui_nav && NovaUI.isSeen(element)) {
-            focus_mark = html;
+            if (serial) focus_mark = html;
             addViewed();
           }
 
@@ -3596,7 +3599,31 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             }
           }
         };
+        var lifeStep = function() {
+          return life_wait_times < 4 ? 550 : 1000;
+        };
+        var lifeOver = function() {
+          return life_wait_times > 15 || Date.now() - life_started > 26000;
+        };
+        var lifeRedraw = function() {
+          if (!modern || !ui.rows || ui_open != 'source') return;
+          try {
+            var keep = last && last.getAttribute ? (last.getAttribute('data-nova-focus') || '') : '';
+            _this3.uiRows();
+            if (keep) ui_focus = keep;
+            _this3.uiFocusRestore(false);
+            if (last) _this3.uiFocusNode(last);
+          } catch (e) {}
+        };
+        var lifeFinish = function() {
+          life_done = true;
+          clearTimeout(life_wait_timer);
+          life_wait_timer = null;
+          filter.render().find('.lampac-balanser-loader').remove();
+          lifeRedraw();
+        };
         var fin = function fin(call) {
+          if (!life_started) life_started = Date.now();
           network.timeout(3000);
           network.silent(account(url), function(json) {
             life_wait_times++;
@@ -3621,23 +3648,25 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             }));
             filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
             _this3.uiLoadingProgress(json, life_wait_times);
+            if (red) lifeRedraw();
             gou(json);
             var lastb = _this3.getLastChoiceBalanser();
-            if (life_wait_times > 15 || json.ready) {
-              filter.render().find('.lampac-balanser-loader').remove();
+            if (lifeOver() || json.ready) {
               gou(json, true);
+              lifeFinish();
             } else if (!red && sources[lastb] && sources[lastb].show) {
               gou(json, true);
-              life_wait_timer = setTimeout(fin, 1000);
+              life_wait_timer = setTimeout(fin, lifeStep());
             } else {
-              life_wait_timer = setTimeout(fin, 1000);
+              life_wait_timer = setTimeout(fin, lifeStep());
             }
           }, function() {
             life_wait_times++;
-            if (life_wait_times > 15) {
+            if (lifeOver()) {
+              life_done = true;
               reject();
             } else {
-              life_wait_timer = setTimeout(fin, 1000);
+              life_wait_timer = setTimeout(fin, lifeStep());
             }
           }, false, {
 			headers: {'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')}
@@ -3676,6 +3705,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                 return _this4.startSource(json_life);
               }).then(resolve)["catch"](reject);
             } else {
+              life_done = true;
               _this4.startSource(json).then(resolve)["catch"](reject);
             }
           }, function(err) {
