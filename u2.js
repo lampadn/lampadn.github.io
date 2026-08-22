@@ -929,6 +929,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero__title--logo>img{display:block;max-height:2.1em;max-width:70%;width:auto;height:auto;-o-object-fit:contain;object-fit:contain;-webkit-filter:drop-shadow(0 .04em .12em rgba(0,0,0,.55));filter:drop-shadow(0 .04em .12em rgba(0,0,0,.55))}',
     '.nova-hero__title--logo>img.nova-logo--invert{-webkit-filter:invert(1) brightness(1.1) drop-shadow(0 .04em .12em rgba(0,0,0,.5));filter:invert(1) brightness(1.1) drop-shadow(0 .04em .12em rgba(0,0,0,.5))}',
     '.nova-hero__title--logo>img.nova-logo--glow{-webkit-filter:drop-shadow(0 0 .02em rgba(255,255,255,.9)) drop-shadow(0 0 .04em rgba(255,255,255,.75));filter:drop-shadow(0 0 .02em rgba(255,255,255,.9)) drop-shadow(0 0 .04em rgba(255,255,255,.75))}',
+    '.nova-hero__mark{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;min-width:0;max-width:40%;margin:0 1.2em .4em 0;font-size:1.2em;font-weight:600;line-height:1.25;overflow:hidden;white-space:nowrap;-o-text-overflow:ellipsis;text-overflow:ellipsis}',
+    '.nova-hero__mark:empty{display:none}',
+    '.nova-hero__mark.nova-hero__title--logo{display:block;overflow:visible;padding:.08em 0 .06em;margin-bottom:.4em;line-height:1}',
+    '.nova-hero__mark>img{max-height:1.75em !important;max-width:100% !important;width:auto;height:auto}',
+    '@media screen and (max-width:900px){.nova-hero__mark{max-width:55%;font-size:1.05em}}',
+    '@media screen and (max-width:580px){.nova-hero__mark{-webkit-box-ordinal-group:2;-webkit-order:1;-ms-flex-order:1;order:1;max-width:100%;margin-right:0}.nova-hero__mark>img{max-height:1.5em !important}}',
     '.nova-hero__meta{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;font-size:1.1em;margin-bottom:.7em}',
     '.nova-hero__meta>*{margin:0 .7em .3em 0;opacity:.8}',
     '.nova-hero__meta>.nova-badge{opacity:1}',
@@ -1663,6 +1669,27 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return '';
     };
 
+    this.uiArtSize = function() {
+      var want = String(Lampa.Storage.get('nova_art_size', 'auto') || 'auto');
+      if (want === 'w780' || want === 'w1280' || want === 'original') return want;
+      var pixels = 0;
+      try {
+        pixels = (window.innerWidth || 0) * (window.devicePixelRatio || 1);
+      } catch (e) {
+        pixels = 0;
+      }
+
+      return pixels >= 1100 ? 'w1280' : 'w780';
+    };
+
+    this.uiLogoSlot = function() {
+      if (!ui.hero) return null;
+      var slot = ui.hero.find('.nova-hero__title');
+      if (slot.length) return slot;
+      slot = ui.hero.find('.nova-hero__mark');
+      return slot.length ? slot : null;
+    };
+
     this.uiLogoUrl = function(path) {
       if (!path) return '';
       try {
@@ -1779,8 +1806,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var _this = this;
       if (!ui.hero) return;
       var movie = object.movie;
-      var slot = ui.hero.find('.nova-hero__title');
-      if (!slot.length || !movie) return;
+      var slot = this.uiLogoSlot();
+      if (!slot || !movie) return;
 
       var name = movie.title || movie.name || '';
       if (!this.uiLogoOn()) return slot.removeClass('nova-hero__title--logo').text(name);
@@ -1788,8 +1815,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var want = movie.id;
       this.uiLogoLoad(function(path) {
         if (!ui.hero || !object.movie || object.movie.id !== want) return;
-        var box = ui.hero.find('.nova-hero__title');
-        if (!box.length) return;
+        var box = _this.uiLogoSlot();
+        if (!box) return;
 
         var src = _this.uiLogoUrl(path);
         if (!src) return box.removeClass('nova-hero__title--logo').text(name);
@@ -1819,10 +1846,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var with_art = Lampa.Storage.get('nova_hero_art', true) !== false;
       if (!ui.hero) {
         ui.hero = $('<div class="nova-hero">' +
-          '<div class="nova-hero__bg"><img alt=""></div><div class="nova-hero__shade"></div>' +
+          (with_art ? '<div class="nova-hero__bg"><img alt=""></div><div class="nova-hero__shade"></div>' : '') +
           '<div class="nova-hero__body">' +
           (with_art ? '<div class="nova-hero__title"></div><div class="nova-hero__meta"></div><div class="nova-hero__descr"></div>' : '') +
-          '<div class="nova-hero__actions"><div class="nova-hero__hint"></div></div>' +
+          '<div class="nova-hero__actions">' +
+          (with_art ? '' : '<div class="nova-hero__mark"></div>') +
+          '<div class="nova-hero__hint"></div></div>' +
           '<div class="nova-hero__season" style="display:none"></div>' +
           '</div>' +
           '<div class="nova-hero__progress" style="display:none"></div>' +
@@ -1831,9 +1860,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (with_art) {
           ui.hero.find('.nova-hero__title').text(movie.title || movie.name || '');
           ui.hero.find('.nova-hero__descr').text(movie.overview || '');
-          this.uiHeroLogo();
         }
-        var art = movie.backdrop_path || movie.poster_path;
+        // logo lives in the title slot with artwork, in the mark slot without it
+        this.uiHeroLogo();
+        var art = with_art ? (movie.backdrop_path || movie.poster_path) : '';
         if (art) {
           var back = ui.hero.find('.nova-hero__bg');
           var img = ui.hero.find('.nova-hero__bg img')[0];
@@ -1841,7 +1871,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             back.addClass('nova-hero__bg--loaded');
           };
           img.onerror = function() {};
-          img.src = Lampa.TMDB.image('t/p/w780' + art);
+          img.src = Lampa.TMDB.image('t/p/' + _this.uiArtSize() + art);
         }
         ui.hero_box.empty().append(ui.hero);
       }
@@ -2864,7 +2894,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           }
         }
 
-        var grid = !ui_nav && items.length > 3 && Lampa.Storage.get('nova_view', 'list') === 'grid';
+        var grid = !ui_nav && items.length > 0 && Lampa.Storage.get('nova_view', 'list') === 'grid';
         var compact = !serial && !ui_nav && !grid && items.length > 1;
         ui_grid = grid;
         ui_season_planned = 0;
@@ -6010,6 +6040,42 @@ Lampa.SettingsApi.addParam({
         en: 'Large backdrop, title and overview above the button',
         zh: '按钮上方显示大图、标题和简介'
       },
+      nova_art_size_name: {
+        ru: 'Качество кадра',
+        uk: 'Якість кадру',
+        en: 'Backdrop quality',
+        zh: '剧照画质'
+      },
+      nova_art_size_descr: {
+        ru: 'Разрешение картинки в шапке. Выше — резче, но тяжелее',
+        uk: 'Роздільна здатність картинки в шапці. Вище — різкіше, але важче',
+        en: 'Header artwork resolution. Higher is sharper but heavier',
+        zh: '头部剧照分辨率。越高越清晰，但更大'
+      },
+      nova_art_auto: {
+        ru: 'Авто (по экрану)',
+        uk: 'Авто (за екраном)',
+        en: 'Auto (by screen)',
+        zh: '自动（按屏幕）'
+      },
+      nova_art_780: {
+        ru: 'Обычное — 780px',
+        uk: 'Звичайна — 780px',
+        en: 'Normal — 780px',
+        zh: '普通 — 780px'
+      },
+      nova_art_1280: {
+        ru: 'Высокое — 1280px',
+        uk: 'Висока — 1280px',
+        en: 'High — 1280px',
+        zh: '高 — 1280px'
+      },
+      nova_art_orig: {
+        ru: 'Максимальное (тяжёлое)',
+        uk: 'Максимальна (важка)',
+        en: 'Maximum (heavy)',
+        zh: '最大（较重）'
+      },
       nova_logo_name: {
         ru: 'Логотип вместо названия',
         uk: 'Логотип замість назви',
@@ -6222,6 +6288,24 @@ Lampa.SettingsApi.addParam({
       }
     });
 
+    Lampa.SettingsApi.addParam({
+      component: 'nova_online',
+      param: {
+        name: 'nova_art_size',
+        type: 'select',
+        values: {
+          auto: Lampa.Lang.translate('nova_art_auto'),
+          w780: Lampa.Lang.translate('nova_art_780'),
+          w1280: Lampa.Lang.translate('nova_art_1280'),
+          original: Lampa.Lang.translate('nova_art_orig')
+        },
+        "default": 'auto'
+      },
+      field: {
+        name: Lampa.Lang.translate('nova_art_size_name'),
+        description: Lampa.Lang.translate('nova_art_size_descr')
+      }
+    });
     Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
