@@ -3,7 +3,7 @@
     try {
       var legacy = 'z' + '01_';
       var pairs = ['ui_mode', 'quality', 'view', 'hero', 'hero_art', 'voice_auto', 'voice_pref',
-        'probe_enable', 'similar_auto', 'auto_switch', 'source_quality', 'reach', 'season_last', 'sources', 'probe'];
+        'similar_auto', 'auto_switch', 'source_quality', 'reach', 'season_last', 'sources', 'probe'];
       var copy = function (from, to) {
         var old = Lampa.Storage.get(from, '@none');
         if (old === '@none') return;
@@ -482,13 +482,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return Lampa.Storage.get('nova_ui_mode', 'modern') !== 'classic';
   };
 
-  NovaUI.PROBE_TIMEOUT = 7000;
-  NovaUI.PROBE_PARALLEL = 2;
-  NovaUI.PROBE_LIMIT = 12;
-  NovaUI.PROBE_BUDGET = 20000;
   NovaUI.PROBE_TTL_OK = 21600000;
   NovaUI.PROBE_TTL_EMPTY = 1800000;
-  NovaUI.PROBE_DELAY = 1500;
   NovaUI.JUMP_FROM = 20;
   NovaUI.SOURCES_TTL = 3600000;
   NovaUI.SOURCES_DELAY = 1200;
@@ -873,8 +868,40 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     return best;
   };
 
+  NovaUI.QUALITY_TTL = 604800000;
+
+  var quality_scope = '';
+
+  NovaUI.qualityScope = function(id) {
+    if (typeof id !== 'undefined') quality_scope = id ? String(id) : '';
+    return quality_scope;
+  };
+
+  NovaUI.qualityBox = function() {
+    var all = Lampa.Storage.cache('nova_source_quality', 500, {});
+    var key;
+
+    for (key in all) {
+      if (typeof all[key] === 'string') {
+        all = {};
+        Lampa.Storage.set('nova_source_quality', all);
+        break;
+      }
+    }
+
+    var now = Date.now();
+    for (key in all) {
+      var entry = all[key];
+      if (!entry || typeof entry !== 'object' || !entry.list ||
+          now - (entry.t || 0) > NovaUI.QUALITY_TTL) delete all[key];
+    }
+    return all;
+  };
+
   NovaUI.qualityMemory = function() {
-    return Lampa.Storage.cache('nova_source_quality', 500, {});
+    if (!quality_scope) return {};
+    var mine = NovaUI.qualityBox()[quality_scope];
+    return (mine && mine.list) || {};
   };
 
   NovaUI.knownQuality = function(name) {
@@ -882,10 +909,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   };
 
   NovaUI.rememberQuality = function(name, label) {
-    if (!name || !label) return;
-    var all = NovaUI.qualityMemory();
-    if (NovaUI.qualityRank(label) <= NovaUI.qualityRank(all[name])) return;
-    all[name] = label;
+    if (!quality_scope || !name || !label) return;
+    var all = NovaUI.qualityBox();
+    var mine = all[quality_scope];
+    if (!mine || typeof mine !== 'object' || !mine.list) mine = { t: 0, list: {} };
+    if (NovaUI.qualityRank(label) <= NovaUI.qualityRank(mine.list[name])) return;
+    mine.list[name] = label;
+    mine.t = Date.now();
+    all[quality_scope] = mine;
     Lampa.Storage.set('nova_source_quality', all);
   };
 
@@ -1300,6 +1331,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	}
 
     var modern = NovaUI.enabled();
+    NovaUI.qualityScope(object.movie ? object.movie.id : '');
     var ui = {};
     var ui_items = [];
     var ui_enter = null;
@@ -1313,8 +1345,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var similar_shown = false;
     var last_origin = '';
     var request_gen = 0;
-    var probe_nets = [];
-    var probe_busy = false;
     var ui_all_sources = false;
     var sources_stale = false;
     var sources_timer;
@@ -1325,8 +1355,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var ui_season_planned = 0;
     var ui_keep = '';
     var ui_draw_params;
-    var probe_auto = false;
-    var probe_timer;
     var ui_watchdog;
     var ui_load_timer;
     var ui_load_started = 0;
@@ -1861,7 +1889,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           ui.hero.find('.nova-hero__title').text(movie.title || movie.name || '');
           ui.hero.find('.nova-hero__descr').text(movie.overview || '');
         }
-        // logo lives in the title slot with artwork, in the mark slot without it
         this.uiHeroLogo();
         var art = with_art ? (movie.backdrop_path || movie.poster_path) : '';
         if (art) {
@@ -1996,6 +2023,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
     this.uiRows = function() {
       var _this = this;
+      NovaUI.qualityScope(object.movie ? object.movie.id : '');
       var rows = ui.rows.empty();
       var toolbar = $('<div class="nova-toolbar"></div>');
 
@@ -2130,151 +2158,10 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return entry ? entry.s : '';
     };
 
-    this.probeOrder = function(names) {
-      var rank = function(name) {
-        if (NovaUI.knownQuality(name)) return 0;
-        return (sources[name] && sources[name].show) ? 2 : 1;
-      };
-      return names.map(function(name, index) {
-        return {
-          name: name,
-          index: index
-        };
-      }).sort(function(a, b) {
-        return (rank(a.name) - rank(b.name)) || (a.index - b.index);
-      }).map(function(entry) {
-        return entry.name;
-      });
-    };
-
-    this.probeBackground = function() {
-      var _this = this;
-      if (!modern || probe_auto || object.balanser) return;
-      if (Lampa.Storage.get('nova_probe_enable', false) !== true) return;
-      clearTimeout(probe_timer);
-
-      probe_timer = setTimeout(function() {
-        if (probe_busy) return;
-        var all = sourceKeys();
-        if (all.length < 2) return;
-        probe_auto = true;
-        _this.probeSources(all);
-      }, NovaUI.PROBE_DELAY);
-    };
-
-    this.probeStop = function() {
-      probe_busy = false;
-      clearTimeout(probe_timer);
-      if (ui.rows) ui.rows.find('.nova-chip--checking').removeClass('nova-chip--checking');
-      probe_nets.forEach(function(net) {
-        net.clear();
-      });
-      probe_nets = [];
-    };
-
-    this.probeMark = function(name, state, count) {
-      if (!ui.rows) return;
-      var row = ui.rows.find('.nova-drop');
-      if (!row.length) return;
-      var chip = row.find('[data-nova-focus="src:' + name + '"]');
-      if (!chip.length) {
-
-        if (state !== 'ok') return;
-        chip = this.sourceChip(name);
-        row.append(chip);
-      }
-      chip.removeClass('nova-chip--checking nova-chip--empty');
-      chip.find('.nova-chip__dot').remove();
-
-      var real = NovaUI.knownQuality(name);
-      if (real && !(sources[name] || {}).vip) {
-        var mark = chip.find('.nova-chip__badge');
-        if (!mark.length) chip.prepend($('<span class="nova-chip__badge"></span>').text(real));
-        else mark.text(real);
-      }
-
-      if (state == 'empty') chip.addClass('nova-chip--empty');
-      else if (state == 'ok') chip.append('<span class="nova-chip__dot"></span>');
-    };
-
-    this.probeSources = function(names) {
-      var _this = this;
-      if (Lampa.Storage.get('nova_probe_enable', false) !== true) return;
-      this.probeStop();
-      probe_busy = true;
-
-      var cached = this.probeCache().list;
-      var queue = names.filter(function(name) {
-        if (name == balanser) return false;
-        if (!sources[name] || !sources[name].url) return false;
-        if (cached[name]) {
-          _this.probeMark(name, cached[name].s, cached[name].c);
-          return false;
-        }
-        return true;
-      });
-      queue = this.probeOrder(queue);
-
-      queue = queue.slice(0, NovaUI.PROBE_LIMIT);
-      var deadline = Date.now() + NovaUI.PROBE_BUDGET;
-
-      queue.forEach(function(name) {
-        var chip = ui.rows.find('[data-nova-focus="src:' + name + '"]');
-        chip.addClass('nova-chip--checking');
-      });
-
-      var index = 0;
-      var next = function() {
-        if (!probe_busy || index >= queue.length) return;
-        if (Date.now() > deadline) return _this.probeStop();
-        var name = queue[index++];
-        var net = new Network();
-        probe_nets.push(net);
-        net.timeout(NovaUI.PROBE_TIMEOUT);
-        net["native"](account(_this.requestParams(sources[name].url)), function(answer) {
-          _this.probeDone(name, answer);
-          next();
-        }, function() {
-          _this.probeDone(name, '');
-          next();
-        }, false, {
-          dataType: 'text',
-          headers: {
-            'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', ''),
-            'X-Zprem-Key': Lampa.Storage.get('zpremkey', '')
-          }
-        });
-      };
-      for (var worker = 0; worker < NovaUI.PROBE_PARALLEL; worker++) next();
-    };
-
-    this.probeDone = function(name, answer) {
-      if (!probe_busy) return;
-      var text = typeof answer === 'string' ? answer : '';
-
-      if (text.indexOf('"rch"') !== -1 || (answer && answer.rch)) {
-        this.probeMark(name, 'skip', 0);
-        return;
-      }
-
-      if (text.indexOf('"accsdb"') !== -1 || text.indexOf('"blocked"') !== -1 ||
-          (answer && (answer.accsdb || answer.blocked))) {
-        this.probeMark(name, 'skip', 0);
-        return;
-      }
-
-      var found = (text.match(/videos__item/g) || []).length ||
-        (text.match(/"method"\s*:\s*"(play|call|link)"/g) || []).length;
-      var state = found ? 'ok' : 'empty';
-      if (found) NovaUI.rememberQuality(name, NovaUI.bestQualityFromText(text));
-      this.probeSave(name, state, found);
-      this.probeMark(name, state, found);
-    };
 
     this.uiToggle = function(key) {
       var opening = ui_open != key;
       ui_open = opening ? key : '';
-      if (!opening || key !== 'source') this.probeStop();
 
       ui_focus = key;
       if (opening) {
@@ -2504,6 +2391,38 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return this.uiFocusNode(this.uiDropEntry());
     };
 
+    this.uiDropSide = function(dir) {
+      var nodes = this.uiDropItems();
+      if (!nodes.length || !last) return false;
+      var at = -1;
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i] === last) {
+          at = i;
+          break;
+        }
+      }
+      if (at === -1) return false;
+      var next = dir === 'left' ? at - 1 : at + 1;
+      if (next < 0 || next >= nodes.length) return false;
+      return nodes[next];
+    };
+
+    this.uiDropLeft = function() {
+      if (!modern || !ui_open) return false;
+      if (this.uiDropFocused()) {
+        var back = this.uiDropSide('left');
+        if (back) this.uiFocusNode(back);
+        return true;
+      }
+      return this.uiToolbarFocused();
+    };
+
+    this.uiDropRight = function() {
+      if (!modern || !ui_open || !this.uiDropFocused()) return false;
+      var ahead = this.uiDropSide('right');
+      return ahead ? this.uiFocusNode(ahead) : false;
+    };
+
     this.uiToolbarFocus = function() {
       if (!modern || !ui.rows) return false;
       var row = ui.rows.find('.nova-toolbar');
@@ -2626,7 +2545,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         row.append(chip);
       });
       ui.rows.append(row);
-      this.probeSources(order);
     };
 
     this.uiSwitch = function(type, index) {
@@ -2664,10 +2582,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (name == balanser) chip.addClass('nova-chip--active');
 
       var known = this.probeCache().list[name];
-      if (known) {
-        if (known.s == 'empty') chip.addClass('nova-chip--empty');
-        else if (known.s == 'ok' && Lampa.Storage.get('nova_probe_enable', false) === true) chip.append('<span class="nova-chip__dot"></span>');
-      }
+      var state = known ? known.s : '';
+      if (state == 'empty') chip.addClass('nova-chip--empty');
+      else if (state == 'ok' || info.show) chip.append('<span class="nova-chip__dot"></span>');
       chip.on('hover:enter', function() {
         ui_open = '';
         if (name == balanser) {
@@ -2730,7 +2647,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         row.append(more);
       }
       ui.rows.append(row);
-      this.probeSources(all);
     };
 
     this.uiSwitch = function(type, index) {
@@ -2786,8 +2702,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       season_pinned = false;
       similar_list = null;
       similar_auto = false;
-      this.probeStop();
-      this.probeStop();
       ui_focus = 'source';
       this.uiLoading();
       this.uiRows();
@@ -2847,9 +2761,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var _this = this;
       params = params || {};
       if (!items.length) return this.empty();
+      NovaUI.qualityScope(object.movie ? object.movie.id : '');
       this.probeSave(balanser, 'ok', items.length);
       if (!params.similars) NovaUI.rememberQuality(balanser, NovaUI.bestQuality(items));
-      this.probeBackground();
       this.uiFrame();
       this.uiLoadingStop();
       this.uiWatchStop();
@@ -4959,8 +4873,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.empty = function() {
       if (modern) {
         this.probeSave(balanser, 'empty', 0);
-
-        this.probeBackground();
         this.uiNote({
           title: Lampa.Lang.translate('empty_title_two'),
           text: Lampa.Lang.translate('nova_empty_text').replace('{name}', (sources[balanser] && sources[balanser].name) || balanser || ''),
@@ -5090,6 +5002,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     this.start = function() {
       var _this = this;
       if (Lampa.Activity.active().activity !== this.activity) return;
+      NovaUI.qualityScope(object.movie ? object.movie.id : '');
       if (!initialized) {
         initialized = true;
         this.initialize();
@@ -5140,11 +5053,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         right: function right() {
           if (Navigator.canmove('right')) Navigator.move('right');
           else if (!modern) filter.show(Lampa.Lang.translate('title_filter'), 'filter');
-
+          else if (_this.uiDropRight()) return;
           else _this.uiToolbarFocus();
         },
         left: function left() {
           if (Navigator.canmove('left')) Navigator.move('left');
+          else if (modern && _this.uiDropLeft()) return;
           else Lampa.Controller.toggle('menu');
         },
         back: this.back.bind(this)
@@ -5234,7 +5148,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         document.removeEventListener('visibilitychange', page_back);
         window.removeEventListener('focus', page_back);
       } catch (e) {}
-      this.probeStop();
       network.clear();
       if (prefetch_timer) { clearTimeout(prefetch_timer); prefetch_timer = null; }
       if (prefetch_network) { try { prefetch_network.clear(); } catch (e) {} prefetch_network = null; }
@@ -6112,18 +6025,6 @@ Lampa.SettingsApi.addParam({
         en: 'Pre-select your usual translation type on every source',
         zh: '在所有来源上预选常用的翻译类型'
       },
-      nova_probe_name: {
-        ru: 'Проверять источники самому',
-        uk: 'Перевіряти джерела самому',
-        en: 'Check sources directly',
-        zh: '自行检查来源'
-      },
-      nova_probe_descr: {
-        ru: 'При открытии списка обойти источники и показать, где действительно есть видео. Отключите, если связь с серверами медленная',
-        uk: 'Під час відкриття списку обійти джерела й показати, де справді є відео. Вимкніть, якщо зв\'язок із серверами повільний',
-        en: 'When the list opens, poll the sources and show which really have video. Turn off on slow connections',
-        zh: '打开列表时轮询来源，显示哪些确实有视频。网络较慢时可关闭'
-      },
       nova_auto_switch_name: {
         ru: 'Автопереключение источника',
         uk: 'Автоперемикання джерела',
@@ -6329,19 +6230,6 @@ Lampa.SettingsApi.addParam({
       field: {
         name: Lampa.Lang.translate('nova_voice_auto_name'),
         description: Lampa.Lang.translate('nova_voice_auto_descr')
-      }
-    });
-
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_probe_enable',
-        type: 'trigger',
-        "default": false
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_probe_name'),
-        description: Lampa.Lang.translate('nova_probe_descr')
       }
     });
 
