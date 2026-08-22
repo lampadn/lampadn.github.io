@@ -2288,7 +2288,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     this.uiFocusNode = function(node) {
-      if (!node) return false;
+      if (!node || !this.uiAlive(node)) return false;
       last = node;
       ui_focus = node.getAttribute ? (node.getAttribute('data-nova-focus') || '') : '';
       try { scroll.update($(node), true); } catch (e) {}
@@ -3605,14 +3605,44 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var lifeOver = function() {
           return life_wait_times > 15 || Date.now() - life_started > 26000;
         };
+        var life_sign = '';
+
+        var lifeSign = function() {
+          var cached = {};
+          try { cached = _this3.probeCache().list || {}; } catch (e) {}
+          var out = [];
+          sourceKeys().forEach(function(name) {
+            var info = sources[name] || {};
+            out.push(name + '~' + (info.show ? 1 : 0) + '~' + ((cached[name] || {}).s || ''));
+          });
+          return out.join('|') + '#' + balanser + '#' + (life_done ? 1 : 0) + '#' + (ui_all_sources ? 1 : 0);
+        };
+
         var lifeRedraw = function() {
           if (!modern || !ui.rows || ui_open != 'source') return;
           try {
+            // доопрос источников идёт раз в ~0.5-1 с. Если список не менялся — не трогаем
+            // DOM вообще, иначе фокус уезжает прямо под руками.
+            var sign = lifeSign();
+            if (sign === life_sign) return;
+            life_sign = sign;
+
             var keep = last && last.getAttribute ? (last.getAttribute('data-nova-focus') || '') : '';
             _this3.uiRows();
             if (keep) ui_focus = keep;
             _this3.uiFocusRestore(false);
-            if (last) _this3.uiFocusNode(last);
+            // когда life_done стал true или источник оказался пустым, его чип исчезает.
+            // Старый last остаётся оторванным от DOM — именно так умирала навигация.
+            if (!_this3.uiAlive(last)) {
+              var back = _this3.uiDropEntry() || _this3.uiDropOwner();
+              if (!back && ui.rows) back = ui.rows.find('.selector')[0] || false;
+              if (!back && ui.play) back = ui.play[0] || false;
+              last = back || null;
+              ui_focus = last && last.getAttribute ? (last.getAttribute('data-nova-focus') || '') : '';
+            }
+            // коллекцию Navigator надо пересобрать после uiRows(), иначе она держит
+            // удалённые узлы и кнопки перестают работать (как в uiToggle).
+            if (last) Lampa.Controller.enable('content');
           } catch (e) {}
         };
         var lifeFinish = function() {
