@@ -805,6 +805,42 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   NovaUI.LOGO_VISIBLE = 0.55;
   NovaUI.LOGO_BRIGHT_SHARE = 0.12;
   NovaUI.LOGO_TONE_KEY = 'nova_logo_tone2';
+  NovaUI.LOGO_BLIND = {};
+
+  NovaUI.FIT_STEPS = ['nova-toolbar--tight', 'nova-toolbar--tighter', 'nova-toolbar--clip'];
+
+  NovaUI.mobilePortrait = function() {
+    try {
+      return window.innerWidth < 600 && window.innerHeight > window.innerWidth;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  NovaUI.fitToolbar = function(toolbar) {
+    if (!toolbar || !toolbar.length) return;
+    toolbar.removeClass(NovaUI.FIT_STEPS.join(' '));
+
+    var node = toolbar[0];
+    var steps = NovaUI.FIT_STEPS;
+    var i;
+
+    if (NovaUI.mobilePortrait()) {
+      toolbar.addClass(steps[0]);
+      for (i = 1; i < steps.length; i++) {
+        if (node.scrollWidth <= node.clientWidth + 1) return;
+        toolbar.addClass(steps[i]);
+      }
+      return;
+    }
+
+    if (!node.clientWidth) return;
+
+    for (i = 0; i < steps.length; i++) {
+      if (node.scrollWidth <= node.clientWidth + 1) return;
+      toolbar.addClass(steps[i]);
+    }
+  };
 
   NovaUI.percentOf = function(element) {
     if (!element) return 0;
@@ -970,6 +1006,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-hero__title--logo>img{display:block;max-height:2.1em;max-width:70%;width:auto;height:auto;-o-object-fit:contain;object-fit:contain;-webkit-filter:drop-shadow(0 .04em .12em rgba(0,0,0,.55));filter:drop-shadow(0 .04em .12em rgba(0,0,0,.55))}',
     '.nova-hero__title--logo>img.nova-logo--invert{-webkit-filter:invert(1) brightness(1.1) drop-shadow(0 .04em .12em rgba(0,0,0,.5));filter:invert(1) brightness(1.1) drop-shadow(0 .04em .12em rgba(0,0,0,.5))}',
     '.nova-hero__title--logo>img.nova-logo--glow{-webkit-filter:drop-shadow(0 0 .03em rgba(255,255,255,.5)) drop-shadow(0 0 .07em rgba(255,255,255,.35));filter:drop-shadow(0 0 .03em rgba(255,255,255,.5)) drop-shadow(0 0 .07em rgba(255,255,255,.35))}',
+    '.nova-hero__title--logo>img.nova-logo--edge{-webkit-filter:drop-shadow(0 0 .02em rgba(255,255,255,.9)) drop-shadow(0 0 .06em rgba(255,255,255,.45)) drop-shadow(0 .04em .12em rgba(0,0,0,.5));filter:drop-shadow(0 0 .02em rgba(255,255,255,.9)) drop-shadow(0 0 .06em rgba(255,255,255,.45)) drop-shadow(0 .04em .12em rgba(0,0,0,.5))}',
     '.nova-hero__mark{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;min-width:0;max-width:40%;margin:0 1.2em .4em 0;font-size:1.2em;font-weight:600;line-height:1.25;overflow:hidden;white-space:nowrap;-o-text-overflow:ellipsis;text-overflow:ellipsis}',
     '.nova-hero__mark:empty{display:none}',
     '.nova-hero__mark.nova-hero__title--logo{display:block;overflow:visible;padding:.08em 0 .06em;margin-bottom:.4em;line-height:1}',
@@ -1021,9 +1058,20 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova-chip--checking{opacity:.55}',
     '.nova-chip--empty{opacity:.35}',
 
-    '.nova-toolbar{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;margin-bottom:1em}',
-    '.nova-toolbar__label{font-size:.95em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:0 .9em .7em 0}',
-    '.nova-toolbar .nova-btn--main{margin:0 1.4em .7em 0;font-size:1.1em;padding:.55em 1.3em}',
+    '.nova-toolbar{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:nowrap;-ms-flex-wrap:nowrap;flex-wrap:nowrap;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;margin-bottom:1em;min-width:0;overflow:hidden}',
+    '.nova-toolbar>*{margin-bottom:0;vertical-align:middle}',
+    '.nova-toolbar .nova-chip{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;max-width:none;margin-bottom:0}',
+    '.nova-toolbar__label{font-size:.95em;letter-spacing:.12em;text-transform:uppercase;opacity:.45;margin:0 .9em 0 0;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-toolbar--tight{font-size:.95em}',
+    '.nova-toolbar--tight .nova-toolbar__label{display:none}',
+    '.nova-toolbar--tight .nova-chip{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;max-width:none;padding:.5em 1em;margin-right:.6em}',
+    '.nova-toolbar--tighter{font-size:.85em}',
+    '.nova-toolbar--tighter .nova-toolbar__label{display:none}',
+    '.nova-toolbar--tighter .nova-chip{-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0;max-width:none;padding:.45em .85em;margin-right:.5em}',
+    '.nova-toolbar--tighter .nova-chip__badge{margin-right:.4em}',
+    '.nova-toolbar--clip .nova-chip{-webkit-flex-shrink:1;-ms-flex-negative:1;flex-shrink:1;min-width:4.5em}',
+    '.nova-toolbar--clip .nova-chip__label{overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;min-width:0}',
+    '.nova-toolbar .nova-btn--main{margin:0 1.4em 0 0;font-size:1.1em;padding:.55em 1.3em}',
     '.nova-toolbar .nova-btn__label{max-width:18em;overflow:hidden;-o-text-overflow:ellipsis;text-overflow:ellipsis;white-space:nowrap}',
 
     '.nova-card{position:relative;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;padding:.7em;-webkit-border-radius:.9em;border-radius:.9em;background:rgba(255,255,255,.05);margin-bottom:.7em}',
@@ -1838,28 +1886,45 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return spread / dark < 0.18 ? 'invert' : 'glow';
     };
 
-    this.uiLogoTone = function(src, done) {
+    this.uiLogoDirect = function(path) {
+      if (!path) return '';
+      return 'https://image.tmdb.org/t/p/w780' + String(path).replace('.svg', '.png');
+    };
+
+    this.uiLogoTone = function(src, path, done) {
       var _this = this;
       if (!src) return done('ok');
       var box = this.uiLogoToneBox();
       if (typeof box[src] === 'string') return done(box[src]);
+      if (NovaUI.LOGO_BLIND[src]) return done('blind');
 
-      var probe;
-      try { probe = new Image(); } catch (e) { return done('ok'); }
-      probe.crossOrigin = 'anonymous';
-      probe.onload = function() {
-        var tone = '';
-        try { tone = _this.uiLogoMeasure(probe); } catch (e) { tone = ''; }
-        if (tone !== 'invert' && tone !== 'glow') tone = 'ok';
-        var now = _this.uiLogoToneBox();
-        now[src] = tone;
-        try { Lampa.Storage.set(NovaUI.LOGO_TONE_KEY, now); } catch (e) {}
-        done(tone);
+      var urls = [src];
+      var direct = this.uiLogoDirect(path);
+      if (direct && urls.indexOf(direct) === -1) urls.push(direct);
+
+      var at = 0;
+      var step = function() {
+        if (at >= urls.length) {
+          NovaUI.LOGO_BLIND[src] = true;
+          return done('blind');
+        }
+        var url = urls[at++];
+        var probe;
+        try { probe = new Image(); } catch (e) { return done('blind'); }
+        probe.crossOrigin = 'anonymous';
+        probe.onload = function() {
+          var tone = '';
+          try { tone = _this.uiLogoMeasure(probe); } catch (e) { tone = ''; }
+          if (tone !== 'invert' && tone !== 'glow' && tone !== 'ok') return step();
+          var now = _this.uiLogoToneBox();
+          now[src] = tone;
+          try { Lampa.Storage.set(NovaUI.LOGO_TONE_KEY, now); } catch (e) {}
+          done(tone);
+        };
+        probe.onerror = step;
+        probe.src = url;
       };
-      probe.onerror = function() {
-        done('ok');
-      };
-      probe.src = src;
+      step();
     };
 
     this.uiLogoLoad = function(done) {
@@ -1933,10 +1998,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         });
         picture.attr('src', src);
         box.addClass('nova-hero__title--logo').empty().append(picture);
-        _this.uiLogoTone(src, function(tone) {
+        _this.uiLogoTone(src, path, function(tone) {
           if (!picture.parent().length) return;
           if (tone === 'invert') picture.addClass('nova-logo--invert');
           else if (tone === 'glow') picture.addClass('nova-logo--glow');
+          else if (tone === 'blind') picture.addClass('nova-logo--edge');
         });
       });
     };
@@ -2153,6 +2219,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       }
 
       rows.append(toolbar);
+      NovaUI.fitToolbar(toolbar);
 
       if (ui_open == 'source' && !object.balanser) this.uiSourceRow();
       else if (ui_open == 'season') this.uiOptionRow('season');
