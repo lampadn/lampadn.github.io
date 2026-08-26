@@ -530,6 +530,52 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   NovaUI.WATCHDOG = 24;
   NovaUI.WATCHDOG_FIRST = 40;
 
+  NovaUI.scrollShow = function(scroll, target, gentle) {
+    var node = null;
+    if (target && target.nodeType) node = target;
+    else if (target && target[0]) node = target[0];
+    if (!node) return;
+    try {
+      var box = $(node).closest('.scroll');
+      if (box.length) {
+        var seat = box[0].offsetHeight || 0;
+        var hero = $(node).closest('.nova-hero');
+        if (hero.length) {
+          var tall = hero[0].offsetHeight || 0;
+          if (tall && seat && tall <= seat - 4) node = hero[0];
+        }
+        if (gentle || NovaUI.gentleNow()) {
+          var top = node.getBoundingClientRect().top - box[0].getBoundingClientRect().top;
+          if (seat && top > -1 && (top + (node.offsetHeight || 0)) <= seat + 1) return;
+        }
+      }
+    } catch (e) {}
+    try { scroll.update($(node), true); } catch (e) {}
+  };
+
+  NovaUI.metaFlat = function(value) {
+    return String(value === undefined || value === null ? '' : value)
+      .replace(/\s+/g, ' ')
+      .replace(/[\s.,;:\u00b7\u25cf|-]+$/, '')
+      .replace(/^\s+/, '')
+      .toLowerCase();
+  };
+
+  NovaUI.metaTrim = function(list, head) {
+    var mark = NovaUI.metaFlat(head);
+    var seen = {};
+    var out = [];
+    (list || []).forEach(function(part) {
+      var flat = NovaUI.metaFlat(part);
+      if (!flat) return;
+      if (mark && flat === mark) return;
+      if (seen[flat]) return;
+      seen[flat] = true;
+      out.push(part);
+    });
+    return out;
+  };
+
   NovaUI.esc = function(str) {
     return (str === undefined || str === null ? '' : String(str))
       .replace(/&/g, '&amp;')
@@ -806,6 +852,159 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
   NovaUI.LOGO_BRIGHT_SHARE = 0.12;
   NovaUI.LOGO_TONE_KEY = 'nova_logo_tone2';
   NovaUI.LOGO_BLIND = {};
+  NovaUI.GENTLE_UNTIL = 0;
+
+  NovaUI.gentleMark = function(span) {
+    NovaUI.GENTLE_UNTIL = Date.now() + (span || 400);
+  };
+
+  NovaUI.gentleNow = function() {
+    return Date.now() < NovaUI.GENTLE_UNTIL;
+  };
+
+  NovaUI.LOGO_MEM = {};
+  NovaUI.LOGO_WARM = {};
+
+  NovaUI.logoOn = function() {
+    try { return Lampa.Storage.get('nova_logo', true) !== false; } catch (e) { return true; }
+  };
+
+  NovaUI.logoBox = function() {
+    var box;
+    try { box = Lampa.Storage.cache('nova_logo_cache', 500, {}); } catch (e) { box = null; }
+    if (!box || typeof box !== 'object') box = {};
+    return box;
+  };
+
+  NovaUI.logoLang = function() {
+    var lang = 'ru';
+    try { lang = Lampa.Storage.get('language', 'ru') || 'ru'; } catch (e) { lang = 'ru'; }
+    var map = { ua: 'uk', ukr: 'uk', rus: 'ru', eng: 'en', cn: 'zh', cs: 'cs', by: 'be' };
+    lang = String(lang).toLowerCase();
+    return map[lang] || lang;
+  };
+
+  NovaUI.logoNum = function(value) {
+    if (typeof value === 'number') return value > 0 ? value : 0;
+    if (typeof value === 'string' && /^\d+$/.test(value)) return parseInt(value, 10) || 0;
+    return 0;
+  };
+
+  NovaUI.logoTmdbId = function(movie) {
+    var card = movie || {};
+    var source = String(card.source || 'tmdb').toLowerCase();
+    var own = (source === 'cub' || source === 'tmdb') ? card.id : 0;
+    return NovaUI.logoNum(own) || NovaUI.logoNum(card.tmdb_id) || 0;
+  };
+
+  NovaUI.logoTmdbKind = function(movie) {
+    var card = movie || {};
+    var kind = String(card.media_type || card.type || '').toLowerCase();
+    if (kind === 'tv' || kind === 'movie') return kind;
+    if (card.number_of_seasons || card.first_air_date || card.name) return 'tv';
+    return 'movie';
+  };
+
+  NovaUI.logoUrl = function(path) {
+    if (!path) return '';
+    try {
+      return Lampa.TMDB.image('t/p/w780' + String(path).replace('.svg', '.png'));
+    } catch (e) {
+      return '';
+    }
+  };
+
+  NovaUI.logoWarm = function(path) {
+    var src = NovaUI.logoUrl(path);
+    if (!src || NovaUI.LOGO_WARM[src]) return src;
+    try {
+      var probe = new Image();
+      probe.src = src;
+      NovaUI.LOGO_WARM[src] = probe;
+    } catch (e) {}
+    return src;
+  };
+
+  NovaUI.logoKey = function(movie) {
+    var id = NovaUI.logoTmdbId(movie);
+    return id ? id + ':' + NovaUI.logoLang() : '';
+  };
+
+  NovaUI.logoPeek = function(movie) {
+    if (!NovaUI.logoOn()) return '';
+    var key = NovaUI.logoKey(movie);
+    if (!key) return '';
+    if (typeof NovaUI.LOGO_MEM[key] === 'string') return NovaUI.LOGO_MEM[key];
+    var mine = NovaUI.logoBox()[key];
+    if (typeof mine !== 'string') return '';
+    NovaUI.LOGO_MEM[key] = mine;
+    if (mine) NovaUI.logoWarm(mine);
+    return mine;
+  };
+
+  NovaUI.logoPick = function(list) {
+    if (!list || !list.length) return '';
+    var lang = NovaUI.logoLang();
+    var i;
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].iso_639_1 === lang && list[i].file_path) return list[i].file_path;
+    }
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].iso_639_1 === 'en' && list[i].file_path) return list[i].file_path;
+    }
+    for (i = 0; i < list.length; i++) {
+      if (list[i] && list[i].file_path) return list[i].file_path;
+    }
+    return '';
+  };
+
+  NovaUI.logoFetch = function(movie, done) {
+    if (!NovaUI.logoOn() || !movie) return done('');
+    var key = NovaUI.logoKey(movie);
+    if (!key) return done('');
+    if (typeof NovaUI.LOGO_MEM[key] === 'string') return done(NovaUI.LOGO_MEM[key]);
+
+    var all = NovaUI.logoBox();
+    var mine = all[key];
+    if (typeof mine === 'string') {
+      NovaUI.LOGO_MEM[key] = mine;
+      if (mine) NovaUI.logoWarm(mine);
+      return done(mine);
+    }
+
+    var id = NovaUI.logoTmdbId(movie);
+    var kind = NovaUI.logoTmdbKind(movie);
+    var lang = NovaUI.logoLang();
+    var langs = lang === 'en' ? 'en,null' : lang + ',en,null';
+    var url = '';
+    try {
+      url = Lampa.TMDB.api(kind + '/' + id + '/images?api_key=' + Lampa.TMDB.key() +
+        '&include_image_language=' + langs);
+    } catch (e) {
+      url = '';
+    }
+    if (!url) return done('');
+
+    var net = null;
+    try { net = new Lampa.Reguest(); } catch (e) { net = null; }
+    if (!net) return done('');
+
+    var keep = function(path) {
+      var box = NovaUI.logoBox();
+      NovaUI.LOGO_MEM[key] = path || '';
+      box[key] = path || '';
+      try { Lampa.Storage.set('nova_logo_cache', box); } catch (e) {}
+      if (path) NovaUI.logoWarm(path);
+      done(path || '');
+    };
+
+    try { net.timeout(8000); } catch (e) {}
+    net.silent(url, function(answer) {
+      keep(NovaUI.logoPick(answer && answer.logos));
+    }, function() {
+      done('');
+    });
+  };
 
   NovaUI.FIT_STEPS = ['nova-toolbar--tight', 'nova-toolbar--tighter', 'nova-toolbar--clip'];
 
@@ -1179,8 +1378,20 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     '.nova__list--grid .nova-card__thumb:not(.nova-card__thumb--loaded) .nova-card__num>span,.nova__list--grid .nova-card__thumb--fallback .nova-card__num>span{background:rgba(10,11,17,.62);padding:.1em .42em;-webkit-box-shadow:0 .12em .45em rgba(0,0,0,.4);box-shadow:0 .12em .45em rgba(0,0,0,.4)}',
 
     '.nova-hero__season{font-size:.95em;opacity:.55;margin-top:.8em}',
+    '.nova-hero__title{min-height:2.3em}',
+    '.nova-hero__title--logo{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-align:end;-webkit-align-items:flex-end;-ms-flex-align:end;align-items:flex-end;min-height:2.3em}',
+    '.nova-hero__mark.nova-hero__title--logo{min-height:0}',
+    '@media screen and (max-width:580px){.nova-hero__title{min-height:2.1em}.nova-hero__title--logo{min-height:2.1em}}',
+    '.nova-skeleton,.nova-loading,.nova-note{width:100%;-webkit-box-flex:1;-webkit-flex:1 1 100%;-ms-flex:1 1 100%;flex:1 1 100%;min-width:0}',
+    '.nova-skeleton--grid{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:wrap;-ms-flex-wrap:wrap;flex-wrap:wrap;margin:0 -.45em}',
+    '.nova-skeleton--grid .nova-skeleton__row{display:block;width:25%;margin:0 0 1em 0;padding:0 .45em;background:none;-webkit-border-radius:0;border-radius:0}',
+    '.nova-skeleton--grid .nova-skeleton__thumb{width:100%;height:0;padding-top:56%;-webkit-border-radius:.5em;border-radius:.5em}',
+    '.nova-skeleton--grid .nova-skeleton__body{padding:.5em .1em 0 .1em}',
+    '.nova-skeleton--grid .nova-skeleton__line{height:.8em;margin-bottom:.4em}',
+    '@media screen and (max-width:860px){.nova-skeleton--grid .nova-skeleton__row{width:33.3333%}}',
+    '@media screen and (max-width:580px){.nova-skeleton--grid .nova-skeleton__row{width:50%}}',
 
-    '@media screen and (max-width:1200px){',
+    '@media screen and (max-width:860px){',
     '.nova__list--grid .nova-card{width:33.3333%}',
     '}',
     '@media screen and (max-width:600px) and (orientation:portrait){',
@@ -1268,9 +1479,9 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
   function novaEdgeFade() {
     try {
-      return Lampa.Storage.get('nova_fade', true) === true;
+      return Lampa.Storage.get('nova_fade', false) === true;
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -1448,9 +1659,26 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       return ui.root;
     };
 
+    this.uiListHold = function() {
+      NovaUI.gentleMark(1200);
+      try {
+        var high = ui.list && ui.list[0] ? ui.list[0].offsetHeight : 0;
+        if (high > 0) ui.list.css('min-height', high + 'px');
+      } catch (e) {}
+      return ui.list;
+    };
+
+    this.uiListFree = function() {
+      NovaUI.GENTLE_UNTIL = 0;
+      try { if (ui.list) ui.list.css('min-height', ''); } catch (e) {}
+    };
+
     this.uiSkeleton = function(count) {
-      var box = $('<div class="nova-skeleton"></div>');
-      for (var i = 0; i < (count || 4); i++) {
+      var tiles = false;
+      try { tiles = Lampa.Storage.get('nova_view', 'list') === 'grid'; } catch (e) { tiles = false; }
+      var box = $('<div class="nova-skeleton' + (tiles ? ' nova-skeleton--grid' : '') + '"></div>');
+      var total = tiles ? Math.max(count || 4, 8) : (count || 4);
+      for (var i = 0; i < total; i++) {
         box.append('<div class="nova-skeleton__row"><div class="nova-skeleton__thumb"></div><div class="nova-skeleton__body"><div class="nova-skeleton__line"></div><div class="nova-skeleton__line nova-skeleton__line--short"></div></div></div>');
       }
       return box;
@@ -1469,7 +1697,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         '</div>');
       ui.load.find('.nova-loading__title').text(Lampa.Lang.translate('nova_loading_title'));
       this.uiWatch(NovaUI.WATCHDOG_FIRST);
-      ui.list.empty().append(ui.load).append(this.uiSkeleton(3));
+      this.uiListHold().empty().append(ui.load).append(this.uiSkeleton(3));
       this.uiLoadingText();
       clearInterval(ui_load_timer);
       ui_load_timer = setInterval(function() {
@@ -1536,7 +1764,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       network.clear();
       clearInterval(balanser_timer);
       this.clearImages();
-      ui.list.empty().append(this.uiSkeleton(4));
+      this.uiListHold().empty().append(this.uiSkeleton(4));
       this.activity.loader(false);
       this.activity.toggle();
       if (!sourceKeys().length) {
@@ -1590,6 +1818,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     this.uiFocusRestore = function(fallback) {
+      NovaUI.gentleMark();
       var element = false;
       if (ui_focus && ui.root) {
         var found = ui.root.find('[data-nova-focus="' + ui_focus + '"]');
@@ -1640,7 +1869,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this.uiPlayMenu();
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
       }
       return ui.play;
@@ -1677,7 +1906,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this.uiPlay(_this.uiNextItem(_this.uiPickResume(ui_items)));
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
       }
       return ui.next;
@@ -1928,49 +2157,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     };
 
     this.uiLogoLoad = function(done) {
-      var _this = this;
-      var movie = object.movie;
-      if (!this.uiLogoOn() || !movie || !movie.id) return done('');
-
-      var tmdb_id = this.uiTmdbId();
-      if (!tmdb_id) return done('');
-
-      var lang = this.uiLogoLang();
-      var cache_key = tmdb_id + ':' + lang;
-      var all = this.uiLogoBox();
-      var mine = all[cache_key];
-      if (typeof mine === 'string') return done(mine);
-
-      var kind = this.uiTmdbKind();
-      var url = '';
-      var langs = lang === 'en' ? 'en,null' : lang + ',en,null';
-      try {
-        url = Lampa.TMDB.api(kind + '/' + tmdb_id + '/images?api_key=' + Lampa.TMDB.key() +
-          '&include_image_language=' + langs);
-      } catch (e) {
-        url = '';
-      }
-      if (!url) return done('');
-
-      var net = null;
-      try { net = new Lampa.Reguest(); } catch (e) { net = null; }
-      if (!net) return done('');
-
-      var keep = function(path) {
-        var box = _this.uiLogoBox();
-        if (movie && movie.id) {
-          box[cache_key] = path || '';
-          try { Lampa.Storage.set('nova_logo_cache', box); } catch (e) {}
-        }
-        done(path || '');
-      };
-
-      try { net.timeout(8000); } catch (e) {}
-      net.silent(url, function(answer) {
-        keep(_this.uiLogoPick(answer && answer.logos));
-      }, function() {
-        done('');
-      });
+      return NovaUI.logoFetch(object.movie, done);
     };
 
     this.uiHeroLogo = function() {
@@ -1983,12 +2170,8 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var name = movie.title || movie.name || '';
       if (!this.uiLogoOn()) return slot.removeClass('nova-hero__title--logo').text(name);
 
-      var want = movie.id;
-      this.uiLogoLoad(function(path) {
-        if (!ui.hero || !object.movie || object.movie.id !== want) return;
-        var box = _this.uiLogoSlot();
+      var paint = function(box, path) {
         if (!box) return;
-
         var src = _this.uiLogoUrl(path);
         if (!src) return box.removeClass('nova-hero__title--logo').text(name);
 
@@ -2004,6 +2187,15 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           else if (tone === 'glow') picture.addClass('nova-logo--glow');
           else if (tone === 'blind') picture.addClass('nova-logo--edge');
         });
+      };
+
+      var ready = NovaUI.logoPeek(movie);
+      if (ready) return paint(slot, ready);
+
+      var want = movie.id;
+      this.uiLogoLoad(function(path) {
+        if (!ui.hero || !object.movie || object.movie.id !== want) return;
+        paint(_this.uiLogoSlot(), path);
       });
     };
 
@@ -2171,7 +2363,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           else _this.uiToggle(key);
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         toolbar.append(chip);
       };
@@ -2454,7 +2646,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (!node || !this.uiAlive(node)) return false;
       last = node;
       ui_focus = node.getAttribute ? (node.getAttribute('data-nova-focus') || '') : '';
-      try { scroll.update($(node), true); } catch (e) {}
+      NovaUI.scrollShow(scroll, node);
       try { Lampa.Controller.collectionFocus(node, scroll.render()); } catch (e) {}
       return true;
     };
@@ -2588,7 +2780,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var chip = row.find('[data-nova-focus="source"]')[0] || row.find('.nova-chip')[0];
       if (!chip) return false;
       last = chip;
-      scroll.update($(chip), true);
+      NovaUI.scrollShow(scroll, chip);
       Lampa.Controller.collectionFocus(chip, scroll.render());
       return true;
     };
@@ -2598,7 +2790,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (this.uiToolbarFocused() || (ui.rows && ui.rows.find(last).length)) {
         if (!ui.play || !ui.play.length || !ui.play.parent().length) return false;
         last = ui.play[0];
-        scroll.update(ui.play, true);
+        NovaUI.scrollShow(scroll, ui.play);
         Lampa.Controller.collectionFocus(last, scroll.render());
         return true;
       }
@@ -2625,7 +2817,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this.uiShowPage(page.start, page.start);
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         row.append(chip);
       };
@@ -2654,7 +2846,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         if (ui_items[i] !== item) continue;
         if (item.__html && item.__html.length) {
           last = item.__html[0];
-          scroll.update(item.__html, true);
+          NovaUI.scrollShow(scroll, item.__html);
           Lampa.Controller.collectionFocus(last, scroll.render());
           return true;
         }
@@ -2702,7 +2894,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this.uiSwitch(type, item.index);
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         row.append(chip);
       });
@@ -2760,7 +2952,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         _this.switchSource(name);
       }).on('hover:focus', function(e) {
         last = e.target;
-        scroll.update($(e.target), true);
+        NovaUI.scrollShow(scroll, e.target);
       });
       return chip;
     };
@@ -2805,7 +2997,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           Lampa.Controller.enable('content');
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         row.append(more);
       }
@@ -2907,11 +3099,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         button.append($('<span></span>').text(action.title));
         button.on('hover:enter', action.handler).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         actions.append(button);
       });
 
+      this.uiListFree();
       ui.list.empty().append(note);
       this.uiRows();
       this.loading(false);
@@ -3128,6 +3321,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
           if (ui_nav) html.addClass('nova-card--nav');
           html.find('.nova-card__title').text(title);
+          meta = NovaUI.metaTrim(meta, title);
           html.find('.nova-card__meta').html(meta.map(function(part) {
             return '<span>' + NovaUI.esc(part) + '</span>';
           }).join('<span class="nova-dot">●</span>'));
@@ -3211,7 +3405,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             last = e.target;
             if (!ui_nav) ui_keep = 'item:' + index;
             if (params.onFocus) params.onFocus(element, html, data);
-            scroll.update($(e.target), true);
+            NovaUI.scrollShow(scroll, e.target);
           });
 
           if (!ui_nav) _this.contextMenu({
@@ -3272,6 +3466,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           });
         }
 
+        _this.uiListFree();
         var hero_button = _this.uiHero(items);
         _this.uiRows();
 
@@ -3300,7 +3495,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           if (target_item && target_item.__html) {
             setTimeout(function() {
               last = target_item.__html[0];
-              scroll.update(target_item.__html, true);
+              NovaUI.scrollShow(scroll, target_item.__html);
               target_item.__html.trigger('hover:enter');
             }, 300);
           }
@@ -3371,7 +3566,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var box = html.find('.nova-card__line');
         if (box.length && line) box.empty().append(Lampa.Timeline.render(line));
         if (element.__meta_base) {
-          var meta = element.__meta_base.slice();
+          var meta = NovaUI.metaTrim(element.__meta_base, element.title);
           if (line && line.percent > 0 && line.duration > line.time) {
             meta.push(Lampa.Lang.translate('nova_left') + ' ' + Lampa.Utils.secondsToTime(line.duration - line.time, true));
           }
@@ -3421,6 +3616,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       this.uiFrame();
       this.uiLoadingStop();
       this.uiWatchStop();
+      this.uiListFree();
       var list = ui.list.empty();
       rank.list.forEach(function(row) {
         var elem = row.elem;
@@ -3460,7 +3656,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this.request(elem.url);
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         list.append(html);
       });
@@ -4436,7 +4632,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           _this6.request(elem.url);
         }).on('hover:focus', function(e) {
           last = e.target;
-          scroll.update($(e.target), true);
+          NovaUI.scrollShow(scroll, e.target);
         });
         scroll.append(item);
       });
@@ -4509,7 +4705,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       network.clear();
       this.clearImages();
       if (modern && ui.root) {
-        ui.list.empty().append(this.uiSkeleton(4));
+        this.uiListHold().empty().append(this.uiSkeleton(4));
         return;
       }
       scroll.render().find('.empty').remove();
@@ -4792,7 +4988,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             last = e.target;
             if (params.onFocus) params.onFocus(element, html, data);
             _this8.prefetchFileUrl(element);
-            scroll.update($(e.target), true);
+            NovaUI.scrollShow(scroll, e.target);
           });
           if (params.onRender) params.onRender(element, html, data);
           _this8.contextMenu({
@@ -4857,7 +5053,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             }
             html.on('hover:focus', function(e) {
               last = e.target;
-              scroll.update($(e.target), true);
+              NovaUI.scrollShow(scroll, e.target);
             });
             html.css('opacity', '0.5');
             scroll.append(html);
@@ -4883,7 +5079,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               var target_html = scroll.body().find('.online-prestige--full').eq(items.indexOf(target_item));
               if (target_html.length) {
                 last = target_html[0];
-                scroll.update(target_html, true);
+                NovaUI.scrollShow(scroll, target_html);
                 target_html.trigger('hover:enter');
               }
             }, 300);
@@ -5237,7 +5433,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           Lampa.Controller.collectionFocus(target || false, scroll.render());
           if (modern && target) {
             last = target;
-            try { scroll.update($(target), true); } catch (e) {}
+            NovaUI.scrollShow(scroll, target, true);
             setTimeout(function() {
               try {
                 var now = Lampa.Controller.enabled();
@@ -5245,7 +5441,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
                 if (!_this.uiShown(target) || $(target).hasClass('focus')) return;
                 Lampa.Controller.collectionSet(scroll.render(), files.render());
                 Lampa.Controller.collectionFocus(target, scroll.render());
-                scroll.update($(target), true);
+                NovaUI.scrollShow(scroll, target, true);
               } catch (e) {}
             }, 0);
           }
@@ -5499,7 +5695,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     window.nova_online_plugin = true;
 		Lampa.SettingsApi.addComponent({
         component: 'nova_online',
-        icon: "<svg height=\"36\" viewBox=\"0 0 36 36\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"2\" y=\"6\" width=\"32\" height=\"24\" rx=\"5\" stroke=\"white\" stroke-width=\"3\"/><path d=\"M15 13l9 5-9 5v-10z\" fill=\"white\"/></svg>",
+        icon: "<svg height=\"36\" viewBox=\"0 0 36 36\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M18 1c.9 6.2 2.2 10.4 4.1 12.7C24 16 28 17.3 34 18c-6 .7-10 2-11.9 4.3C20.2 24.6 18.9 28.8 18 35c-.9-6.2-2.2-10.4-4.1-12.7C12 20 8 18.7 2 18c6-.7 10-2 11.9-4.3C15.8 11.4 17.1 7.2 18 1z\" fill=\"white\"/><circle cx=\"18\" cy=\"18\" r=\"3.6\" fill=\"white\"/></svg>",
         name: 'Nova Online'
       });
 	  		var currentAcc = currentAccount();
@@ -6404,7 +6600,7 @@ Lampa.SettingsApi.addParam({
       param: {
         name: 'nova_fade',
         type: 'trigger',
-        "default": true
+        "default": false
       },
       field: {
         name: Lampa.Lang.translate('nova_fade_name'),
@@ -6669,6 +6865,14 @@ Lampa.SettingsApi.addParam({
 }
     Lampa.Listener.follow('full', function(e) {
       if (e.type == 'complite') {
+        try {
+          var early = e.data && e.data.movie;
+          if (early && NovaUI.logoOn()) {
+            NovaUI.logoFetch(early, function(path) {
+              if (path) NovaUI.logoWarm(path);
+            });
+          }
+        } catch (err) {}
         addButton({
           render: e.object.activity.render().find('.view--torrent'),
           movie: e.data.movie
