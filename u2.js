@@ -6118,43 +6118,7 @@ Lampa.SettingsApi.addParam({
       }
     });
 
-Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_quality',
-        type: 'select',
-        values: {
-          'auto': Lampa.Lang.translate('nova_quality_auto'),
-          '2160': '4K',
-          '1080': '1080p',
-          '720': '720p',
-          '480': '480p'
-        },
-        "default": 'auto'
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_quality_name'),
-        description: Lampa.Lang.translate('nova_quality_descr')
-      }
-    });
 
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_view',
-        type: 'select',
-        values: {
-          list: Lampa.Lang.translate('nova_view_list'),
-          grid: Lampa.Lang.translate('nova_view_grid')
-        },
-        "default": 'list'
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_view_name')
-      }
-    });
-
-Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
         name: 'nova_hero',
