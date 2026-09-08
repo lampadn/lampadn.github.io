@@ -2273,6 +2273,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var _this8 = this;
       var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       if (!items.length) return this.empty();
+      try { this.probeSave(balanser, 'ok', items.length); } catch (e) {}
       scroll.clear();
       if(!object.balanser)scroll.append(Lampa.Template.get('lampac_prestige_watched', {}));
       this.updateWatched();
@@ -2654,9 +2655,44 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       });
     };
     this.empty = function() {
+      var _this_empty = this;
+      try { this.probeSave(balanser, 'empty', 0); } catch (e) {}
+      ui_tried[balanser] = true;
+      clearInterval(balanser_timer);
+
+      var auto = Lampa.Storage.get('u2skaz_auto_switch', true) !== false && !object.balanser;
+      var next = auto ? this.nextSource() : '';
+
       var html = Lampa.Template.get('lampac_does_not_answer', {});
-      html.find('.online-empty__buttons').remove();
       html.find('.online-empty__title').text(Lampa.Lang.translate('empty_title_two'));
+
+      if (next) {
+        var tic = 3;
+        html.find('.online-empty__time').html(Lampa.Lang.translate('u2skaz_auto_switch_text')
+          .replace('{name}', (sources[next] && sources[next].name) || next)
+          .replace('{sec}', '<span class="timeout">' + tic + '</span>'));
+        html.find('.cancel').on('hover:enter', function() {
+          clearInterval(balanser_timer);
+        });
+        html.find('.change').on('hover:enter', function() {
+          clearInterval(balanser_timer);
+          filter.render().find('.filter--sort').trigger('hover:enter');
+        });
+        scroll.clear();
+        scroll.append(html);
+        this.loading(false);
+        balanser_timer = setInterval(function() {
+          tic--;
+          html.find('.timeout').text(tic);
+          if (tic <= 0) {
+            clearInterval(balanser_timer);
+            if (Lampa.Activity.active().activity == _this_empty.activity) _this_empty.switchSource(next);
+          }
+        }, 1000);
+        return;
+      }
+
+      html.find('.online-empty__buttons').remove();
       html.find('.online-empty__time').text(Lampa.Lang.translate('empty_text'));
       scroll.clear();
       scroll.append(html);
@@ -2675,6 +2711,14 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       var _this9 = this;
       this.reset();
 
+      var _denial = SkazUI.serverDenial(er);
+      if (!_denial && !(er && er.timeout)) {
+        try { this.probeSave(balanser, 'empty', 0); } catch (e) {}
+      }
+      ui_tried[balanser] = true;
+      var _auto = Lampa.Storage.get('u2skaz_auto_switch', true) !== false && !object.balanser && !_denial;
+      var _next = _auto ? this.nextSource() : '';
+
       if (filter_sources && filter_sources.length) {
         filter.set('sort', filter_sources.map(function(e) {
           return {
@@ -2691,6 +2735,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if(er && er.accsdb) html.find('.online-empty__title').html(er.msg);
 
       var tic = er && er.accsdb ? 10 : 5;
+      if (_next) {
+        tic = 3;
+        html.find('.online-empty__time').html(Lampa.Lang.translate('u2skaz_auto_switch_text')
+          .replace('{name}', (sources[_next] && sources[_next].name) || _next)
+          .replace('{sec}', '<span class="timeout">' + tic + '</span>'));
+      }
       html.find('.cancel').on('hover:enter', function() {
         clearInterval(balanser_timer);
       });
@@ -2706,6 +2756,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         html.find('.timeout').text(tic);
         if (tic == 0) {
           clearInterval(balanser_timer);
+          if (_next) {
+            if (Lampa.Activity.active().activity == _this9.activity) _this9.switchSource(_next);
+            return;
+          }
+          if (_denial) return;
           var keys = Lampa.Arrays.getKeys(sources);
           var indx = keys.indexOf(balanser);
           var next = keys[indx + 1];
@@ -2964,6 +3019,19 @@ Lampa.SettingsApi.addParam({
         onChange: function (value) {
 			Lampa.Noty.show('Необходимо перезайти в лампу');
 		}
+	  });
+
+	  Lampa.SettingsApi.addParam({
+        component: 'u2skaz_online',
+        param: {
+          name: 'u2skaz_auto_switch',
+          type: 'trigger',
+          default: true
+        },
+        field: {
+          name: Lampa.Lang.translate('u2skaz_auto_switch_name'),
+          description: Lampa.Lang.translate('u2skaz_auto_switch_descr')
+        }
 	  });
 
 	  Lampa.SettingsApi.addParam({
@@ -3303,6 +3371,24 @@ Lampa.SettingsApi.addParam({
         uk: 'Показувати логотип фільму в шапці, якщо він є',
         en: 'Show the movie logo in the header when available',
         zh: '如果有，在头部显示影片标识'
+      },
+      u2skaz_auto_switch_text: {
+        ru: 'Ничего не найдено. Пробую {name} через {sec} сек',
+        uk: 'Нічого не знайдено. Пробую {name} за {sec} сек',
+        en: 'Nothing found. Trying {name} in {sec} sec',
+        zh: '未找到内容。{sec} 秒后尝试 {name}'
+      },
+      u2skaz_auto_switch_name: {
+        ru: 'Автоперебор источников',
+        uk: 'Автоперебір джерел',
+        en: 'Auto switch sources',
+        zh: '自动切换源'
+      },
+      u2skaz_auto_switch_descr: {
+        ru: 'Если источник пустой или не ответил, автоматически пробовать следующий',
+        uk: 'Якщо джерело порожнє або не відповіло, автоматично пробувати наступне',
+        en: 'When a source is empty or fails, try the next one automatically',
+        zh: '当源为空或失败时，自动尝试下一个'
       },
       lampac_does_not_answer_text: {
         ru: 'Поиск на ({balanser}) не дал результатов',
