@@ -1363,18 +1363,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         var lifeOver = function() {
           return life_wait_times > 15 || Date.now() - life_started > 26000;
         };
-        var life_sign = '';
-
-        var lifeSign = function() {
-          var cached = {};
-          try { cached = _this3.probeCache().list || {}; } catch (e) {}
-          var out = [];
-          sourceKeys().forEach(function(name) {
-            var info = sources[name] || {};
-            out.push(name + '~' + (info.show ? 1 : 0) + '~' + ((cached[name] || {}).s || ''));
-          });
-          return out.join('|') + '#' + balanser + '#' + (life_done ? 1 : 0) + '#' + (ui_all_sources ? 1 : 0);
-        };
         var lifeFinish = function() {
           life_done = true;
           clearTimeout(life_wait_timer);
@@ -1406,7 +1394,6 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
               };
             }));
             filter.chosen('sort', [sources[balanser] ? sources[balanser].name : balanser]);
-            if (red) lifeRedraw();
             gou(json);
             var lastb = _this3.getLastChoiceBalanser();
             if (lifeOver() || json.ready) {
