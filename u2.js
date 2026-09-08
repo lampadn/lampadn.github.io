@@ -1357,14 +1357,17 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
             show: sources[key].show
           };
         }));
+        console.log('[u2skaz] startSource: got %d sources, filtered %d, accepted %d', json.length, Lampa.Arrays.getKeys(sources).length, filter_sources.length);
         if (filter_sources.length) {
           balanser = startBalanser();
           if (!sources[balanser]) balanser = filter_sources[0];
           source = sources[balanser].url;
           Lampa.Storage.set('active_balanser', balanser);
+          console.log('[u2skaz] startSource: chose balanser=%s', balanser);
           if (_self_src) _self_src.sourcesLive();
           resolve(json);
         } else {
+          console.log('[u2skaz] startSource: NO sources after filtering! json=%O sources=%O', json.slice(0,3), Object.keys(sources));
           reject();
         }
       });
@@ -3029,8 +3032,18 @@ Lampa.SettingsApi.addParam({
           default: true
         },
         field: {
-          name: Lampa.Lang.translate('u2skaz_auto_switch_name'),
-          description: Lampa.Lang.translate('u2skaz_auto_switch_descr')
+          name: {
+            ru: 'Автоперебор источников',
+            uk: 'Автоперебір джерел',
+            en: 'Auto switch sources',
+            zh: '自动切换源'
+          },
+          description: {
+            ru: 'Если источник пустой или не ответил, автоматически пробовать следующий',
+            uk: 'Якщо джерело порожнє або не відповіло, автоматично пробувати наступне',
+            en: 'When a source is empty or fails, try the next one automatically',
+            zh: '当源为空或失败时，自动尝试下一个'
+          }
         }
 	  });
 
