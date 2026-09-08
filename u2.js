@@ -6119,52 +6119,14 @@ Lampa.SettingsApi.addParam({
     });
 
 
-      component: 'nova_online',
-      param: {
-        name: 'nova_hero',
-        type: 'trigger',
-        "default": true
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_hero_name'),
-        description: Lampa.Lang.translate('nova_hero_descr')
-      }
-    });
 
-Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_fade',
-        type: 'trigger',
-        "default": true
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_fade_name'),
-        description: Lampa.Lang.translate('nova_fade_descr')
-      },
-      onChange: function () {
-        novaApplyEdgeFade();
-      }
-    });
+    
 
-Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_art_size',
-        type: 'select',
-        values: {
-          auto: Lampa.Lang.translate('nova_art_auto'),
-          w780: Lampa.Lang.translate('nova_art_780'),
-          w1280: Lampa.Lang.translate('nova_art_1280'),
-          original: Lampa.Lang.translate('nova_art_orig')
-        },
-        "default": 'auto'
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_art_size_name'),
-        description: Lampa.Lang.translate('nova_art_size_descr')
-      }
-    });
+
+
+
+
+
 Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
