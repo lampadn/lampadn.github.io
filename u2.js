@@ -6118,24 +6118,7 @@ Lampa.SettingsApi.addParam({
       }
     });
 
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_ui_mode',
-        type: 'select',
-        values: {
-          modern: Lampa.Lang.translate('nova_ui_modern'),
-          classic: Lampa.Lang.translate('nova_ui_classic')
-        },
-        "default": 'modern'
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_ui_mode_name'),
-        description: Lampa.Lang.translate('nova_ui_mode_descr')
-      }
-    });
-
-    Lampa.SettingsApi.addParam({
+Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
         name: 'nova_quality',
@@ -6171,27 +6154,7 @@ Lampa.SettingsApi.addParam({
       }
     });
 
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_focus_style',
-        type: 'select',
-        values: {
-          ring: Lampa.Lang.translate('nova_focus_ring'),
-          fill: Lampa.Lang.translate('nova_focus_fill')
-        },
-        "default": 'ring'
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_focus_name'),
-        description: Lampa.Lang.translate('nova_focus_descr')
-      },
-      onChange: function () {
-        novaApplyFocusStyle();
-      }
-    });
-
-    Lampa.SettingsApi.addParam({
+Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
         name: 'nova_hero',
@@ -6204,23 +6167,7 @@ Lampa.SettingsApi.addParam({
       }
     });
 
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_fullscreen',
-        type: 'trigger',
-        "default": true
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_fullscreen_name'),
-        description: Lampa.Lang.translate('nova_fullscreen_descr')
-      },
-      onChange: function () {
-        novaApplyFullScreen();
-      }
-    });
-
-    Lampa.SettingsApi.addParam({
+Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
         name: 'nova_fade',
@@ -6236,20 +6183,7 @@ Lampa.SettingsApi.addParam({
       }
     });
 
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_hero_art',
-        type: 'trigger',
-        "default": true
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_hero_art_name'),
-        description: Lampa.Lang.translate('nova_hero_art_descr')
-      }
-    });
-
-    Lampa.SettingsApi.addParam({
+Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
         name: 'nova_art_size',
@@ -6267,20 +6201,7 @@ Lampa.SettingsApi.addParam({
         description: Lampa.Lang.translate('nova_art_size_descr')
       }
     });
-    Lampa.SettingsApi.addParam({
-      component: 'nova_online',
-      param: {
-        name: 'nova_logo',
-        type: 'trigger',
-        "default": true
-      },
-      field: {
-        name: Lampa.Lang.translate('nova_logo_name'),
-        description: Lampa.Lang.translate('nova_logo_descr')
-      }
-    });
-
-    Lampa.SettingsApi.addParam({
+Lampa.SettingsApi.addParam({
       component: 'nova_online',
       param: {
         name: 'nova_voice_auto',
