@@ -445,13 +445,47 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     if (next === -1) return false;
 
     cfg.currentIndex = next;
-    if (!accountAuto()) Lampa.Storage.set('u2skaz_account_index', next);
+    dropAccountCaches();
+    refreshAccountTitle();
     return _accountRotateAttempts < _accountRotateMax;
   }
 
   function resetAccountRotation() {
     _accountRotateAttempts = 0;
     _accountTried = {};
+  }
+
+  var _account_title_elem = null;
+
+  function accountCacheKey(url) {
+    return String(SERVER_CONFIG.pool.currentIndex) + '#' + String(url);
+  }
+
+  function accountTitleText() {
+    var acc = currentAccount();
+    var uniqs = String(acc && acc.uid ? acc.uid : unic_id).slice(-3).toUpperCase();
+    return '\u041a\u043e\u0434 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430 ' + uniqs + ' (' + accountTitle(SERVER_CONFIG.pool.currentIndex) + ')';
+  }
+
+  function refreshAccountTitle() {
+    try {
+      if (!_account_title_elem) return;
+      var node = _account_title_elem.find('div').first();
+      if (!node.length) node = _account_title_elem;
+      node.text(accountTitleText());
+    } catch (e) {}
+  }
+
+  function accountRotatable(er) {
+    if (SkazUI.serverDenial(er)) return true;
+    if (er && typeof er.status === 'number' &&
+      (er.status === 401 || er.status === 402 || er.status === 403 || er.status === 429)) return true;
+    return false;
+  }
+
+  function dropAccountCaches() {
+    online_results_cache = {};
+    try { window.u2skaz_drop_fileurl_cache && window.u2skaz_drop_fileurl_cache(); } catch (e) {}
   }
 
   function account(url) {
@@ -782,6 +816,11 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
     var number_of_requests_timer;
     var fileurl_cache = {};
     var fileurl_prefetching = {};
+    var _fileurl_rotated = false;
+    window.u2skaz_drop_fileurl_cache = function() {
+      fileurl_cache = {};
+      fileurl_prefetching = {};
+    };
     var prefetch_timer = null;
     var prefetch_network = null;
     var FILEURL_TTL = 90 * 1000;
@@ -1487,7 +1526,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 
       var origin = String(url).match(/^(https?:\/\/[^\/]+)\//);
       if (origin) last_origin = origin[1] + '/';
-      var cached = online_results_cache[url];
+      var cached = online_results_cache[accountCacheKey(url)];
       if (cached && (Date.now() - cached.time) < ONLINE_CACHE_TTL) {
 
         ++request_gen;
@@ -1497,10 +1536,24 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (number_of_requests < 10) {
 
         var gen = ++request_gen;
-        var done = function(str) {
+
+        var textDenial = function(str) {
+          if (str && typeof str === 'object') return SkazUI.serverDenial(str);
+          if (typeof str !== 'string') return null;
+          if (str.indexOf('accsdb') === -1 && str.indexOf('"blocked"') === -1) return null;
+          try { return SkazUI.serverDenial(JSON.parse(str)); } catch (e) { return null; }
+        };
+
+        var done = function(str, target) {
           if (gen !== request_gen) return;
+          if (textDenial(str) && rotateToNextAccount()) {
+            send(target, 1);
+            return;
+          }
+          markAccountAlive(SERVER_CONFIG.pool.currentIndex);
+          resetAccountRotation();
           if (typeof str === 'string' && str.indexOf('videos__') !== -1) {
-            online_results_cache[url] = { time: Date.now(), text: str };
+            online_results_cache[accountCacheKey(url)] = { time: Date.now(), text: str };
           }
           _this.parse(str);
         };
@@ -1509,10 +1562,13 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
           var target_origin = serverBase(target);
           if (target_origin) last_origin = target_origin;
           network.timeout(SkazUI.REQUEST_TIMEOUT);
-          network["native"](account(target), done, function(er) {
+          network["native"](account(target), function(str) {
+            done(str, target);
+          }, function(er) {
             if (gen !== request_gen) return;
             var other = retry_left > 0 && SkazUI.networkFail(er) ? nextServerUrl(target) : '';
             if (other) return send(other, retry_left - 1);
+            if (accountRotatable(er) && rotateToNextAccount(!SkazUI.serverDenial(er))) return send(target, 1);
             _this.doesNotAnswer(er);
           }, false, {
             dataType: 'text',
@@ -1570,7 +1626,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 	  }
       else if (file.method == 'play') call(file, {});
       else {
-        var pc = file.url ? fileurl_cache[file.url] : null;
+        var pc = file.url ? fileurl_cache[accountCacheKey(file.url)] : null;
         if (pc && (Date.now() - pc.time) < FILEURL_TTL) { call(pc.json, pc.json); return; }
         Lampa.Loading.start(function() {
           Lampa.Loading.stop();
@@ -1593,12 +1649,25 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
 					});
 				}
 			}
-			else{
+			else if (SkazUI.serverDenial(json) && !_fileurl_rotated && rotateToNextAccount()) {
+				_fileurl_rotated = true;
 				Lampa.Loading.stop();
-				if (file.url && json && !json.rch) fileurl_cache[file.url] = { time: Date.now(), json: json };
+				_this.getFileUrl(file, call, waiting_rch);
+			}
+			else{
+				_fileurl_rotated = false;
+				Lampa.Loading.stop();
+				if (file.url && json && !json.rch) fileurl_cache[accountCacheKey(file.url)] = { time: Date.now(), json: json };
 				call(json, json);
 			}
-        }, function() {
+        }, function(er) {
+          if (!_fileurl_rotated && accountRotatable(er) && rotateToNextAccount(!SkazUI.serverDenial(er))) {
+            _fileurl_rotated = true;
+            Lampa.Loading.stop();
+            _this.getFileUrl(file, call, waiting_rch);
+            return;
+          }
+          _fileurl_rotated = false;
           Lampa.Loading.stop();
           call(false, {});
         }, false, {
@@ -1613,21 +1682,22 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       if (!file || !file.url || file.method == 'play') return;
       if (Lampa.Platform.is('apple') && file.stream) return;
       var url = file.url;
-      var c = fileurl_cache[url];
+      var c = fileurl_cache[accountCacheKey(url)];
       if (c && (Date.now() - c.time) < FILEURL_TTL) return;
-      if (fileurl_prefetching[url]) return;
+      if (fileurl_prefetching[accountCacheKey(url)]) return;
       prefetch_timer = setTimeout(function() {
         prefetch_timer = null;
-        if (fileurl_prefetching[url]) return;
-        var c2 = fileurl_cache[url];
+        var pkey = accountCacheKey(url);
+        if (fileurl_prefetching[pkey]) return;
+        var c2 = fileurl_cache[pkey];
         if (c2 && (Date.now() - c2.time) < FILEURL_TTL) return;
-        fileurl_prefetching[url] = true;
+        fileurl_prefetching[pkey] = true;
         if (!prefetch_network) prefetch_network = new Network();
         prefetch_network.silent(account(url), function(json) {
-          delete fileurl_prefetching[url];
-          if (json && !json.rch) fileurl_cache[url] = { time: Date.now(), json: json };
+          delete fileurl_prefetching[pkey];
+          if (json && !json.rch && !SkazUI.serverDenial(json)) fileurl_cache[pkey] = { time: Date.now(), json: json };
         }, function() {
-          delete fileurl_prefetching[url];
+          delete fileurl_prefetching[pkey];
         }, false, {
           headers: {'X-Kit-AesGcm': Lampa.Storage.get('aesgcmkey', '')}
         });
@@ -2712,6 +2782,7 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
       fileurl_cache = {};
       fileurl_prefetching = {};
       episodes_cache = {};
+      try { if (window.u2skaz_drop_fileurl_cache) window.u2skaz_drop_fileurl_cache = null; } catch (e) {}
       this.clearImages();
       files.destroy();
       scroll.destroy();
@@ -2839,17 +2910,19 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         icon: "<svg height=\"36\" viewBox=\"0 0 36 36\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M18 1c.9 6.2 2.2 10.4 4.1 12.7C24 16 28 17.3 34 18c-6 .7-10 2-11.9 4.3C20.2 24.6 18.9 28.8 18 35c-.9-6.2-2.2-10.4-4.1-12.7C12 20 8 18.7 2 18c6-.7 10-2 11.9-4.3C15.8 11.4 17.1 7.2 18 1z\" fill=\"white\"/><circle cx=\"18\" cy=\"18\" r=\"3.6\" fill=\"white\"/></svg>",
         name: 'Skaz Online'
       });
-	  		var currentAcc = currentAccount();
-				var uniqs = (currentAcc ? currentAcc.uid : unic_id).slice(-3).toUpperCase();
 				Lampa.SettingsApi.addParam({
 				component: 'u2skaz_online',
 				param: {
-					name: 'only_title',
+					name: 'u2skaz_account_title',
 					type: 'title',
 					default: true
 				},
 				field: {
-					name: 'Код устройства '+uniqs + ' (' + accountTitle(SERVER_CONFIG.pool.currentIndex) + ')'
+					name: accountTitleText()
+				},
+				onRender: function(item) {
+					_account_title_elem = item;
+					refreshAccountTitle();
 				}
 			});
 Lampa.SettingsApi.addParam({
@@ -2913,6 +2986,8 @@ Lampa.SettingsApi.addParam({
           Lampa.Storage.set('u2skaz_account_index', String(value) === 'auto' ? 'auto' : (parseInt(value, 10) || 0));
           resetAccountRotation();
           applyAccountIndex();
+          dropAccountCaches();
+          refreshAccountTitle();
           Lampa.Noty.show('Аккаунт переключен. Перезайдите в онлайн.');
         }
 	  });
