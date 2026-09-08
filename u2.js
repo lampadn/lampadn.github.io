@@ -462,10 +462,12 @@ window.rch_nws[hostkey].Registry = function RchRegistry(client, startConnection)
         url = Lampa.Utils.addUrlComponent(url, 'account_email=' + encodeURIComponent(acc.email));
       else
         url = url.replace(/account_email=([^&]+)/, 'account_email=' + encodeURIComponent(acc.email));
-      if (url.indexOf('uid=') === -1)
-        url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(acc.uid));
-      else
-        url = url.replace(/uid=([^&]+)/, 'uid=' + encodeURIComponent(acc.uid));
+      if (acc.uid) {
+        if (url.indexOf('uid=') === -1)
+          url = Lampa.Utils.addUrlComponent(url, 'uid=' + encodeURIComponent(acc.uid));
+        else
+          url = url.replace(/uid=([^&]+)/, 'uid=' + encodeURIComponent(acc.uid));
+      }
     }
     if (url.indexOf('token=') == -1) {
       var token = '';
