@@ -59,6 +59,7 @@
         var number_of_requests_timer;
         var life_wait_times = 0;
         var life_wait_timer;
+        var empty_retries = {};
         var filter_sources = {};
         var filter_translate = {
             season: Lampa.Lang.translate('torrent_serial_season'),
@@ -290,6 +291,8 @@
             Lampa.Storage.set('online_last_balanser', last_select_balanser);
         };
         this.changeBalanser = function(balanser_name) {
+            balanser = balanser_name;
+            if (sources[balanser_name] && sources[balanser_name].url) source = sources[balanser_name].url;
             this.updateBalanser(balanser_name);
             Lampa.Storage.set('online_balanser', balanser_name);
             var to = this.getChoice(balanser_name);
@@ -351,6 +354,7 @@
                     if (!sources[balanser]) balanser = filter_sources[0];
                     if (!sources[balanser].show && !object.core_stream_custom_select) balanser = filter_sources[0];
                     source = sources[balanser].url;
+                    object.core_stream_custom_select = balanser;
                     Lampa.Storage.set('active_balanser', balanser);
                     resolve(json);
                 } else {
@@ -818,6 +822,13 @@
                             this.request(season.url);
                         }
                     } else {
+                        var retryKey = String(source || '') + '|' + String(balanser || '');
+                        if (!empty_retries[retryKey]) {
+                            empty_retries[retryKey] = 1;
+                            var self = this;
+                            setTimeout(function () { self.request(source); }, 700);
+                            return;
+                        }
                         this.doesNotAnswer(json);
                     }
                 }
