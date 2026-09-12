@@ -87,9 +87,10 @@
 
         function cleanSourceName(value) {
             return String(value || '')
-                .replace(/\s*[\[\(]\s*(?:4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)\s*[\]\)]/gi, '')
-                .replace(/\s*(?:4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)\s*/gi, ' ')
+                .replace(/\s*[\[\(]\s*(4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)\s*[\]\)]/gi, ' $1 ')
+                .replace(/\s*(4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)\s*/gi, ' $1 ')
                 .replace(/\[\s*\]|\(\s*\)/g, ' ')
+                .replace(/[\[\](){}]+/g, ' ')
                 .replace(/\s{2,}/g, ' ')
                 .trim();
         }
