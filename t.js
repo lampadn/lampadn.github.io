@@ -14,6 +14,9 @@
         'y9725724-9005-428a-9d86-a466c13ddcc4'
     ];
     var current_beta_index = 0;
+    var unic_id = BETA_UIDS[0];
+    var hostkey = 'beta.l-vid.online:888';
+    function rchRun(json, callback) { callback(); }
 
     function getHost() { return 'http://beta.l-vid.online:888/'; }
 
