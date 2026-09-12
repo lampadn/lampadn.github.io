@@ -85,9 +85,16 @@
             }
         }
 
+        function cleanSourceName(value) {
+            return String(value || '')
+                .replace(/\s*[\[\(]?(?:4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)[\]\)]?/gi, '')
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+        }
+
         function balanserName(j) {
             var bals = j.balanser;
-            var name = j.name.split(' ')[0];
+            var name = cleanSourceName(j.name).split(' ')[0];
             return (bals || name).toLowerCase();
         }
 
@@ -209,7 +216,7 @@
                 files.render().find('.filter--search').remove();
                 sources = {};
                 sources[object.balanser] = {
-                    name: object.balanser
+                    name: cleanSourceName(object.balanser)
                 };
                 balanser = object.balanser;
                 filter_sources = [];
@@ -326,7 +333,7 @@
                     var name = balanserName(j);
                     sources[name] = {
                         url: j.url,
-                        name: j.name,
+                        name: cleanSourceName(j.name),
                         show: typeof j.show == 'undefined' ? true : j.show
                     };
                 });
@@ -380,7 +387,7 @@
                             var name = balanserName(j);
                             sources[name] = {
                                 url: j.url,
-                                name: j.name,
+                                name: cleanSourceName(j.name),
                                 show: typeof j.show == 'undefined' ? true : j.show
                             };
                         });
