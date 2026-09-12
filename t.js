@@ -87,13 +87,15 @@
 
         function cleanSourceName(value) {
             return String(value || '')
-                .replace(/\s*[\[\(]?(?:4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)[\]\)]?/gi, '')
+                .replace(/\s*[\[\(]\s*(?:4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)\s*[\]\)]/gi, '')
+                .replace(/\s*(?:4k|8k|2160p|1440p|1080p|720p|uhd|fhd|hdr10?\+?|dolby[ .-]?vision)\s*/gi, ' ')
+                .replace(/\[\s*\]|\(\s*\)/g, ' ')
                 .replace(/\s{2,}/g, ' ')
                 .trim();
         }
 
         function balanserName(j) {
-            var bals = j.balanser;
+            var bals = cleanSourceName(j.balanser);
             var name = cleanSourceName(j.name).split(' ')[0];
             return (bals || name).toLowerCase();
         }
