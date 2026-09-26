@@ -19,18 +19,15 @@
   function sset(k, v) { try { Lampa.Storage.set('wily_' + k, v); } catch (e) {} }
 
   function hwid() {
-    var h = sget('hwid', null);
-    if (!h) {
-      h = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16);
-      });
-      sset('hwid', h);
-    }
+    // fiksirovannyi ID: vse loginy plutina popadayut v odno ustroistvo
+    var h = sget('hwid', 'e7c1a9d4-3b28-4f6e-9d15-a8c47f2b6039');
+    sset('hwid', h);
     return h;
   }
 
   function proxyBase() {
-    return (sget('proxy', 'https://little-brook-acdb.lisiyvirus.workers.dev') || '').trim().replace(/\/+$/, '');
+    var p = (sget('proxy', '') || '').trim().replace(/\/+$/, '');
+    return p || 'https://little-brook-acdb.lisiyvirus.workers.dev';
   }
 
   // pereadresaciya ssylok CDN cherez proxy (privazka tokenov rabotaet tolko
@@ -60,8 +57,8 @@
     if (auth && sget('access_token', null)) {
       headers['Authorization'] = 'Bearer ' + sget('access_token', null);
       headers['X-Device-Id'] = hwid();
-      headers['X-Device-Platform'] = 'web';
-      headers['X-App-Version'] = '1.0.0';
+      headers['X-Device-Platform'] = 'windows';
+      headers['X-App-Version'] = '1.2.41 (73)';
     }
     return rawFetch(url, { method: method || 'GET', headers: headers, body: body ? JSON.stringify(body) : undefined })
       .catch(function () {
@@ -161,7 +158,7 @@
           if (!code) return;
           apiCall('/v1/auth/verify-code', 'POST', {
             email: email, code: code,
-            device: { platform: 'web', name: 'Lampa', hardware_id: hwid() }
+            device: { platform: 'windows', name: 'Wily Windows', hardware_id: hwid() }
           }).then(function (r2) {
             if (r2.ok && r2.json && r2.json.access_token) {
               sset('access_token', r2.json.access_token);
@@ -694,7 +691,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.5 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v1.6 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
