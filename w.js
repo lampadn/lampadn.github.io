@@ -90,7 +90,9 @@
         sset('refresh_token', r.json.refresh_token);
         return true;
       }
-      sset('refresh_token', null);
+      // stiraem refresh tolko kogga server yavno skazal chto on nevernyi
+      var invalid = r.json && (r.json.error === 'invalid refresh token' || (r.json.message || '').indexOf('refresh') !== -1);
+      if (invalid) { sset('refresh_token', null); toast('Wily: требуется повторный вход'); }
       return false;
     }).catch(function () { refreshing = null; return false; });
     return refreshing;
@@ -691,7 +693,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.6 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v1.7 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
