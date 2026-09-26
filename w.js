@@ -655,7 +655,7 @@
 
     Lampa.Listener.follow('full', function (e) {
       try {
-        if (e.type !== 'complite' && e.type !== 'build') return;
+        if (e.type !== 'complite' || !e.object || !e.object.activity) return;
         var $view = e.object.activity.render();
         if ($view.find('.wily-view-btn').length) return;
         var movie = (e.data && e.data.movie) || e.object.card || (e.object.data && e.object.data.card);
@@ -686,7 +686,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.3 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v1.4 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
