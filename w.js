@@ -33,6 +33,15 @@
     return (sget('proxy', 'https://little-brook-acdb.lisiyvirus.workers.dev') || '').trim().replace(/\/+$/, '');
   }
 
+  // pereadresaciya ssylok CDN cherez proxy (privazka tokenov rabotaet tolko
+  // kogda resolve i video idut cherez odnu tochku)
+  function prox(u) {
+    if (!u) return u;
+    var m = /^https?:\/\/([a-z0-9.-]+\.vkvideo\.cloud)\/(.*)$/i.exec(u);
+    if (!m) return u;
+    return proxyBase() + '/wily-stream/' + m[1] + '/' + m[2];
+  }
+
   function rawFetch(url, options) {
     options = options || {};
     options.headers = Object.assign({ 'Accept': 'application/json' }, options.headers || {});
@@ -274,7 +283,7 @@
               });
               if (!avail.length) { _this.empty('Wily: нет доступных озвучек'); return; }
               translation = avail[0];
-              build();
+              build(_this);
             });
           });
         });
@@ -284,9 +293,10 @@
       this.empty = function (txt) {
         content.empty();
         content.append('<div style="padding:2em;opacity:.7">' + txt + '</div>');
+        try { (self || object).activity.toggle(); } catch (e) {}
       };
 
-      function build() {
+      function build(self) {
         content.empty();
         content.append('<div style="opacity:.55;margin-bottom:1em">Wily · ' + (wily.year || '') + ' · ' + (translation ? translation.name : '') + '</div>');
 
@@ -299,7 +309,7 @@
             if (a.translation_id === translation.translation_id) $b.css({ background: 'rgba(255,255,255,.14)' });
             $b.on('hover:enter', function () {
               if (a.translation_id === translation.translation_id) return;
-              translation = a; build();
+              translation = a; build(_this);
             });
             $row.append($b);
           });
@@ -317,7 +327,7 @@
             if (s === season) $b.css({ background: 'rgba(255,255,255,.14)' });
             $b.on('hover:enter', function () {
               if (s === season) return;
-              season = s; build();
+              season = s; build(_this);
             });
             $srow.append($b);
           });
@@ -331,17 +341,19 @@
           episodes.forEach(function (ep) {
             content.append(episodeItem(ep));
           });
+          try { (self || object).activity.toggle(); } catch (e) {}
         } else {
           content.append(sectionTitle('ФИЛЬМ'));
           var item = Lampa.Template.get(core[mode].template, {
             title: wily.name || 'Смотреть',
-            quality: (translation.qualities || []).join('/') + 'p',
+            quality: (translation.qualities || []).filter(function (q) { return Number(q) <= 1080; }).join('/') + 'p',
             info: ''
           });
           item.on('hover:enter', function () {
             act(null, null, wily.name);
           });
           content.append(item);
+          try { (self || object).activity.toggle(); } catch (e) {}
         }
       }
 
@@ -351,7 +363,7 @@
         var hash = Lampa.Utils.hash([season, num, movie.original_title || movie.name].join(''));
         var view = Lampa.Timeline.view(hash);
         var eq = translation.episode_qualities && translation.episode_qualities[season + ':' + num];
-        var qline = ((eq || translation.qualities || []).slice(0, 3).join('/') || '?') + 'p' + (ep.runtime_min ? ' · ' + ep.runtime_min + ' мин' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' · ' + ep.air_status : '');
+        var qline = ((eq || translation.qualities || []).filter(function (q) { return Number(q) <= 1080; }).slice(0, 3).join('/') || '1080') + 'p' + (ep.runtime_min ? ' · ' + ep.runtime_min + ' мин' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' · ' + ep.air_status : '');
         var item = Lampa.Template.get(core[mode].template, {
           title: 'Серия ' + num + (ep.name ? ' — ' + ep.name : ''),
           quality: qline,
@@ -388,8 +400,8 @@
       function toPlayObject(pb, title_) {
         var a = pickAudio(pb);
         var qualityMap = {};
-        Object.keys(a.qualities).forEach(function (q) { qualityMap[q] = a.qualities[q].main; });
-        var subs = (pb.subtitles || []).map(function (s) { return { label: s.label, url: s.url }; });
+        Object.keys(a.qualities).forEach(function (q) { qualityMap[q] = prox(a.qualities[q].main); });
+        var subs = (pb.subtitles || []).map(function (s) { return { label: s.label, url: prox(s.url) }; });
         return {
           title: title_,
           url: qualityMap[sget('quality', '1080')] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]].main,
@@ -468,9 +480,10 @@
         var q = sget('quality', '1080');
         var qu = a.qualities[q] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]];
         if (!qu || !qu.main) { toast('Wily: нет ссылки'); return; }
-        fetch(qu.main).then(function (r) { return r.text(); }).then(function (m3u8) {
+        var m3u8Url = prox(qu.main);
+        fetch(m3u8Url).then(function (r) { return r.text(); }).then(function (m3u8) {
           var media = m3u8.split('\n').filter(function (l) { return l.trim() && l.trim().indexOf('#') !== 0; })[0];
-          var base = qu.main.split('/').slice(0, -1).join('/');
+          var base = m3u8Url.split('/').slice(0, -1).join('/');
           var mediaUrl = /^https?:/.test(media) ? media : base + '/' + media;
           return fetch(mediaUrl).then(function (r) { return r.text(); }).then(function (playlist) {
             var lines = playlist.split('\n').map(function (l) { return l.trim(); });
