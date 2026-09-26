@@ -267,17 +267,20 @@
           $layout.append($poster);
 
           var $right = $('<div class="wily-right"></div>');
-          var $chips = $('<div class="wily-chiprow"></div>');
+          $right.append(sectionTitle('ПЕРЕВОД'));
+          var $tgrid = $('<div class="wily-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))"></div>');
           avail.forEach(function (a) {
-            var $ch = $('<div class="wily-chip selector"><b>' + esc(a.name) + '</b></div>');
-            if (a.translation_id === translation.translation_id) $ch.addClass('active');
-            $ch.on('hover:enter', function () {
+            var eps = 0;
+            Object.keys(a.seasons || {}).forEach(function (sn) { eps += (a.seasons[sn] || []).length; });
+            var $c = $('<div class="wily-card selector"><div class="wily-card__name">' + esc(a.name) + '</div><div class="wily-card__sub">' + eps + ' эпизодов</div></div>');
+            if (a.translation_id === translation.translation_id) $c.addClass('active');
+            $c.on('hover:enter', function () {
               if (a.translation_id === translation.translation_id) return;
               translation = a; season = null; build(comp);
             });
-            $chips.append($ch);
+            $tgrid.append($c);
           });
-          $right.append($chips);
+          $right.append($tgrid);
           $right.append(sectionTitle('СЕЗОН <span style="opacity:.6">всего ' + seasons.length + '</span>'));
           var $srow = row();
           seasons.forEach(function (sn) {
@@ -315,17 +318,17 @@
           content.append($hero);
 
           content.append(sectionTitle('ПЕРЕВОД'));
-          var $chips = $('<div class="wily-chiprow"></div>');
+          var $tgrid = $('<div class="wily-grid" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr))"></div>');
           avail.forEach(function (a) {
-            var $ch = $('<div class="wily-chip selector"><b>' + esc(a.name) + '</b> <span style="opacity:.55">' + (a.qualities || []).join('/') + 'p</span></div>');
-            if (a.translation_id === translation.translation_id) $ch.addClass('active');
-            $ch.on('hover:enter', function () {
+            var $c = $('<div class="wily-card selector"><div class="wily-card__name">' + esc(a.name) + '</div><div class="wily-card__sub">' + (a.qualities || []).join('/') + 'p</div></div>');
+            if (a.translation_id === translation.translation_id) $c.addClass('active');
+            $c.on('hover:enter', function () {
               if (a.translation_id === translation.translation_id) return;
               translation = a; build(comp);
             });
-            $chips.append($ch);
+            $tgrid.append($c);
           });
-          content.append($chips);
+          content.append($tgrid);
         }
 
         try { comp.activity.toggle(); } catch (e) {}
@@ -611,11 +614,11 @@
     if (!document.getElementById('wily-plugin-style')) {
       var st = document.createElement('style');
       st.id = 'wily-plugin-style';
-      st.textContent = '.wily-hero{position:relative;width:100%;min-height:320px;border-radius:1em;overflow:hidden;background-size:cover;background-position:center 30%;cursor:pointer}' + '.wily-hero__grad{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.45) 55%,rgba(0,0,0,.15) 100%)}' + '.wily-hero__body{position:relative;padding:2em 2.2em;display:flex;flex-direction:column;justify-content:flex-end;min-height:320px;box-sizing:border-box}' + '.wily-hero__title{font-size:2.4em;font-weight:900;text-transform:uppercase;margin-bottom:.3em}' + '.wily-badges{display:flex;gap:.5em;margin:.5em 0;flex-wrap:wrap}' + '.wily-badge{background:rgba(255,255,255,.16);border-radius:.4em;padding:.15em .55em;font-weight:700;font-size:.95em}' + '.wily-hero__desc{max-width:62%;opacity:.92;margin:0 0 1em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}' + '.wily-hero__btn{display:inline-flex;align-items:center;gap:.5em;background:rgba(0,0,0,.4);border:.12em solid rgba(255,255,255,.7);border-radius:2em;padding:.5em 1.3em;font-size:1.15em;font-weight:700;width:max-content}' + '.wily-hero.focus .wily-hero__btn{background:#fff;color:#000}' + '.wily-hero.focus{outline:.15em solid rgba(255,255,255,.9)}' + '.wily-chiprow{display:flex;gap:.5em;flex-wrap:wrap;margin-bottom:.3em}' + '.wily-chip{display:inline-flex;align-items:center;gap:.4em;background:rgba(255,255,255,.08);border-radius:.6em;padding:.45em .9em;cursor:pointer;transition:background .15s}' + '.wily-chip.active{background:rgba(255,255,255,.22)}' + '.wily-chip.focus{outline:.12em solid #fff;background:rgba(255,255,255,.18)}' + '.wily-layout{display:flex;gap:1.2em;align-items:flex-start;flex-wrap:wrap}' + '.wily-poster{width:300px;flex-shrink:0}' + '.wily-poster .wily-ep__img{aspect-ratio:16/10}' + '.wily-poster__btns{display:flex;flex-direction:column;gap:.5em;margin-top:.7em}' + '.wily-poster__btn{display:flex;align-items:center;justify-content:center;gap:.4em;background:rgba(255,255,255,.1);border:.1em solid rgba(255,255,255,.55);border-radius:2em;padding:.45em 1em;font-weight:600;cursor:pointer}' + '.wily-poster.focus .wily-poster__btn{background:#fff;color:#000}' + '.wily-poster.focus{outline:.15em solid rgba(255,255,255,.9)}' + '.wily-ep__date{padding:.05em .2em .45em;opacity:.55;font-size:.9em}' + '.wily-right{flex:1;min-width:300px}' + '.wily-top{display:flex;gap:1.2em;align-items:flex-start;flex-wrap:wrap}' +
+      st.textContent = '.wily-hero{position:relative;width:100%;min-height:320px;border-radius:1em;overflow:hidden;background-size:cover;background-position:center 30%;cursor:pointer}' + '.wily-hero__grad{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.45) 55%,rgba(0,0,0,.15) 100%)}' + '.wily-hero__body{position:relative;padding:2em 2.2em;display:flex;flex-direction:column;justify-content:flex-end;min-height:320px;box-sizing:border-box}' + '.wily-hero__title{font-size:2.4em;font-weight:900;text-transform:uppercase;margin-bottom:.3em}' + '.wily-badges{display:flex;gap:.5em;margin:.5em 0;flex-wrap:wrap}' + '.wily-badge{background:rgba(255,255,255,.16);border-radius:.4em;padding:.15em .55em;font-weight:700;font-size:.95em}' + '.wily-hero__desc{max-width:62%;opacity:.92;margin:0 0 1em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}' + '.wily-hero__btn{display:inline-flex;align-items:center;gap:.5em;background:rgba(0,0,0,.4);border:.12em solid rgba(255,255,255,.7);border-radius:2em;padding:.5em 1.3em;font-size:1.15em;font-weight:700;width:max-content}' + '.wily-hero.focus .wily-hero__btn{background:#fff;color:#000}' + '.wily-hero.focus{outline:.15em solid rgba(255,255,255,.9)}' + '.wily-chiprow{display:flex;gap:.5em;flex-wrap:wrap;margin-bottom:.3em}' + '.wily-chip{display:inline-flex;align-items:center;gap:.4em;background:rgba(255,255,255,.08);border-radius:.6em;padding:.45em .9em;cursor:pointer;transition:background .15s}' + '.wily-chip.active{background:rgba(255,255,255,.22)}' + '.wily-chip.focus{outline:.12em solid #fff;background:rgba(255,255,255,.18)}' + '.wily-layout{display:flex;gap:1.2em;align-items:flex-start;flex-wrap:wrap}' + '.wily-poster{width:280px;flex-shrink:0}' + '.wily-poster .wily-ep__img{aspect-ratio:16/10}' + '.wily-poster__btns{display:flex;flex-direction:column;gap:.5em;margin-top:.7em}' + '.wily-poster__btn{display:flex;align-items:center;justify-content:center;gap:.4em;background:rgba(255,255,255,.1);border:.1em solid rgba(255,255,255,.55);border-radius:2em;padding:.45em 1em;font-weight:600;cursor:pointer}' + '.wily-poster.focus .wily-poster__btn{background:#fff;color:#000}' + '.wily-poster.focus{outline:.15em solid rgba(255,255,255,.9)}' + '.wily-ep__date{padding:.05em .2em .45em;opacity:.55;font-size:.9em}' + '.wily-right{flex:1;min-width:280px}' + '.wily-top{display:flex;gap:1.2em;align-items:flex-start;flex-wrap:wrap}' +
         '.wily-hero{width:320px;flex-shrink:0}' +
         '.wily-top .wily-grid{flex:1;min-width:280px}' +
         '.wily-content{max-width:950px;margin:0 auto}' +
-        '.wily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.6em}' +
+        '.wily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.6em}' +
         '.wily-card{background:rgba(255,255,255,.06);border-radius:.8em;padding:.9em 1.1em;cursor:pointer;transition:background .15s,color .15s}' +
         '.wily-card.active{background:rgba(255,255,255,.17)}' +
         '.wily-card__sub{opacity:.55;font-size:.92em;margin-top:.2em}' +
@@ -693,7 +696,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v3.0 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v3.1 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
