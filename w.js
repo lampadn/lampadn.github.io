@@ -385,28 +385,55 @@
       }
 
       var acting = false;
+      var acting = false;
       function act(season_, episode_, label) {
         if (acting) return;
         acting = true;
+        var done = function () { acting = false; };
+        var fail = function (err) { toast('Wily: ' + err); done(); };
+        var body = resolveBody(season_, episode_);
+        var go = function (b) {
+          withValidStream(b, 0, function (data) { onStream(data, season_, episode_, label); done(); },
+            function (err) { toast('Wily: ' + err); done(); });
+        };
         toast('Wily: получаем ссылку…');
-        apiResolve(resolveBody(season_, episode_)).then(function (res) {
+        apiResolve(body).then(function (res) {
           if (!res.ok) {
             if (res.limit && res.limit.streams && res.limit.streams.length) {
               var s0 = res.limit.streams[0];
-              var b = resolveBody(season_, episode_);
-              b.force = true;
-              b.terminateSessionId = s0.sessionId;
-              apiResolve(b).then(function (r2) {
-                if (r2.ok) onStream(r2.data, season_, episode_, label);
-                else toast('Wily: ' + (r2.error || 'лимит потоков'));
-              });
+              body.force = true;
+              body.terminateSessionId = s0.sessionId;
+              go(body);
               return;
             }
-            toast('Wily: ' + (res.error || 'нет ссылки'));
+            fail(res.error || 'нет ссылки');
             return;
           }
-          onStream(res.data, season_, episode_, label);
-        }).then(function () { acting = false; }, function () { acting = false; });
+          go(body);
+        });
+      }
+
+      // proveryaem chto manifest otkryvaetsya; inache pererezolvivaem (uzly CDN raznye)
+      function withValidStream(body, attempt, onOk, onFail) {
+        apiResolve(body).then(function (res) {
+          if (!res.ok) { onFail(res.error || 'нет ссылки'); return; }
+          var pb = res.data.playback;
+          var a = pb.audios.filter(function (x) { return x.default; })[0] || pb.audios[0];
+          var q = sget('quality', '2160');
+          var qu = a.qualities[q] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]];
+          if (!qu || !qu.main) { onFail('нет ссылки на качество'); return; }
+          fetch(qu.main, { method: 'GET' }).then(function (r) {
+            if (r.ok) { onOk(res.data); return; }
+            throw new Error('HTTP ' + r.status);
+          }).catch(function () {
+            if (attempt < 6) {
+              toast('Wily: узел CDN недоступен, перезапрашиваем (' + (attempt + 1) + '/6)…');
+              setTimeout(function () { withValidStream(body, attempt + 1, onOk, onFail); }, 1200);
+            } else {
+              onOk(res.data); // играем как есть — пусть плеер попробует
+            }
+          });
+        });
       }
 
       function onStream(data, season_, episode_, label) {
@@ -696,7 +723,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v3.1 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v3.3 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
