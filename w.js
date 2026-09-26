@@ -249,6 +249,7 @@
 
   function makeComponent(mode) {
     return function (object) {
+      var comp = this;
       var scroll = new Lampa.Scroll({ mask: true, over: true });
       var html = $('<div class="wily-screen"></div>');
       var content = $('<div class="wily-content"></div>').css({ padding: '1.5em 2em' });
@@ -289,12 +290,12 @@
       this.empty = function (txt) {
         content.empty();
         content.append('<div style="padding:2em;opacity:.7">' + txt + '</div>');
-        try { (self || object).activity.toggle(); } catch (e) {}
+        try { comp.activity.toggle(); } catch (e) {}
       };
 
       function build(self) {
         content.empty();
-        content.append('<div style="opacity:.55;margin-bottom:1em">Wily · ' + (wily.year || '') + ' · ' + (translation ? translation.name : '') + '</div>');
+        content.append('<div style="opacity:.55;margin-bottom:1em">Wily v1.8 · ' + (wily.year || '') + ' · ' + (translation ? translation.name : '') + '</div>');
 
         // переводы
         if (avail.length > 1 || true) {
@@ -305,7 +306,7 @@
             if (a.translation_id === translation.translation_id) $b.css({ background: 'rgba(255,255,255,.14)' });
             $b.on('hover:enter', function () {
               if (a.translation_id === translation.translation_id) return;
-              translation = a; build(_this);
+              translation = a; build(comp);
             });
             $row.append($b);
           });
@@ -323,7 +324,7 @@
             if (s === season) $b.css({ background: 'rgba(255,255,255,.14)' });
             $b.on('hover:enter', function () {
               if (s === season) return;
-              season = s; build(_this);
+              season = s; build(comp);
             });
             $srow.append($b);
           });
@@ -337,7 +338,7 @@
           episodes.forEach(function (ep) {
             content.append(episodeItem(ep));
           });
-          try { (self || object).activity.toggle(); } catch (e) {}
+          try { comp.activity.toggle(); } catch (e) {}
         } else {
           content.append(sectionTitle('ФИЛЬМ'));
           var item = Lampa.Template.get(core[mode].template, {
@@ -349,7 +350,7 @@
             act(null, null, wily.name);
           });
           content.append(item);
-          try { (self || object).activity.toggle(); } catch (e) {}
+          try { comp.activity.toggle(); } catch (e) {}
         }
       }
 
@@ -634,6 +635,16 @@
   /* ================= TEMPLATES ================= */
 
   function addTemplates() {
+    if (!document.getElementById('wily-plugin-style')) {
+      var st = document.createElement('style');
+      st.id = 'wily-plugin-style';
+      st.textContent = '.wily-btn{transition:background .15s,color .15s}' +
+        '.wily-btn.focus{background:#fff !important;color:#000 !important}' +
+        '.wily-item.focus .online__title{color:#fff}' +
+        '.wily-item.focus{background:rgba(255,255,255,.09);border-radius:.8em}' +
+        '.wily-content{max-width:900px;margin:0 auto}';
+      document.head.appendChild(st);
+    }
     Lampa.Template.add('wily_item', '<div class="online selector wily-item">' +
       '<div class="online__body">' +
       '<div class="online__title">{title}</div>' +
@@ -693,7 +704,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.7 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v1.8 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
