@@ -1,8 +1,8 @@
 /**
  * Lampa plugin: Wily Online (wily.to)
- * РљРЅРѕРїРєР° "Wily" РЅР° РєР°СЂС‚РѕС‡РєРµ С„РёР»СЊРјР°/СЃРµСЂРёР°Р»Р° в†’ РЅР°С‚РёРІРЅС‹Р№ СЌРєСЂР°РЅ РІС‹Р±РѕСЂР°
- * РѕР·РІСѓС‡РєРё/СЃРµР·РѕРЅР°/СЃРµСЂРёРё в†’ РїСЂРѕСЃРјРѕС‚СЂ С‡РµСЂРµР· HLS (VK Video CDN) СЃ СЃСѓР±С‚РёС‚СЂР°РјРё
- * Рё РїРµСЂРµРєР»СЋС‡РµРЅРёРµРј РєР°С‡РµСЃС‚РІР°. РўСЂРµР±СѓРµС‚СЃСЏ Р°РєРєР°СѓРЅС‚ Wily.
+ * Кнопка "Wily" на карточке фильма/сериала → нативный экран выбора
+ * озвучки/сезона/серии → просмотр через HLS (VK Video CDN) с субтитрами
+ * и переключением качества. Требуется аккаунт Wily.
  */
 (function () {
   'use strict';
@@ -30,7 +30,7 @@
   }
 
   function proxyBase() {
-    return (sget('proxy', 'http://94.249.239.197/wily-api') || '').trim().replace(/\/+$/, '');
+    return (sget('proxy', 'https://little-brook-acdb.lisiyvirus.workers.dev') || '').trim().replace(/\/+$/, '');
   }
 
   function rawFetch(url, options) {
@@ -59,7 +59,7 @@
     }
     return rawFetch(url, { method: method || 'GET', headers: headers, body: body ? JSON.stringify(body) : undefined })
       .catch(function () {
-        return { status: 0, ok: false, json: { message: 'РЅРµС‚ СЃРІСЏР·Рё СЃ РїСЂРѕРєСЃРё ' + proxyBase() + ' вЂ” https-Lampa С‚СЂРµР±СѓРµС‚ https-РїСЂРѕРєСЃРё (СЃРј. README)' } };
+        return { status: 0, ok: false, json: { message: 'нет связи с прокси ' + proxyBase() + ' — https-Lampa требует https-прокси (см. README)' } };
       })
       .then(function (r) {
         if (r.status === 401 && auth && sget('refresh_token', null)) {
@@ -98,7 +98,7 @@
       if (r.json && r.json.message) return r.json.message;
       if (r.json && r.json.error && r.json.error.message) return r.json.error.message;
     } catch (e) {}
-    return 'РѕС€РёР±РєР° ' + r.status;
+    return 'ошибка ' + r.status;
   }
 
   function apiSearch(q) {
@@ -136,21 +136,21 @@
     Lampa.Modal.open({
       title: title_, html: html,
       onBack: function () { Lampa.Modal.close(); },
-      buttons: [mbtn('OK', submit), mbtn('РћС‚РјРµРЅР°', function () { Lampa.Modal.close(); })]
+      buttons: [mbtn('OK', submit), mbtn('Отмена', function () { Lampa.Modal.close(); })]
     });
     try { $input.focus(); } catch (e) {}
   }
 
   function ensureAuth(cb) {
     if (sget('access_token', null)) return cb(true);
-    if (!window.Lampa || !Lampa.Modal || !Lampa.Modal.open) { toast('Wily: РјРѕРґР°Р»РєРё РЅРµРґРѕСЃС‚СѓРїРЅС‹'); return cb(false); }
-    inputModal('Wily вЂ” email Р°РєРєР°СѓРЅС‚Р°', sget('email', ''), function (email) {
+    if (!window.Lampa || !Lampa.Modal || !Lampa.Modal.open) { toast('Wily: модалки недоступны'); return cb(false); }
+    inputModal('Wily — email аккаунта', sget('email', ''), function (email) {
       email = (email || '').trim();
       if (!email) return;
       sset('email', email);
       apiCall('/v1/auth/request-code', 'POST', { email: email }).then(function (r) {
         if (!r.ok) { toast('Wily: ' + errMsg(r)); return; }
-        inputModal('Wily вЂ” РєРѕРґ РёР· РїРёСЃСЊРјР°', '', function (code) {
+        inputModal('Wily — код из письма', '', function (code) {
           code = (code || '').trim();
           if (!code) return;
           apiCall('/v1/auth/verify-code', 'POST', {
@@ -160,7 +160,7 @@
             if (r2.ok && r2.json && r2.json.access_token) {
               sset('access_token', r2.json.access_token);
               sset('refresh_token', r2.json.refresh_token);
-              toast('Wily: РІС…РѕРґ РІС‹РїРѕР»РЅРµРЅ');
+              toast('Wily: вход выполнен');
               cb(true);
             } else toast('Wily: ' + errMsg(r2));
           });
@@ -172,7 +172,7 @@
   /* ================= MATCHING ================= */
 
   function findWilyTitle(movie) {
-    var norm = function (s) { return (s || '').toLowerCase().replace(/С‘/g, 'Рµ').replace(/[^a-zР°-СЏ0-9]/gi, ''); };
+    var norm = function (s) { return (s || '').toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/gi, ''); };
     var movieNames = [];
     [movie.original_name, movie.original_title, movie.name, movie.title].forEach(function (n) {
       n = norm(n);
@@ -219,7 +219,7 @@
   function loadComponent(movie, mode) {
     Lampa.Activity.push({
       url: '',
-      title: 'Wily вЂ” ' + (movie.name || movie.original_name || ''),
+      title: 'Wily — ' + (movie.name || movie.original_name || ''),
       component: mode === 'download' ? COMPONENT + '_dl' : COMPONENT,
       search: movie.title,
       search_one: movie.title,
@@ -262,17 +262,17 @@
         scroll.append(html);
         this.activity.loader(true);
         ensureAuth(function (ok) {
-          if (!ok) { _this.empty('РўСЂРµР±СѓРµС‚СЃСЏ РІС…РѕРґ РІ Р°РєРєР°СѓРЅС‚ Wily'); _this.activity.loader(false); return; }
+          if (!ok) { _this.empty('Требуется вход в аккаунт Wily'); _this.activity.loader(false); return; }
           findWilyTitle(movie).then(function (match) {
-            if (!match) { _this.empty('РќРµ РЅР°Р№РґРµРЅРѕ РІ Wily: ' + (movie.name || movie.title)); _this.activity.loader(false); return; }
+            if (!match) { _this.empty('Не найдено в Wily: ' + (movie.name || movie.title)); _this.activity.loader(false); return; }
             apiTitle(match.id).then(function (t) {
               _this.activity.loader(false);
-              if (!t) { _this.empty('Wily: РѕС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё'); return; }
+              if (!t) { _this.empty('Wily: ошибка загрузки'); return; }
               wily = t;
               avail = (t.availabilities || []).filter(function (a) {
                 return t.kind === 'series' ? Object.keys(a.seasons || {}).length : (a.qualities || []).length;
               });
-              if (!avail.length) { _this.empty('Wily: РЅРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… РѕР·РІСѓС‡РµРє'); return; }
+              if (!avail.length) { _this.empty('Wily: нет доступных озвучек'); return; }
               translation = avail[0];
               build();
             });
@@ -288,14 +288,14 @@
 
       function build() {
         content.empty();
-        content.append('<div style="opacity:.55;margin-bottom:1em">Wily В· ' + (wily.year || '') + ' В· ' + (translation ? translation.name : '') + '</div>');
+        content.append('<div style="opacity:.55;margin-bottom:1em">Wily · ' + (wily.year || '') + ' · ' + (translation ? translation.name : '') + '</div>');
 
-        // РїРµСЂРµРІРѕРґС‹
+        // переводы
         if (avail.length > 1 || true) {
-          content.append(sectionTitle('РџР•Р Р•Р’РћР”'));
+          content.append(sectionTitle('ПЕРЕВОД'));
           var $row = row();
           avail.forEach(function (a) {
-            var $b = selBtn(a.name + (a.translation_id === translation.translation_id ? ' вњ“' : ''));
+            var $b = selBtn(a.name + (a.translation_id === translation.translation_id ? ' ✓' : ''));
             if (a.translation_id === translation.translation_id) $b.css({ background: 'rgba(255,255,255,.14)' });
             $b.on('hover:enter', function () {
               if (a.translation_id === translation.translation_id) return;
@@ -308,12 +308,12 @@
 
         if (wily.kind === 'series') {
           seasons = Object.keys(translation.seasons || {}).map(Number).sort(function (a, b) { return a - b; });
-          if (!seasons.length) { content.append('<div style="opacity:.6;padding:1em 0">РќРµС‚ РґРѕСЃС‚СѓРїРЅС‹С… СЃРµР·РѕРЅРѕРІ</div>'); return; }
+          if (!seasons.length) { content.append('<div style="opacity:.6;padding:1em 0">Нет доступных сезонов</div>'); return; }
           if (season === null || seasons.indexOf(season) === -1) season = seasons[0];
-          content.append(sectionTitle('РЎР•Р—РћРќ'));
+          content.append(sectionTitle('СЕЗОН'));
           var $srow = row();
           seasons.forEach(function (s) {
-            var $b = selBtn('РЎРµР·РѕРЅ ' + s + (s === season ? ' вњ“' : ''));
+            var $b = selBtn('Сезон ' + s + (s === season ? ' ✓' : ''));
             if (s === season) $b.css({ background: 'rgba(255,255,255,.14)' });
             $b.on('hover:enter', function () {
               if (s === season) return;
@@ -323,7 +323,7 @@
           });
           content.append($srow);
 
-          content.append(sectionTitle('РЎР•Р РР'));
+          content.append(sectionTitle('СЕРИИ'));
           var sdata = (wily.seasons || []).filter(function (x) { return Number(x.number) === Number(season); })[0];
           var availEps = (translation.seasons || {})[season] || [];
           episodes = (sdata && sdata.episodes ? sdata.episodes : []).filter(function (e) { return availEps.indexOf(Number(e.number)) !== -1; });
@@ -332,9 +332,9 @@
             content.append(episodeItem(ep));
           });
         } else {
-          content.append(sectionTitle('Р¤РР›Р¬Рњ'));
+          content.append(sectionTitle('ФИЛЬМ'));
           var item = Lampa.Template.get(core[mode].template, {
-            title: wily.name || 'РЎРјРѕС‚СЂРµС‚СЊ',
+            title: wily.name || 'Смотреть',
             quality: (translation.qualities || []).join('/') + 'p',
             info: ''
           });
@@ -351,9 +351,9 @@
         var hash = Lampa.Utils.hash([season, num, movie.original_title || movie.name].join(''));
         var view = Lampa.Timeline.view(hash);
         var eq = translation.episode_qualities && translation.episode_qualities[season + ':' + num];
-        var qline = ((eq || translation.qualities || []).slice(0, 3).join('/') || '?') + 'p' + (ep.runtime_min ? ' В· ' + ep.runtime_min + ' РјРёРЅ' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' В· ' + ep.air_status : '');
+        var qline = ((eq || translation.qualities || []).slice(0, 3).join('/') || '?') + 'p' + (ep.runtime_min ? ' · ' + ep.runtime_min + ' мин' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' · ' + ep.air_status : '');
         var item = Lampa.Template.get(core[mode].template, {
-          title: 'РЎРµСЂРёСЏ ' + num + (ep.name ? ' вЂ” ' + ep.name : ''),
+          title: 'Серия ' + num + (ep.name ? ' — ' + ep.name : ''),
           quality: qline,
           info: ''
         });
@@ -402,7 +402,7 @@
       function act(season_, episode_, label) {
         if (acting) return;
         acting = true;
-        toast('Wily: РїРѕР»СѓС‡Р°РµРј СЃСЃС‹Р»РєСѓвЂ¦');
+        toast('Wily: получаем ссылку…');
         apiResolve(resolveBody(season_, episode_)).then(function (res) {
           if (!res.ok) {
             if (res.limit && res.limit.streams && res.limit.streams.length) {
@@ -412,11 +412,11 @@
               b.terminateSessionId = s0.sessionId;
               apiResolve(b).then(function (r2) {
                 if (r2.ok) onStream(r2.data, season_, episode_, label);
-                else toast('Wily: ' + (r2.error || 'Р»РёРјРёС‚ РїРѕС‚РѕРєРѕРІ'));
+                else toast('Wily: ' + (r2.error || 'лимит потоков'));
               });
               return;
             }
-            toast('Wily: ' + (res.error || 'РЅРµС‚ СЃСЃС‹Р»РєРё'));
+            toast('Wily: ' + (res.error || 'нет ссылки'));
             return;
           }
           onStream(res.data, season_, episode_, label);
@@ -428,21 +428,21 @@
           downloadEpisode(data, label);
           return;
         }
-        var first = toPlayObject(data.playback, (movie.name || wily.name) + (label ? ' вЂ” ' + label : ''));
+        var first = toPlayObject(data.playback, (movie.name || wily.name) + (label ? ' — ' + label : ''));
         var hash = Lampa.Utils.hash([season_, episode_, movie.original_title || movie.name].join(''));
         try { first.timeline = Lampa.Timeline.view(hash); } catch (e) {}
         Lampa.Player.play(first);
-        // РїР»РµР№Р»РёСЃС‚: РѕСЃС‚Р°Р»СЊРЅС‹Рµ СЃРµСЂРёРё СЃРµР·РѕРЅР° (Р»РµРЅРёРІС‹Рµ СЃСЃС‹Р»РєРё)
+        // плейлист: остальные серии сезона (ленивые ссылки)
         if (season_ && episodes.length > 1) {
           var playlist = episodes.map(function (ep) {
             var lbl = 'S' + pad(season_) + 'E' + pad(ep.number);
             if (ep.number === episode_) return first;
             return {
-              title: (movie.name || wily.name) + ' вЂ” ' + lbl,
+              title: (movie.name || wily.name) + ' — ' + lbl,
               url: function (call) {
                 apiResolve(resolveBody(season_, ep.number)).then(function (res) {
                   if (res.ok) {
-                    var po = toPlayObject(res.data.playback, (movie.name || wily.name) + ' вЂ” ' + lbl);
+                    var po = toPlayObject(res.data.playback, (movie.name || wily.name) + ' — ' + lbl);
                     var h = Lampa.Utils.hash([season_, ep.number, movie.original_title || movie.name].join(''));
                     try { po.timeline = Lampa.Timeline.view(h); } catch (e) {}
                     first = po; // eslint-disable-line
@@ -467,7 +467,7 @@
         var a = pickAudio(data.playback);
         var q = sget('quality', '1080');
         var qu = a.qualities[q] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]];
-        if (!qu || !qu.main) { toast('Wily: РЅРµС‚ СЃСЃС‹Р»РєРё'); return; }
+        if (!qu || !qu.main) { toast('Wily: нет ссылки'); return; }
         fetch(qu.main).then(function (r) { return r.text(); }).then(function (m3u8) {
           var media = m3u8.split('\n').filter(function (l) { return l.trim() && l.trim().indexOf('#') !== 0; })[0];
           var base = qu.main.split('/').slice(0, -1).join('/');
@@ -480,35 +480,35 @@
               if (m) init = /^https?:/.test(m[1]) ? m[1] : base + '/' + m[1];
               if (lines[i] && lines[i].indexOf('#') !== 0) segs.push(/^https?:/.test(lines[i]) ? lines[i] : base + '/' + lines[i]);
             }
-            if (!segs.length) { toast('Wily: СЃРµРіРјРµРЅС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹'); return; }
+            if (!segs.length) { toast('Wily: сегменты не найдены'); return; }
             var name = (movie.name || wily.name) + (label ? ' ' + label : '') + ' [' + q + 'p Wily].mp4';
             runDownload(init, segs, name);
           });
-        }).catch(function (e) { toast('Wily: РѕС€РёР±РєР° ' + e.message); });
+        }).catch(function (e) { toast('Wily: ошибка ' + e.message); });
       }
 
       function runDownload(initUrl, segs, filename) {
         var results = [];
         var total = segs.length + (initUrl ? 1 : 0);
         var done = 0, failed = false;
-        var htmlDl = $('<div style="padding:15px"><div class="wily-dl-status">РџРѕРґРіРѕС‚РѕРІРєР°вЂ¦</div><div style="height:8px;background:#333;border-radius:4px;margin-top:10px"><div class="wily-dl-fill" style="height:100%;width:0;background:#34c759;border-radius:4px"></div></div></div>');
-        Lampa.Modal.open({ title: 'Wily вЂ” СЃРєР°С‡РёРІР°РЅРёРµ', html: htmlDl, buttons: [mbtn('РЎРєСЂС‹С‚СЊ', function () { Lampa.Modal.close(); })] });
+        var htmlDl = $('<div style="padding:15px"><div class="wily-dl-status">Подготовка…</div><div style="height:8px;background:#333;border-radius:4px;margin-top:10px"><div class="wily-dl-fill" style="height:100%;width:0;background:#34c759;border-radius:4px"></div></div></div>');
+        Lampa.Modal.open({ title: 'Wily — скачивание', html: htmlDl, buttons: [mbtn('Скрыть', function () { Lampa.Modal.close(); })] });
         var $status = htmlDl.find('.wily-dl-status'), $fill = htmlDl.find('.wily-dl-fill');
         function update() {
           var pct = Math.round(done / total * 100);
           $fill.css('width', pct + '%');
-          $status.text('РЎРєР°С‡Р°РЅРѕ ' + done + ' РёР· ' + total + ' (' + pct + '%)');
+          $status.text('Скачано ' + done + ' из ' + total + ' (' + pct + '%)');
         }
         function finish() {
           if (failed) return;
-          $status.text('РЎРѕР±РёСЂР°РµРј С„Р°Р№Р»вЂ¦');
+          $status.text('Собираем файл…');
           var parts = [];
           var okFlag = true;
           for (var i = 0; i < total; i++) {
             if (!results[i]) { okFlag = false; break; }
             parts.push(results[i]);
           }
-          if (!okFlag) { $status.text('РћС€РёР±РєР°: С‡Р°СЃС‚Рё РЅРµ СЃРєР°С‡Р°РЅС‹'); return; }
+          if (!okFlag) { $status.text('Ошибка: части не скачаны'); return; }
           var blob = new Blob(parts, { type: 'video/mp4' });
           save(blob, filename, $status);
         }
@@ -529,7 +529,7 @@
             if (done >= total) finish(); else worker();
           }).catch(function (e) {
             failed = true;
-            $status.text('РћС€РёР±РєР°: ' + e.message);
+            $status.text('Ошибка: ' + e.message);
           });
         }
         for (var w = 0; w < CONC; w++) worker();
@@ -543,10 +543,10 @@
               return handle.createWritable().then(function (w) { return w.write(blob).then(function () { return w.close(); }); });
             }).then(function () {
               Lampa.Modal.close();
-              toast('Wily: СЃРєР°С‡РёРІР°РЅРёРµ Р·Р°РІРµСЂС€РµРЅРѕ');
+              toast('Wily: скачивание завершено');
             }).catch(function (e) {
               if (e && e.name === 'AbortError') return;
-              $status.text('РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ: ' + e.message);
+              $status.text('Ошибка сохранения: ' + e.message);
             });
         } else {
           var a = document.createElement('a');
@@ -556,7 +556,7 @@
           a.click();
           setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 3000);
           Lampa.Modal.close();
-          toast('Wily: СЃРєР°С‡РёРІР°РЅРёРµ Р·Р°РІРµСЂС€РµРЅРѕ');
+          toast('Wily: скачивание завершено');
         }
       }
 
@@ -594,7 +594,7 @@
       '</div></div>');
     Lampa.Template.add('wily_item_dl', '<div class="online selector wily-item">' +
       '<div class="online__body">' +
-      '<div class="online__title">в¬‡ {title}</div>' +
+      '<div class="online__title">⬇ {title}</div>' +
       '<div class="online__quality wily__quality">{quality}{info}</div>' +
       '</div></div>');
   }
@@ -643,7 +643,7 @@
     };
 
     try {
-      Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) вЂ” РѕРЅР»Р°Р№РЅ Рё СЃРєР°С‡РёРІР°РЅРёРµ', component: COMPONENT };
+      Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
     console.log('[Wily] plugin loaded. setProxy/setQuality via WilyLampa.*');
