@@ -36,10 +36,7 @@
   // pereadresaciya ssylok CDN cherez proxy (privazka tokenov rabotaet tolko
   // kogda resolve i video idut cherez odnu tochku)
   function prox(u) {
-    if (!u) return u;
-    var m = /^https?:\/\/([a-z0-9.-]+\.vkvideo\.cloud)\/(.*)$/i.exec(u);
-    if (!m) return u;
-    return proxyBase() + '/wily-stream/' + m[1] + '/' + m[2];
+    return u; // video kachaetsya s CDN napryamuyu (privazka tokena = IP brauzera)
   }
 
   function rawFetch(url, options) {
@@ -586,7 +583,36 @@
       function pad(n) { n = String(n); return n.length < 2 ? '0' + n : n; }
 
       this.render = function () { return scroll.render(); };
-      this.start = function () {};
+      this.start = function () {
+        if (Lampa.Activity.active().activity !== this.activity) return;
+        Lampa.Controller.add('content', {
+          toggle: function () {
+            Lampa.Controller.collectionSet(scroll.render());
+            Lampa.Controller.collectionFocus(false, scroll.render());
+          },
+          up: function () {
+            if (Navigator.canmove('up')) Navigator.move('up');
+            else Lampa.Controller.toggle('head');
+          },
+          down: function () {
+            Navigator.move('down');
+          },
+          left: function () {
+            if (Navigator.canmove('left')) Navigator.move('left');
+            else Lampa.Controller.toggle('menu');
+          },
+          right: function () {
+            if (Navigator.canmove('right')) Navigator.move('right');
+          },
+          back: this.back
+        });
+        Lampa.Controller.toggle('content');
+      };
+
+      this.inActivity = function () {
+        var body = $('body');
+        return !(body.hasClass('settings--open') || body.hasClass('menu--open') || body.hasClass('keyboard-input--visible') || body.hasClass('selectbox--open') || body.hasClass('search--open'));
+      };
       this.back = function () { Lampa.Activity.backward(); };
       this.pause = function () {};
       this.stop = function () {};
