@@ -293,65 +293,107 @@
         try { comp.activity.toggle(); } catch (e) {}
       };
 
+      function esc(t) {
+        return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function esc(t) {
+        return String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
       function build(self) {
         content.empty();
-        content.append('<div style="opacity:.55;margin-bottom:1em">Wily v1.8 · ' + (wily.year || '') + ' · ' + (translation ? translation.name : '') + '</div>');
+        // seriyl = est' sezony v ozyvke (pole kind u Wily nenadezhno)
+        var isSeries = Object.keys((translation && translation.seasons) || {}).length > 0;
 
-        // переводы
-        if (avail.length > 1 || true) {
-          content.append(sectionTitle('ПЕРЕВОД'));
-          var $row = row();
-          avail.forEach(function (a) {
-            var $b = selBtn(a.name + (a.translation_id === translation.translation_id ? ' ✓' : ''));
-            if (a.translation_id === translation.translation_id) $b.css({ background: 'rgba(255,255,255,.14)' });
-            $b.on('hover:enter', function () {
-              if (a.translation_id === translation.translation_id) return;
-              translation = a; build(comp);
-            });
-            $row.append($b);
-          });
-          content.append($row);
+        if (isSeries) {
+          seasons = Object.keys(translation.seasons || {}).map(Number).sort(function (a, b) { return a - b; });
+          if (!seasons.length) { content.append('<div style="opacity:.6;padding:2em">Нет доступных сезонов</div>'); try { comp.activity.toggle(); } catch (e) {} return; }
+          if (season === null || seasons.indexOf(season) === -1) season = seasons[0];
+          var sd0 = (wily.seasons || []).filter(function (x) { return Number(x.number) === Number(season); })[0];
+          var av0 = (translation.seasons || {})[season] || [];
+          episodes = (sd0 && sd0.episodes ? sd0.episodes : []).filter(function (e) { return av0.indexOf(Number(e.number)) !== -1; });
+          if (!episodes.length) episodes = sd0 && sd0.episodes ? sd0.episodes : [];
         }
 
-        if (wily.kind === 'series') {
-          seasons = Object.keys(translation.seasons || {}).map(Number).sort(function (a, b) { return a - b; });
-          if (!seasons.length) { content.append('<div style="opacity:.6;padding:1em 0">Нет доступных сезонов</div>'); return; }
-          if (season === null || seasons.indexOf(season) === -1) season = seasons[0];
-          content.append(sectionTitle('СЕЗОН'));
+        var qAll = translation.qualities || [];
+        var has4k = qAll.map(Number).indexOf(2160) !== -1 || qAll.map(Number).indexOf(1440) !== -1;
+
+        if (isSeries) {
+          // постер слева + озвучки/сезоны справа
+          var $layout = $('<div class="wily-layout"></div>');
+          var firstEp = episodes.length ? Number(episodes[0].number) : 1;
+          var nextEp = episodes.length > 1 ? Number(episodes[1].number) : null;
+          var $poster = $('<div class="wily-ep wily-poster selector"><div class="wily-ep__img">' + (wily.poster ? '<img src="' + wily.poster + '">' : '') + '<div class="wily-ep__badge">' + (has4k ? '4K' : '') + '</div></div><div class="wily-ep__name">' + esc(wily.name || '') + '</div><div class="wily-poster__btns">' +
+            '<div class="wily-poster__btn">▶ Смотреть · S' + pad(season) + 'E' + pad(firstEp) + '</div>' +
+            (nextEp ? '<div class="wily-poster__btn">Следующая · Серия ' + nextEp + '</div>' : '') +
+            '</div><div class="wily-ep__q" style="padding:.5em .2em">' + esc(translation.name) + '</div><div class="wily-ep__q">Серий доступно: ' + episodes.length + '</div></div>');
+          $poster.on('hover:enter', function () { act(season, firstEp, 'S' + pad(season) + 'E' + pad(firstEp)); });
+          $layout.append($poster);
+
+          var $right = $('<div class="wily-right"></div>');
+          var $chips = $('<div class="wily-chiprow"></div>');
+          avail.forEach(function (a) {
+            var $ch = $('<div class="wily-chip selector"><b>' + esc(a.name) + '</b></div>');
+            if (a.translation_id === translation.translation_id) $ch.addClass('active');
+            $ch.on('hover:enter', function () {
+              if (a.translation_id === translation.translation_id) return;
+              translation = a; season = null; build(comp);
+            });
+            $chips.append($ch);
+          });
+          $right.append($chips);
+          $right.append(sectionTitle('СЕЗОН <span style="opacity:.6">всего ' + seasons.length + '</span>'));
           var $srow = row();
-          seasons.forEach(function (s) {
-            var $b = selBtn('Сезон ' + s + (s === season ? ' ✓' : ''));
-            if (s === season) $b.css({ background: 'rgba(255,255,255,.14)' });
+          seasons.forEach(function (sn) {
+            var cnt = (translation.seasons[sn] || []).length;
+            var $b = $('<div class="wily-card selector"><b>Сезон ' + sn + '</b> <span class="wily-card__sub" style="display:inline">' + cnt + ' эп.</span></div>');
+            if (sn === season) $b.addClass('active');
             $b.on('hover:enter', function () {
-              if (s === season) return;
-              season = s; build(comp);
+              if (sn === season) return;
+              season = sn; build(comp);
             });
             $srow.append($b);
           });
-          content.append($srow);
+          $right.append($srow);
+          $layout.append($right);
+          content.append($layout);
 
           content.append(sectionTitle('СЕРИИ'));
-          var sdata = (wily.seasons || []).filter(function (x) { return Number(x.number) === Number(season); })[0];
-          var availEps = (translation.seasons || {})[season] || [];
-          episodes = (sdata && sdata.episodes ? sdata.episodes : []).filter(function (e) { return availEps.indexOf(Number(e.number)) !== -1; });
-          if (!episodes.length) episodes = sdata && sdata.episodes ? sdata.episodes : [];
-          episodes.forEach(function (ep) {
-            content.append(episodeItem(ep));
-          });
-          try { comp.activity.toggle(); } catch (e) {}
+          var $eps = $('<div class="wily-grid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))"></div>');
+          episodes.forEach(function (ep) { $eps.append(episodeItem(ep)); });
+          content.append($eps);
         } else {
-          content.append(sectionTitle('ФИЛЬМ'));
-          var item = Lampa.Template.get(core[mode].template, {
-            title: wily.name || 'Смотреть',
-            quality: (translation.qualities || []).join('/') + 'p',
-            info: ''
+          // фильм: широкий герой-баннер
+          var badges = '<div class="wily-badges">' +
+            (has4k ? '<span class="wily-badge">4K</span>' : '') +
+            (wily.rating_kp ? '<span class="wily-badge">★ ' + wily.rating_kp + '</span>' : '') +
+            '<span class="wily-badge">' + esc(String(wily.year || '')) + '</span>' +
+            (wily.runtime_min ? '<span class="wily-badge">' + wily.runtime_min + ' мин</span>' : '') + '</div>';
+          var $hero = $('<div class="wily-hero selector"><div class="wily-hero__grad"></div><div class="wily-hero__body">' +
+            '<div class="wily-hero__title">' + esc(wily.name || '') + '</div>' + badges +
+            '<div class="wily-hero__desc">' + esc(wily.description || '') + '</div>' +
+            '<div class="wily-hero__btn">▶ Смотреть</div>' +
+            '</div></div>');
+          if (wily.backdrop) $hero.css('background-image', 'url(' + wily.backdrop + ')');
+          $hero.on('hover:enter', function () { act(null, null, wily.name); });
+          content.append($hero);
+
+          content.append(sectionTitle('ПЕРЕВОД'));
+          var $chips = $('<div class="wily-chiprow"></div>');
+          avail.forEach(function (a) {
+            var $ch = $('<div class="wily-chip selector"><b>' + esc(a.name) + '</b> <span style="opacity:.55">' + (a.qualities || []).join('/') + 'p</span></div>');
+            if (a.translation_id === translation.translation_id) $ch.addClass('active');
+            $ch.on('hover:enter', function () {
+              if (a.translation_id === translation.translation_id) return;
+              translation = a; build(comp);
+            });
+            $chips.append($ch);
           });
-          item.on('hover:enter', function () {
-            act(null, null, wily.name);
-          });
-          content.append(item);
-          try { comp.activity.toggle(); } catch (e) {}
+          content.append($chips);
         }
+
+        try { comp.activity.toggle(); } catch (e) {}
       }
 
       function episodeItem(ep) {
@@ -359,21 +401,17 @@
         var label = 'S' + pad(season) + 'E' + pad(num);
         var hash = Lampa.Utils.hash([season, num, movie.original_title || movie.name].join(''));
         var view = Lampa.Timeline.view(hash);
-        var eq = translation.episode_qualities && translation.episode_qualities[season + ':' + num];
-        var qline = ((eq || translation.qualities || []).slice(0, 3).join('/') || '?') + 'p' + (ep.runtime_min ? ' · ' + ep.runtime_min + ' мин' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' · ' + ep.air_status : '');
-        var item = Lampa.Template.get(core[mode].template, {
-          title: 'Серия ' + num + (ep.name ? ' — ' + ep.name : ''),
-          quality: qline,
-          info: ''
-        });
+        var qline = (ep.runtime_min ? ep.runtime_min + ' мин' : '') + (ep.air_date ? ' · ' + ep.air_date.split('-').reverse().join('.') : '');
+        var $card = $('<div class="wily-ep selector"><div class="wily-ep__img">' + (ep.still ? '<img loading="lazy" src="' + ep.still + '" onerror="this.style.opacity=0">' : '') + '<div class="wily-ep__badge">' + label + '</div>' + (ep.runtime_min ? '<div class="wily-ep__time">' + ep.runtime_min + ' мин</div>' : '') + '</div><div class="wily-ep__name">' + esc(ep.name ? ep.name : 'Серия ' + num) + '</div><div class="wily-ep__q">' + qline + '</div></div>');
         try {
-          item.append(Lampa.Timeline.render(view));
-          if (Lampa.Timeline.details) item.find('.online__quality, .wily__quality').append(Lampa.Timeline.details(view, ' / '));
+          var pr = Lampa.Timeline.render(view);
+          pr.addClass('wily-ep__progress');
+          $card.find('.wily-ep__img').append(pr);
         } catch (e) {}
-        item.on('hover:enter', function () {
+        $card.on('hover:enter', function () {
           act(season, num, label);
         });
-        return item;
+        return $card;
       }
 
       function resolveBody(season_, episode_) {
@@ -638,11 +676,27 @@
     if (!document.getElementById('wily-plugin-style')) {
       var st = document.createElement('style');
       st.id = 'wily-plugin-style';
-      st.textContent = '.wily-btn{transition:background .15s,color .15s}' +
-        '.wily-btn.focus{background:#fff !important;color:#000 !important}' +
-        '.wily-item.focus .online__title{color:#fff}' +
-        '.wily-item.focus{background:rgba(255,255,255,.09);border-radius:.8em}' +
-        '.wily-content{max-width:900px;margin:0 auto}';
+      st.textContent = '.wily-hero{position:relative;width:100%;min-height:320px;border-radius:1em;overflow:hidden;background-size:cover;background-position:center 30%;cursor:pointer}' + '.wily-hero__grad{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.45) 55%,rgba(0,0,0,.15) 100%)}' + '.wily-hero__body{position:relative;padding:2em 2.2em;display:flex;flex-direction:column;justify-content:flex-end;min-height:320px;box-sizing:border-box}' + '.wily-hero__title{font-size:2.4em;font-weight:900;text-transform:uppercase;margin-bottom:.3em}' + '.wily-badges{display:flex;gap:.5em;margin:.5em 0;flex-wrap:wrap}' + '.wily-badge{background:rgba(255,255,255,.16);border-radius:.4em;padding:.15em .55em;font-weight:700;font-size:.95em}' + '.wily-hero__desc{max-width:62%;opacity:.92;margin:0 0 1em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}' + '.wily-hero__btn{display:inline-flex;align-items:center;gap:.5em;background:rgba(0,0,0,.4);border:.12em solid rgba(255,255,255,.7);border-radius:2em;padding:.5em 1.3em;font-size:1.15em;font-weight:700;width:max-content}' + '.wily-hero.focus .wily-hero__btn{background:#fff;color:#000}' + '.wily-hero.focus{outline:.15em solid rgba(255,255,255,.9)}' + '.wily-chiprow{display:flex;gap:.5em;flex-wrap:wrap;margin-bottom:.3em}' + '.wily-chip{display:inline-flex;align-items:center;gap:.4em;background:rgba(255,255,255,.08);border-radius:.6em;padding:.45em .9em;cursor:pointer;transition:background .15s}' + '.wily-chip.active{background:rgba(255,255,255,.22)}' + '.wily-chip.focus{outline:.12em solid #fff;background:rgba(255,255,255,.18)}' + '.wily-layout{display:flex;gap:1.2em;align-items:flex-start;flex-wrap:wrap}' + '.wily-poster{width:300px;flex-shrink:0}' + '.wily-poster .wily-ep__img{aspect-ratio:16/10}' + '.wily-poster__btns{display:flex;flex-direction:column;gap:.5em;margin-top:.7em}' + '.wily-poster__btn{display:flex;align-items:center;justify-content:center;gap:.4em;background:rgba(255,255,255,.1);border:.1em solid rgba(255,255,255,.55);border-radius:2em;padding:.45em 1em;font-weight:600;cursor:pointer}' + '.wily-poster.focus .wily-poster__btn{background:#fff;color:#000}' + '.wily-poster.focus{outline:.15em solid rgba(255,255,255,.9)}' + '.wily-ep__date{padding:.05em .2em .45em;opacity:.55;font-size:.9em}' + '.wily-right{flex:1;min-width:300px}' + '.wily-top{display:flex;gap:1.2em;align-items:flex-start;flex-wrap:wrap}' +
+        '.wily-hero{width:320px;flex-shrink:0}' +
+        '.wily-top .wily-grid{flex:1;min-width:280px}' +
+        '.wily-content{max-width:950px;margin:0 auto}' +
+        '.wily-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:.6em}' +
+        '.wily-card{background:rgba(255,255,255,.06);border-radius:.8em;padding:.9em 1.1em;cursor:pointer;transition:background .15s,color .15s}' +
+        '.wily-card.active{background:rgba(255,255,255,.17)}' +
+        '.wily-card__sub{opacity:.55;font-size:.92em;margin-top:.2em}' +
+        '.wily-ep{position:relative;border-radius:.8em;overflow:hidden;background:#171821;cursor:pointer}' +
+        '.wily-ep__img{position:relative;aspect-ratio:16/9;background:#101018}' +
+        '.wily-ep__img img{width:100%;height:100%;object-fit:cover;display:block}' +
+        '.wily-ep__badge{position:absolute;top:.5em;left:.5em;background:rgba(0,0,0,.75);padding:.15em .5em;border-radius:.4em;font-size:.85em;font-weight:600}' +
+        '.wily-ep__time{position:absolute;bottom:.5em;right:.5em;background:rgba(0,0,0,.75);padding:.1em .5em;border-radius:.4em;font-size:.85em}' +
+        '.wily-ep__name{padding:.55em .2em .05em;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+        '.wily-ep__q{padding:0 .2em .55em;opacity:.55;font-size:.9em}' +
+        '.wily-ep__progress{position:absolute;bottom:0;left:0;right:0}' +
+        '.wily-card.focus,.wily-ep.focus{background:rgba(255,255,255,.14) !important;outline:.15em solid #fff;outline-offset:-.1em;color:#fff !important}' +
+        '.wily-ep.focus img{opacity:.85}' +
+        '.wily-card.focus .wily-card__sub,.wily-ep.focus .wily-ep__q{opacity:.75}' +
+        '.wily-sec{opacity:.5;margin:1.3em 0 .5em;font-size:.85em;letter-spacing:.08em}' +
+        '.wily-row{display:flex;flex-wrap:wrap;gap:.6em}';
       document.head.appendChild(st);
     }
     Lampa.Template.add('wily_item', '<div class="online selector wily-item">' +
@@ -704,7 +758,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.8 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v2.3 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
