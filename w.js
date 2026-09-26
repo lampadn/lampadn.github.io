@@ -49,53 +49,13 @@
     });
   }
 
-  var refreshing = null;
-
   function apiCall(path, method, body, auth) {
+    // autentifikaciyu delaet worker (centralnaya sessiya) — tokeny pluginu ne nuzhny
     var url = proxyBase() + path;
-    var headers = {};
-    if (auth && sget('access_token', null)) {
-      headers['Authorization'] = 'Bearer ' + sget('access_token', null);
-      headers['X-Device-Id'] = hwid();
-      headers['X-Device-Platform'] = 'windows';
-      headers['X-App-Version'] = '1.2.41 (73)';
-    }
-    return rawFetch(url, { method: method || 'GET', headers: headers, body: body ? JSON.stringify(body) : undefined })
+    return rawFetch(url, { method: method || 'GET', headers: {}, body: body ? JSON.stringify(body) : undefined })
       .catch(function () {
-        return { status: 0, ok: false, json: { message: 'нет связи с прокси ' + proxyBase() + ' — https-Lampa требует https-прокси (см. README)' } };
-      })
-      .then(function (r) {
-        if (r.status === 401 && auth && sget('refresh_token', null)) {
-          return refreshTokens().then(function (ok) {
-            if (ok) {
-              headers['Authorization'] = 'Bearer ' + sget('access_token', null);
-              return rawFetch(url, { method: method || 'GET', headers: headers, body: body ? JSON.stringify(body) : undefined });
-            }
-            return r;
-          });
-        }
-        return r;
+        return { status: 0, ok: false, json: { message: 'net svyazi s proksi ' + proxyBase() } };
       });
-  }
-
-  function refreshTokens() {
-    if (refreshing) return refreshing;
-    refreshing = rawFetch(proxyBase() + '/v1/auth/refresh', {
-      method: 'POST',
-      body: JSON.stringify({ refresh_token: sget('refresh_token', null) })
-    }).then(function (r) {
-      refreshing = null;
-      if (r.ok && r.json && r.json.access_token) {
-        sset('access_token', r.json.access_token);
-        sset('refresh_token', r.json.refresh_token);
-        return true;
-      }
-      // stiraem refresh tolko kogga server yavno skazal chto on nevernyi
-      var invalid = r.json && (r.json.error === 'invalid refresh token' || (r.json.message || '').indexOf('refresh') !== -1);
-      if (invalid) { sset('refresh_token', null); toast('Wily: требуется повторный вход'); }
-      return false;
-    }).catch(function () { refreshing = null; return false; });
-    return refreshing;
   }
 
   function errMsg(r) {
@@ -147,34 +107,9 @@
   }
 
   function ensureAuth(cb) {
-    if (sget('access_token', null)) return cb(true);
-    if (!window.Lampa || !Lampa.Modal || !Lampa.Modal.open) { toast('Wily: модалки недоступны'); return cb(false); }
-    inputModal('Wily — email аккаунта', sget('email', ''), function (email) {
-      email = (email || '').trim();
-      if (!email) return;
-      sset('email', email);
-      apiCall('/v1/auth/request-code', 'POST', { email: email }).then(function (r) {
-        if (!r.ok) { toast('Wily: ' + errMsg(r)); return; }
-        inputModal('Wily — код из письма', '', function (code) {
-          code = (code || '').trim();
-          if (!code) return;
-          apiCall('/v1/auth/verify-code', 'POST', {
-            email: email, code: code,
-            device: { platform: 'windows', name: 'Wily Windows', hardware_id: hwid() }
-          }).then(function (r2) {
-            if (r2.ok && r2.json && r2.json.access_token) {
-              sset('access_token', r2.json.access_token);
-              sset('refresh_token', r2.json.refresh_token);
-              toast('Wily: вход выполнен');
-              cb(true);
-            } else toast('Wily: ' + errMsg(r2));
-          });
-        });
-      });
-    });
+    // vhod delaetsya na urovne workerd — kod iz pisma ne nuzhen
+    cb(true);
   }
-
-  /* ================= MATCHING ================= */
 
   function findWilyTitle(movie) {
     var norm = function (s) { return (s || '').toLowerCase().replace(/ё/g, 'е').replace(/[^a-zа-я0-9]/gi, ''); };
@@ -758,7 +693,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v2.3 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v3.0 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
