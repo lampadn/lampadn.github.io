@@ -686,7 +686,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.2 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v1.3 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
