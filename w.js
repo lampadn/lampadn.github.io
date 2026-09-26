@@ -346,7 +346,7 @@
           content.append(sectionTitle('ФИЛЬМ'));
           var item = Lampa.Template.get(core[mode].template, {
             title: wily.name || 'Смотреть',
-            quality: (translation.qualities || []).filter(function (q) { return Number(q) <= 1080; }).join('/') + 'p',
+            quality: (translation.qualities || []).join('/') + 'p',
             info: ''
           });
           item.on('hover:enter', function () {
@@ -363,7 +363,7 @@
         var hash = Lampa.Utils.hash([season, num, movie.original_title || movie.name].join(''));
         var view = Lampa.Timeline.view(hash);
         var eq = translation.episode_qualities && translation.episode_qualities[season + ':' + num];
-        var qline = ((eq || translation.qualities || []).filter(function (q) { return Number(q) <= 1080; }).slice(0, 3).join('/') || '1080') + 'p' + (ep.runtime_min ? ' · ' + ep.runtime_min + ' мин' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' · ' + ep.air_status : '');
+        var qline = ((eq || translation.qualities || []).slice(0, 3).join('/') || '?') + 'p' + (ep.runtime_min ? ' · ' + ep.runtime_min + ' мин' : '') + (ep.air_status && ep.air_status !== 'aired' ? ' · ' + ep.air_status : '');
         var item = Lampa.Template.get(core[mode].template, {
           title: 'Серия ' + num + (ep.name ? ' — ' + ep.name : ''),
           quality: qline,
@@ -385,8 +385,9 @@
           tokenMovie: wily.token_movie,
           kind: 'movie',
           translationId: translation.translation_id,
-          quality: sget('quality', '1080'),
-          resume: mode === 'view'
+          quality: sget('quality', '2160'),
+          resume: mode === 'view',
+          deviceCaps: { av1: true, hevc: true, h264: true, maxRes: 4320, codecMaxRes: { h264: 2160, hevc: 4320, av1: 4320 } }
         };
         if (season_) { b.season = season_; b.episode = episode_; }
         return b;
@@ -404,7 +405,7 @@
         var subs = (pb.subtitles || []).map(function (s) { return { label: s.label, url: prox(s.url) }; });
         return {
           title: title_,
-          url: qualityMap[sget('quality', '1080')] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]].main,
+          url: qualityMap[sget('quality', '2160')] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]].main,
           quality: qualityMap,
           subtitles: subs
         };
@@ -477,7 +478,7 @@
       /* ---- download mode ---- */
       function downloadEpisode(data, label) {
         var a = pickAudio(data.playback);
-        var q = sget('quality', '1080');
+        var q = sget('quality', '2160');
         var qu = a.qualities[q] || a.qualities[Object.keys(a.qualities).sort(function (x, y) { return y - x; })[0]];
         if (!qu || !qu.main) { toast('Wily: нет ссылки'); return; }
         var m3u8Url = prox(qu.main);
