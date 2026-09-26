@@ -584,7 +584,13 @@
 
       this.render = function () { return scroll.render(); };
       this.start = function () {
-        if (Lampa.Activity.active().activity !== this.activity) return;
+        try {
+          var act = Lampa.Activity.active() ? Lampa.Activity.active().activity : null;
+          var items = scroll.render().find('.selector').length;
+          console.log('[Wily] start: activityMatch=' + (act === this.activity) + ' items=' + items);
+          if (act && this.activity && act !== this.activity) return;
+        } catch (e) { console.warn('[Wily] start guard', e); }
+        try {
         Lampa.Controller.add('content', {
           toggle: function () {
             Lampa.Controller.collectionSet(scroll.render());
@@ -607,6 +613,8 @@
           back: this.back
         });
         Lampa.Controller.toggle('content');
+        console.log('[Wily] controller registered');
+        } catch (e) { console.warn('[Wily] controller error', e); }
       };
 
       this.inActivity = function () {
@@ -686,7 +694,7 @@
       Lampa.Manifest.plugins = { type: 'video', version: '1.0', name: PLUGIN_NAME, description: 'Wily (wily.to) — онлайн и скачивание', component: COMPONENT };
     } catch (e) {}
 
-    console.log('[Wily] plugin v1.4 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
+    console.log('[Wily] plugin v1.5 loaded (Wily Online). setProxy/setQuality via WilyLampa.*');
   }
 
   if (window.Lampa) startPlugin();
